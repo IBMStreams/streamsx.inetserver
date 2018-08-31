@@ -44,8 +44,6 @@ All required libs are now available in the source repository
 		<fileset dir="opt">
 			<include name="eclipse-4.2.2/plugins/*.jar"/>
 			<include name="wssupport/Java-WebSocket-1.3.0.jar"/>
-			<include name="signpost-1.2/lib/*.jar"/>
-			<include name="httpcomponents-client-4.5.5/lib/*.jar"/>
 		</fileset>
 	</path>
 
@@ -62,15 +60,10 @@ All required libs are now available in the source repository
 		<mkdir dir="${impl.lib.dir}" />
 	</target>
 
-	<target name="clean" depends="cpp-clean,cleanToolkitxml" description="clean all generated compiler, toolkit, test, document and downloaded artefacts">
+	<target name="clean" depends="cleanToolkitxml" description="clean all generated compiler, toolkit, test, document and downloaded artefacts">
 		<delete verbose="true">
 			<!-- The fileset with the generated spl artifacts -->
 			<fileset dir="${basedir}">
-				<include name="com.ibm.streamsx.inet.http/HTTPGetJSONContent/*"/>
-				<include name="com.ibm.streamsx.inet.http/HTTPGetStream/*"/>
-				<include name="com.ibm.streamsx.inet.http/HTTPGetXMLContent/*"/>
-				<include name="com.ibm.streamsx.inet.http/HTTPPost/*"/>
-				<include name="com.ibm.streamsx.inet.http/HTTPRequest/*"/>
 				<include name="com.ibm.streamsx.inet.rest/HTTPBLOBInjection/*"/>
 				<include name="com.ibm.streamsx.inet.rest/HTTPJSONInjection/*"/>
 				<include name="com.ibm.streamsx.inet.rest/HTTPTupleInjection/*"/>
@@ -98,23 +91,7 @@ All required libs are now available in the source repository
 		<delete dir="${test.build.dir}" />
 	</target>
 
-	<target name="cpp" description="Build the c++ source components">
-		<exec executable="make" failonerror="true" dir="impl">
-			<arg value="-f" />
-			<arg value="Makefile" />
-			<arg value="build" />
-		</exec>
-	</target>
-
-	<target name="cpp-clean" description="Cleanup the c++ build">
-		<exec executable="make" failonerror="true" dir="impl">
-			<arg value="-f" />
-			<arg value="Makefile" />
-			<arg value="clean" />
-		</exec>
-	</target>
-
-	<target name="indextoolkit" depends="jar,cpp" description="Build the toolkit index">
+	<target name="indextoolkit" depends="jar" description="Build the toolkit index">
 		<echo message="Tookit to index: ${basedir}"/>
 		<exec executable="${streams.install}/bin/spl-make-toolkit" failonerror="true">
 			<arg value="--directory"/>
