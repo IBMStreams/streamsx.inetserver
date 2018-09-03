@@ -26,7 +26,6 @@ All required libs are now available in the source repository
 	<property name="build.dir"         location="impl/java/classes" />
 	<property name="impl.lib.dir"      location="impl/lib" /> <!-- used for the libs -->
 	<property name="lib.dir"           location="lib" />      <!-- used for cleanup only -->
-	<property name="nl.dir"            location="impl/nl" />
 	<property name="gensrc.dir"        location="impl/java/src-gen" />
 	<property name="test.run.dir"      location="unittestrun" />
 	<property name="test.build.dir"    location="${test.run.dir}/bin" />
@@ -83,10 +82,6 @@ All required libs are now available in the source repository
 		<delete dir="${downloads.dir}" />
 		<delete dir="output" />
 		<delete dir="doc" />
-		<delete dir="${nl.dir}/include"/>
-		<delete>
-			<fileset dir="${nl.dir}" includes="*.dat"/>
-		</delete>
 		<delete dir="${test.run.dir}" />
 		<delete dir="${test.build.dir}" />
 	</target>
