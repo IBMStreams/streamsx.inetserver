@@ -1,11 +1,11 @@
-<project name="streamsx.inet" default="all" basedir=".">
+<project name="streamsx.inetserver" default="all" basedir=".">
     <description>
         Build file for streamsx.inet project, built the toolkits and samples.
     </description>
   <!-- set global properties for this build -->
   <property environment="env" />
   <property name="streams.install" value="${env.STREAMS_INSTALL}" />
-  <property name="toolkit" location="com.ibm.streamsx.inet"/>
+  <property name="toolkit" location="com.ibm.streamsx.inetserver"/>
   <property name="toolkit.test" location="tests" />
   <property name="release.dir" location="release" />
   <property name="release.info.file"  value="${toolkit}/build.info"/>

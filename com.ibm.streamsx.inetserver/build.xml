@@ -17,7 +17,7 @@ We do not use maven downloads any longer
 All required libs are now available in the source repository
 -->
 
-<project name="com.ibm.streamsx.inet" basedir="." default="all">
+<project name="com.ibm.streamsx.inetserver" basedir="." default="all">
 
 	<property environment="env" />
 	<property name="streams.install"   value="${env.STREAMS_INSTALL}" />
@@ -30,7 +30,7 @@ All required libs are now available in the source repository
 	<property name="test.run.dir"      location="unittestrun" />
 	<property name="test.build.dir"    location="${test.run.dir}/bin" />
 	<property name="downloads.dir"     location="opt/downloaded" /> <!-- used for cleanup only -->
-	<property name="jarfile"           value="com.ibm.streamsx.inet.jar" />
+	<property name="jarfile"           value="com.ibm.streamsx.inetserver.jar" />
 
 	<defaultexcludes add="**/.gitkeep"/>
 
