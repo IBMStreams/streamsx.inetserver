@@ -1,4 +1,5 @@
 /.toolkitList
 /impl/java/src-gen/
+/impl/java/studio-build/
 /output/
 /unittestrun/
