@@ -12,31 +12,40 @@ sidebar:
 {%include editme %}
 
 
-Place here an overview about the functionality of the toolkit.
-Don't repeat work by explaining things which are available in SPLDOC.
-SPLDOC shall be linked in this page 
+# Running applications that use the Internet Server Toolkit
 
+To create applications that use the Internet Server Toolkit, you must configure either Streams Studio
+or the SPL compiler to be aware of the location of the toolkit.
 
-## Overview Sample header level 2
+## Before you begin
 
-Your text related to this topic 
+Install IBM InfoSphere Streams. Configure the product environment variables by entering the following command: 
+    source product-installation-root-directory/product-version/bin/streamsprofile.sh
 
-**ProTip:** This is a Pro-Tip
-{: .notice--info}
+## About this task
 
-### Overview Sample header level 3
+After the location of the toolkit is communicated to the compiler, the SPL artifacts that are specified
+in the toolkit can be used by an application. The application can include a use directive to bring the necessary namespaces into scope.
+Alternatively, you can fully qualify the operators that are provided by toolkit with their namespaces as prefixes.
 
-Some text in this level
+## Procedure
 
-Some shell command description
-
-```bash
-bundle install
-```
-
-### Overview Another Sample header level 3 
-
-**Note:** This is a Notize.
-{: .notice--warning}
+1. Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
+  * Set the **STREAMS_SPLPATH** environment variable to the root directory of a toolkit
+    or multiple toolkits (with : as a separator).  For example:
+      export STREAMS_SPLPATH=<your_toolkit_root_directory>/com.ibm.streamsx.inetserver
+  * Specify the **-t** or **--spl-path** command parameter when you run the **sc** command. For example:
+      sc -t <your_toolkit_root_directory>/com.ibm.streamsx.inetserver -M MyMain
+    where MyMain is the name of the SPL main composite.
+    **Note**: These command parameters override the **STREAMS_SPLPATH** environment variable.
+  * Add the toolkit location in InfoSphere Streams Studio.
+2. Develop your application. To avoid the need to fully qualify the operators, add a use directive in your application. 
+  * For example, you can add the following clause in your SPL source file:
+      use com.ibm.streamsx.inet.rest::*;
+    You can also specify a use clause for individual operators by replacing the asterisk (\*) with the operator name. For example: 
+      use com.ibm.streamsx.inet.rest::HTTPRequestProcess;
+3. Build your application.  You can use the **sc** command or Streams Studio.  
+4. Start the InfoSphere Streams instance. 
+5. Run the application. You can submit the application as a job by using the **streamtool submitjob** command or by using Streams Studio. 
 
 

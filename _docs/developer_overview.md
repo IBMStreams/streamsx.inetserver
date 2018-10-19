@@ -11,29 +11,17 @@ sidebar:
 {% include toc %}
 {% include editme %}
 
- Describe in this page the general development process. Refer for build setup and test setup to the appropriate pages
+# Developing operators of this toolkit:
 
+This toolkit uses Apache Ant 1.8 (or later) to build.
 
-## Development Heading level 2
+The top-level build.xml contains the main targets:
 
-Your text
+* all - Builds and creates SPLDOC for the toolkit and samples. Developers should ensure this target is successful when creating a pull request.
+* toolkit - Build the complete toolkit code
+* build-all-samples - Builds all samples. Developers should ensure this target is successful when creating a pull request.
+* release - Builds release artifacts, which is a tar bundle containing the toolkits and samples. It includes stamping the SPLDOC and toolkit version numbers with the git commit number (thus requires git to be available).
 
-**ProTip:** This is a Pro-Tip
-{: .notice--info}
-
-### Development Heading level 3
-
-Some text
-
-Some shell command description
-
-```bash
-bundle install
-```
-
-### Development Another level 3 Heading
-
-**Note:** This is a Notize.
-{: .notice--warning}
-
-
+The release should use Java 8 for the Java compile to allow the widest use of the toolkit (with Streams 4.0.1 or later). (Note Streams 4.0.1 ships Java 8).
+The build script inserts the commit hash into the toolkit version if the version number has a form like X.Y.Z.__dev__ 
+This change in the info.xml file can be removed with ant target revertversion.
