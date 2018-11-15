@@ -48,4 +48,7 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
 4. Start the InfoSphere Streams instance. 
 5. Run the application. You can submit the application as a job by using the **streamtool submitjob** command or by using Streams Studio. 
 
+## Samples
+
+[SPLDoc for the samples of streamsx.inetserver toolkit](https://ibmstreams.github.io/streamsx.inetserver/samples/doc/spldoc/html/index.html)
 
