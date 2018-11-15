@@ -1,5 +1,12 @@
 namespace application ;
 
+use com.ibm.streamsx.inet.rest::HTTPRequestProcess ;
+use com.ibm.streamsx.inet.rest::WebContext ;
+use com.ibm.streamsx.inet.rest::HTTPRequest ;
+use com.ibm.streamsx.json::JSONToTuple ;
+use com.ibm.streamsx.json::TupleToJSON ;
+
+
 /**
 * This has the same functioinality as DysonTuple application, excpet this one gets 
 * processes the request/response as json. Refer to the DysonTuple for and description. 
@@ -9,16 +16,7 @@ namespace application ;
 * using this operator with Python and the topology tookit is the way to go. 
 *
 */
-
-use com.ibm.streamsx.inet.rest::HTTPRequestProcess ;
-use com.ibm.streamsx.inet.rest::WebContext ;
-use com.ibm.streamsx.inet.rest::HTTPRequest ;
-use com.ibm.streamsx.json::JSONToTuple ;
-use com.ibm.streamsx.json::TupleToJSON ;
-
-
-
-composite DynJson
+public composite DynJson
 {
 	type
 		ReqProc = HTTPRequest reqRsp, rstring templateFile, map<rstring,

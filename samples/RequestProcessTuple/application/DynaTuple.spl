@@ -1,27 +1,25 @@
 namespace application ;
 
+use com.ibm.streamsx.inet.rest::HTTPRequestProcess ;
+use com.ibm.streamsx.inet.rest::WebContext ;
+use com.ibm.streamsx.inet.rest::HTTPRequest ;
+
 /**
 * This is an example of using the HTTPRequestProcess() operator to put up a form, 
 * get form input and generate a response. This uses the Tuple aspect of the operator,
 * the RequestProcessJson example does this same process with the Json aspect. 
 *
-* Description. 
-*  - Using th context put up the index.html page in /opt/html, which includes a form.
-*  - The forms action (/livepage/HttpTuple/ports/analyze/0/login) post to the operator.
-*  - The HTTPTupleProcess operator outputs the request, note the use of pathInfo to route the request.
-*  - On completion of the processing, the response is input to the originaling HTTPTupleProcess
-*    operator. 
+* Description: 
+* * Using th context put up the index.html page in /opt/html, which includes a form.
+* * The forms action (/livepage/HttpTuple/ports/analyze/0/login) post to the operator.
+* * The HTTPTupleProcess operator outputs the request, note the use of pathInfo to route the request.
+* * On completion of the processing, the response is input to the originaling HTTPTupleProcess operator. 
 *    
-*    The goal...
-*      - Demonstrate the processing of forms.
-*      - Reinterate how important it is NOT to mess with the id. 
+* The goal:
+* * Demonstrate the processing of forms.
+* * Reinterate how important it is NOT to mess with the id. 
 */
-
-use com.ibm.streamsx.inet.rest::HTTPRequestProcess ;
-use com.ibm.streamsx.inet.rest::WebContext ;
-use com.ibm.streamsx.inet.rest::HTTPRequest ;
-
-composite DynTuple
+public composite DynTuple
 {
 	type		
 		ReqProc = HTTPRequest reqRsp, rstring templateFile, map<rstring,

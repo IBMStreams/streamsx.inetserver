@@ -6,13 +6,13 @@ use com.ibm.streamsx.inet.wsserver::WebSocketSend ;
 
 /**
  * Example of using the Receive() and Send() WebSocket operators. 
- * 1) Start the application.</p>
- * 2) Start up firefox on local system.
- * 3) go to "http://localhost:8080"
- * 4) select 'Start Transmitting'
- * 5) select 'Start Receiving'
- * 6) Notes the 'RECEIVED:" and 'TRANSMIT:' fields changing. 
- * 7) Move cursor into Gray box, move up/down to send data.
+ * 1. Start the application.
+ * 2. Start up firefox on local system.
+ * 3. go to "http://localhost:8080"
+ * 4. select 'Start Transmitting'
+ * 5. select 'Start Receiving'
+ * 6. Notes the 'RECEIVED:" and 'TRANSMIT:' fields changing. 
+ * 7. Move cursor into Gray box, move up/down to send data.
  */
 
 public composite Main {
