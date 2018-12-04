@@ -2,7 +2,7 @@
 title: "Toolkit technical background overview"
 permalink: /docs/knowledge/overview/
 excerpt: "Basic knowledge of the toolkits technical domain."
-last_modified_at: 2017-08-04T12:37:48-04:00
+last_modified_at: 2018-12-04T09:37:48-04:00
 redirect_from:
    - /theme-setup/
 sidebar:
@@ -11,8 +11,9 @@ sidebar:
 {% include toc %}
 {% include editme %}
 
-The INet Server Toolkit
-The Internet Toolkit provides support for common internet rest protocol and web socket server protocol.
+# The INet Server Toolkit
+
+The Internet Server Toolkit provides support for common internet rest protocol and web socket server protocol.
 This toolkit is a split from streamsx.inet 2.9.6
 [streams.inet v2.9.6](https://github.com/IBMStreams/streamsx.inet/tree/v2.9.6)
 

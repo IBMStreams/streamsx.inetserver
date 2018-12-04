@@ -2,7 +2,7 @@
 title: "Toolkit Usage Overview"
 permalink: /docs/user/overview/
 excerpt: "How to use this toolkit."
-last_modified_at: 2017-08-04T12:37:48-04:00
+last_modified_at: 2018-12-04T09:37:48-04:00
 redirect_from:
    - /theme-setup/
 sidebar:
@@ -10,6 +10,11 @@ sidebar:
 ---
 {% include toc %}
 {%include editme %}
+
+# SPLDOC
+
+* [SPLDoc of the streamsx.inetserver toolkit](https://ibmstreams.github.io/streamsx.inetserver/doc/spldoc/html/tk$com.ibm.streamsx.inetserver/tk$com.ibm.streamsx.inetserver.html)
+* [SPLDoc for the samples of streamsx.inetserver toolkit](https://ibmstreams.github.io/streamsx.inetserver/samples/doc/spldoc/html/index.html)
 
 
 # Running applications that use the Internet Server Toolkit
@@ -48,7 +53,5 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
 4. Start the InfoSphere Streams instance. 
 5. Run the application. You can submit the application as a job by using the **streamtool submitjob** command or by using Streams Studio. 
 
-## Samples
 
-[SPLDoc for the samples of streamsx.inetserver toolkit](https://ibmstreams.github.io/streamsx.inetserver/samples/doc/spldoc/html/index.html)
 
