@@ -16,41 +16,44 @@ use com.ibm.streamsx.inet.wsserver::WebSocketSend ;
  */
 
 public composite Main {
+	param
+		expression<int32> $webContextPort : (int32)getSubmissionTimeValue("webContextPort", "8080");
+		expression<int32> $wsSourcePort :   (int32)getSubmissionTimeValue("wsSourcePort", "8081");
+		expression<int32> $wsSinkPort :     (int32)getSubmissionTimeValue("wsSinkPort", "8082");
+		
 	graph
 		()as WebContext_1 = WebContext(){
 			param
-				port : 8080 ;
-				context : "html" ;
-				contextResourceBase : "opt/html" ;
+				port : $webContextPort;
+				context : "html";
+				contextResourceBase : "opt/html";
 		}
 
-		(stream<rstring data> Receive_2_out0)as Receive_2 = WebSocketInject(){
+		stream<rstring data> ReceivedWsTuples = WebSocketInject() {
 			param
-				port : 8081 ;
+				port : $wsSourcePort;
 				ackCount : 10;
 		}
-		(stream<rstring data> Functor_4_out0)as Functor_4 = Functor(Receive_2_out0){
-		logic
-			state:  {
-				mutable list<rstring> colors = ["RED", "GREEN", "BLUE", "ORANGE", "PURPLE", "CORAL", "DEEPPINK", "LIME", "TAN", "SLATEBLUE"];
-				mutable rstring  bstring;
-				mutable rstring color;
-				}  
-		onTuple Receive_2_out0:
-				{
-				color = colors[(int32)(random() * 10.0)];
-				// this will not work on a strictly HTML5 browser, but it's festive.
-				bstring =  data + " Augment : <FONT COLOR=" + color + " >" + color + "</FONT>";
+
+		stream<rstring data> AugmentedWs as O = Functor(ReceivedWsTuples as I){
+			logic
+				state: {
+					mutable list<rstring> colors = ["RED", "GREEN", "BLUE", "ORANGE", "PURPLE", "CORAL", "DEEPPINK", "LIME", "TAN", "SLATEBLUE"];
+					mutable rstring  bstring;
+					mutable rstring color;
 				}
-
-		output Functor_4_out0 : data = bstring; 
+				onTuple I: {
+					color = colors[(int32)(random() * 10.0)];
+					// this will not work on a strictly HTML5 browser, but it's festive.
+					bstring =  data + " Augment : <FONT COLOR=" + color + " >" + color + "</FONT>";
+					printStringLn(bstring);
+				}
+				output O : data = bstring;
 		}
-		
 
-		()as Send_3 = WebSocketSend(Functor_4_out0){
+		()as WsSender = WebSocketSend(AugmentedWs){
 			param
-				port : 8082 ;
+				port : $wsSinkPort;
 		}
-
 
 }
