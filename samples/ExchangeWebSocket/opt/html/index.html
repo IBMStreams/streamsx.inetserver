@@ -1,177 +1,209 @@
+<!DOCTYPE html>
 <html>
-<!-- 
-    Quick and dirty sample.....
-
-    License : Be nice.
--->
-<head>
-<title>Send/Recieve example of WebSockets and Streams</title>
-<script type="text/javascript" src="js/jquery-1.9.1.js"></script>
-<style type="text/css">
-	#bigbigbox{
-		margin:16px 16px 16px 48px;
-		border:1px groove blue;
-		background-color : #BBBBBB;
-		width:180px;
-		height:180px;
-	}
-	#msg{
-		color:#800000;
-	}
-</style>
+	<head>
+		<meta charset="UTF-8">
+		<title>Send/Recieve example of WebSockets and Streams</title>
 <script type="text/javascript">
-        var portIDSnd = 8081; 
-        var portIDRcv = 8082;
-	var i=0;
-	var gamma = 90;
-	var alpha = 90;
-	var beta = 101;
-	var count = 0;
+	"use strict";
+	
+	const portIDSnd = 8081; 
+	const portIDRcv = 8082;
+	let wsEnabled = '';
+	let wsSnd;
+	let wsRcv;
+	let sendCounter = 0;
+	let receiveCounter = 0;
+	let wsSendState;
+	let wsRcvState;
 
-        function init() {
-                document.getElementById("formID").value = "DevId:" + Math.floor(Math.random()*100);
-                var ip = location.host;
-    	        nodeNameSnd = (ip.split(":") == 1) ? "ws://" + ip : ip.split(":")[0] + ":" + portIDSnd;
-                document.getElementById("outWSsnd").value = nodeNameSnd;   	         
-    	        nodeNameRcv = (ip.split(":") == 1) ? "ws://" + ip : ip.split(":")[0] + ":" + portIDRcv;
-                document.getElementById("outWSrcv").value = nodeNameRcv;   	         
-	     // track the mouse.an
-	        $('#bigbigbox').mousemove(function(event) {
-	            beta = (event.pageY-156);
-	            alpha = (event.pageX-156);
-	            gamma = alpha + beta;
-	            count = i++;
-                    var msg = 'alpha:' + alpha + ' beta:' + beta +' gamma : ' + gamma + ' [counter]: ' + count;
-	            $('#track').text(msg);
-	        });
-        }
+	function init() {
+		document.getElementById("formID").value = "DevId:" + Math.floor(Math.random()*100);
+		let ip = location.host;
+		let urlSnd = (ip.split(":").length == 1) ? "ws://" + ip : "ws://" + ip.split(":")[0] + ":" + portIDSnd;
+		console.log("ip: " + ip + " urlSnd: " + urlSnd);
+		document.getElementById("urlSnd").value = urlSnd;
+		let urlRcv = (ip.split(":").length == 1) ? "ws://" + ip : "ws://" + ip.split(":")[0] + ":" + portIDRcv;
+		console.log("ip: " + ip + " urlRcv: " + urlRcv);
+		document.getElementById("urlRcv").value = urlRcv;
+		
+		wsSendState = document.getElementById("wsSendState");
+		wsRcvState  = document.getElementById("wsRcvState");
+	}
 
+	function isWsEnabled() {
+		if (! wsEnabled) {
+			if ("WebSocket" in window) {
+				alert("WebSocket is supported by your Browser!");
+				wsEnabled = true;
+			} else {
+				alert("WebSocket NOT supported by your Browser!");
+			}
+		}
+		return wsEnabled;
+	}
+	
+	function stateToString(inp) {
+		if (inp == 0) { return 'CONNECTING'; }
+		if (inp == 1) { return 'OPEN'; }
+		if (inp == 2) { return 'CLOSING'; }
+		if (inp == 3) { return 'CLOSED'; }
+		return 'ERROR';
+	}
+	
+	function updateWsSendState() {
+		wsSendState.innerHTML = "State: " + stateToString(wsSnd.readyState) + " sendCounter: " + sendCounter;
+	}
+
+	function updateWsRcvState() {
+		wsRcvState.innerHTML = "State: " + stateToString(wsRcv.readyState) + " receiveCounter: " + receiveCounter;
+	}
+	
 	function buildMessage() {
-
-            var actDate = new Date();
-	    var currentTimeValue = actDate.getTime();
-	    currentTime.innerHTML = currentTimeValue;
-            msg =   "ID:" + document.getElementById("formID").value +
-                    ", T:" + currentTimeValue +
-                    ", A:" + alpha + 
-                    ", B:" + beta;
-            if (wsSnd != null) {
-	        $('#transmitting').text(msg);
-                wsSnd.send(msg)
-            }
+		let msg = "ID:" + document.getElementById("formID").value + ", COUNTER:" + sendCounter;
+		sendCounter += 1;
+		if (wsSnd != null) {
+			if (wsSnd.readyState == 1) {
+				var transmitbox = document.getElementById("transmitting");
+				transmitbox.innerHTML = msg;
+				wsSnd.send(msg);
+			}
+			updateWsSendState();
+		}
 	}
-//	function abortTimer() { // to be called when you want to stop the timer
-//	     clearInterval(tid);
-//	}
-//	var tid = 0;
 
-        function SndWebSocket() {
-	    var sndMsg;
-            if ("WebSocket" in window) {
-                sndMsg = document.getElementById('sndMsg');
-                alert("WebSocket is supported by your Browser!");
-                // Let us open a web socket
-                var wsSoc = "ws://" + document.getElementById("outWSsnd").value.trim();
-                wsSnd = new WebSocket(wsSoc)
-                wsSnd.onopen = function () {
-                    // Web Socket is connected, send data using send()
-                    wsSnd.send("<CONTROL>ID "+ document.getElementById("formID").value  + " STARTING</CONTROL>");
-                    sndMsg.innerHTML = "Transmitting on port : " + portIDSnd;
-                    alert("Message is sent...");
-                };
-                wsSnd.onmessage = function (evt) {
-                    var received_msg = evt.data;
-                    sndMsg.innerHTML = "Alert:<b>" + received_msg + "</b>";
-                };
-                wsSnd.onclose = function () {
-                    alert("Connection is closed...");
-                    sndMsg.innerHTML = "Connection closed....";
-                    wsSnd = null;
-                };
-	        setInterval(buildMessage, 100);
-            }
-            else {
-                // The browser doesn't support WebSocket
-                alert("WebSocket NOT supported by your Browser!");
-            }
-        }
-        /// End of SndWebSocket()
+	function SndWebSocket() {
+		if (isWsEnabled()) {
+			if (wsSnd == null) {
+				sendCounter = 0;
+				// Let us open a web socket
+				let wsUrl = document.getElementById("urlSnd").value.trim();
+				console.log("Open sender to:" + wsUrl);
+				wsSnd = new WebSocket(wsUrl)
+	
+				wsSnd.onopen = function () {
+					alert("Message is sent...");
+					updateWsSendState();
+					buildMessage();
+					setInterval(buildMessage, 500);
+				};
+	
+				wsSnd.onmessage = function (evt) {
+					var received_msg = evt.data;
+				};
+	
+				wsSnd.onclose = function () {
+					alert("Sender connection is closed...");
+					updateWsSendState();
+					wsSnd = null;
+				};
+			}
+		}
+	} /// End of SndWebSocket()
 
-// User has selected the link, they want to see the data from server. 
-//    - connect up to server
-//    - data flows in via the onmessage. 
-
-function RcvWebSocket()
-{
-     // Let us open a web socket
-     var rcvDataDoc = document.getElementById("rcvdata");
-     var wsSocRcv = "ws://" + document.getElementById("outWSrcv").value.trim();
-     wsRcv = new WebSocket(wsSocRcv);	 
-
-
-     wsRcv.onopen = function()
-     {
-        // Web Socket is connected, send data using send()
-        wsRcv.send("Message to Server, send me data....");
-        alert("Connection established, message sent ...");
-     };
-     wsRcv.onmessage = function (evt)   { 
-        var json_msg = JSON.parse(evt.data);
-
-	if (json_msg.tuples != null) {
-	   var tmp = json_msg.tuples[0].tuple.data;
-           rcvDataDoc.innerHTML = "<b>" + tmp + "</b>";
-	} 
-	if (json_msg.control != null) {
-	   // we do have a status
-	   // json_msg.control.status &  json_msg.control.text;
+	function SndWebSocketStop() {
+		if (isWsEnabled()) {
+			if (wsSnd != null) {
+				wsSnd.close();
+			}
+		}
 	}
-     };
-     wsRcv.onclose = function()  { 
-        // websocket is closed.
-        alert("Connection is closed..."); 
-        wsRcv = null;
-     };
-} // end RcvWebSocket()
+	
+	function RcvWebSocketStop() {
+		if (isWsEnabled()) {
+			if (wsRcv != null) {
+				wsRcv.close();
+			}
+		}
+	}
 
+	function RcvWebSocket() {
+		if (isWsEnabled()) {
+			if (wsRcv == null) {
+				receiveCounter = 0;
+				// Let us open a web socket
+				let rcvDataDoc = document.getElementById("rcvData");
+				let rcvDataRawDoc = document.getElementById("rcvDataRaw");
+				let rcvDataControlDoc = document.getElementById("rcvDataControl");
+				let wsUrl = document.getElementById("urlRcv").value.trim();
+				console.log("Open receiver from:" + wsUrl);
+				wsRcv = new WebSocket(wsUrl);
+	
+				wsRcv.onopen = function() {
+					// Web Socket is connected, send data using send()
+					wsRcv.send("Message to Server, send me data....");
+					alert("Connection established, message sent ...");
+					updateWsRcvState();
+				};
+				
+				wsRcv.onmessage = function (evt) {
+					receiveCounter += 1;
+					rcvDataRawDoc.textContent = evt.data;
+					let json_msg = JSON.parse(evt.data);
+					if (json_msg.tuples != null) {
+						var tmp = json_msg.tuples[0].tuple.data;
+						rcvDataDoc.innerHTML = "<b>" + tmp + "</b>";
+					}
+					if (json_msg.control != null) {
+						// we do have a status
+						rcvDataControlDoc.textContent = evt.data;
+					}
+					updateWsRcvState();
+				};
+				
+				wsRcv.onclose = function() {
+					// websocket is closed.
+					alert("Receiver connection is closed...");
+					updateWsRcvState();
+					wsRcv = null;
+				};
+			}
+		}
+	} // end RcvWebSocket()
 
-</script> 
+</script>
+
 </head>
+
 <body onload="init()">
-Server clients to demonstrate the use of WebSocket operators.  
+Server clients to demonstrate the use of WebSocket operators.
 
 <h2>Who is the data from ....</h2>
 <table>
-<tr><td>Form Id : <input type="text" id="formID"></td></tr>
+	<tr><td>Form Id : <input type="text" id="formID"></td></tr>
 </table>
+
 <h2>Where will the data be exchanged with ....</h2>
 <p>Change the defaults if you wish....</p>
 <table>
-<tr><td>Streams Source Operator (port) : <input type="text" id="outWSsnd"></td></tr>
-<tr><td>Streams Sink Operator (port) : <input type="text" id="outWSrcv"></td></tr>
+	<tr><td>Streams Source Operator (url) : <input type="text" id="urlSnd"></td></tr>
+	<tr><td>Streams Sink Operator (url)   : <input type="text" id="urlRcv"></td></tr>
 </table>
+
 <h2>Commence the communication....</h2>
 <ol>
 <li><a href="javascript:SndWebSocket()" >Start Transmitting</a></li>
 <li><a href="javascript:RcvWebSocket()" >Start Receiving</a></li>
+<li><a href="javascript:SndWebSocketStop()" >Stop Transmitting</a></li>
+<li><a href="javascript:RcvWebSocketStop()" >Stop Receiving</a></li>
 </ol>
 
 <h2>Monitor the data exchange...</h2>
-<pre>SND state:<span id="sndMsg"></span></pre>
-TimeStamp:<span id="currentTime"></span><br>
+<pre>Sender   <span id="wsSendState"></span></pre>
+<pre>Receiver <span id="wsRcvState"></span></pre>
 <HR>
 <p>
-TRANSMIT:<span id="transmitting"></span>
+TRANSMIT: <span id="transmitting"></span>
 </p>
 <HR>
 <br>
-RECIEVED:<span id="rcvdata"></span>
+<p>
+RECIEVED    : <span id="rcvData"></span>
+<br>
+RECIEVED CONTROL: <span id="rcvDataControl"></span>
+<br>
+RECIEVED RAW: <span id="rcvDataRaw"></span>
 </p>
 Recieved data has been 'augmented' by Streams..
 <HR>
-<h2>Generate data...</h2>
-<p>Move cursor witin box to generate changes(you may need to select the box)</p> 
-<div id="bigbigbox"></div>
-<p id="track"></p>
 </body>
 </html>
