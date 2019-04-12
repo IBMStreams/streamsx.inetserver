@@ -19,33 +19,10 @@
 
   <target name="all"
     description="Build the toolkit code, build the samples index and generate the spl documentation"
-    depends="setcommitversion, toolkit, samples, spldoc_work"
+    depends="toolkit, samples, spldoc_work"
   />
 
-  <target name="setcommitversion">
-    <!-- Extract the git commit hash -->
-    <exec executable="git" outputproperty="commithash">
-        <arg value="rev-parse"/>
-        <arg value="--short"/>
-        <arg value="HEAD"/>
-    </exec>
-    <!-- Update the info.xml -->
-    <replace file="${toolkit}/info.xml" token="__dev__" value="commit_${commithash}" summary="yes"/>
-    <!-- Extract info from the toolkit's info.xml -->
-    <xmlproperty file="${toolkit}/info.xml" prefix="tkinfo" keepRoot="no"/>
-    <echo message="Toolkit Version: ${tkinfo.identity.version}"/>
-    <echo message="Git Hash: ${commithash}"/>
-  </target>
-
-  <target name="revertversion" description="Revert the version change (commithash) in info.xml">
-    <exec executable="git">
-        <arg value="checkout"/>
-        <arg value="--"/>
-        <arg value="${toolkit}/info.xml"/>
-    </exec>
-  </target>
-
-  <target name="clean" depends="spldocclean,samplesclean,releaseinfo-clean"
+  <target name="clean" depends="spldoc-clean,samples-clean,releaseinfo-clean"
       description="clean up toolkit code, samples code and all spldocs">
       <delete includeemptydirs="true">
           <fileset dir="${basedir}" includes="release-*/"/>
@@ -53,17 +30,23 @@
       <ant dir="${toolkit}" target="clean"/>
   </target>
 
-  <target name="toolkit"
+  <target name="toolkit" depends="get_name"
       description="Build any code and index the toolkit." >
       <ant dir="${toolkit}" target="all"/>
   </target>
-  
+
+  <target name="get_name">
+    <xmlproperty file="${toolkit}/info.xml" prefix="tkinfo" keepRoot="no"/>
+    <echo message="Toolkit Name: ${tkinfo.identity.name}"/>
+    <echo message="Toolkit Version: ${tkinfo.identity.version}"/>
+  </target>
+
   <target name="toolkitIndexOnly" description="Index the toolkit.">
       <ant dir="${toolkit}" target="cleanToolkitxml" />
       <ant dir="${toolkit}" target="indextoolkit" />
   </target> 	
 
-  <target name="spldoc" depends="setcommitversion, spldoc_work, revertversion"
+  <target name="spldoc" depends="spldoc_work"
     description="Create SPLDOC with git commit hash included in the version"
   />
 
@@ -84,7 +67,8 @@
        <dirset dir="samples" includes="*" excludes="doc"/>
     </subant>
   </target>
-  <target name="samplesclean" description="Clean up samples index and samples code">
+
+  <target name="samples-clean" description="Clean up samples index and samples code">
     <subant genericantfile="${basedir}/build.xml">
        <target name="cleantoolkit"/>
        <target name="cleansample"/>
@@ -92,7 +76,7 @@
     </subant>
   </target>
 
-  <target name="build-all-samples" depends="toolkit" description="Compile all samples">
+  <target name="samples-build" depends="toolkit" description="Compile all samples">
     <subant target="buildsample" genericantfile="${basedir}/build.xml">
        <dirset dir="samples" includes="*" excludes="doc"/>
     </subant>
@@ -190,20 +174,20 @@
     </exec>
   </target>
 
-  <target name="spldocclean" description="clean the toolkit doc and the all samples doc">
+  <target name="spldoc-clean" description="clean the toolkit doc and the all samples doc">
     <delete dir="${basedir}/doc" quiet="true"/>
     <delete dir="${basedir}/samples/doc"/>
   </target>
 
   <!-- Targets to build releases -->
   <target name="release" description="Make a toolkit release archive - purge workspace and build toolkit from scratch" depends="clean">
-  	<antcall target="release-target" inheritAll="true"/>
+    <antcall target="release-target" inheritAll="true"/>
   </target>
 
   <target name="release-target" depends="releaseinfo">
     <!-- prepare toolkit code and docs -->
     <antcall target="all" inheritAll="true"/>
-    <antcall target="samplesclean" inheritAll="true"/> <!-- remove toolkit index from samples -->
+    <antcall target="samples-clean" inheritAll="true"/> <!-- remove toolkit index from samples -->
     <!-- Extract the git commit hash -->
     <exec executable="git" outputproperty="commithash.short">
         <arg value="rev-parse"/>
@@ -221,8 +205,6 @@
     />
     <checksum file="${releasefilename}"/>
     <checksum algorithm="sha1" file="${releasefilename}"/>
-    <!-- revert commithash -->
-    <antcall target="revertversion" inheritAll="true"/>
   </target>
 
   <!-- Extract the git commit hash and make release info -->
