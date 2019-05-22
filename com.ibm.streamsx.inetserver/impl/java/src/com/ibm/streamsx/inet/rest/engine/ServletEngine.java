@@ -31,18 +31,21 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.relation.MBeanServerNotificationFilter;
 
+import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
-import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.util.thread.ThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 import com.ibm.streams.operator.OperatorContext;
@@ -137,7 +140,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
             setHTTPConnector(context, server, portNumber);
         context.getMetrics().getCustomMetric("https").setValue(isSSL ? 1 : 0);
         
-        server.setThreadPool(new ThreadPool() {
+        /*server.setThreadPool(new ThreadPool() {
 
             @Override
             public boolean dispatch(Runnable runnable) {
@@ -171,7 +174,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
                 }
                 
             }});
-        
+        */
         ServletContextHandler portsIntro = new ServletContextHandler(server, "/ports", ServletContextHandler.SESSIONS);
         portsIntro.addServlet(new ServletHolder(
         		new ExposedPortsInfo(exposedPorts)), "/info");       
@@ -196,16 +199,22 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
      * Setup an HTTP connector.
      */
     private void setHTTPConnector(OperatorContext context, Server server, int portNumber) {
-        SelectChannelConnector connector = new SelectChannelConnector();
+		HttpConfiguration http_config = new HttpConfiguration();
+		http_config.setSecureScheme("https");
+		//http_config.setSecurePort(httpsPort);
+		//http_config.setOutputBufferSize(32768);
+
+        ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory(http_config));
         connector.setPort(portNumber);
-        connector.setMaxIdleTime(30000);
+        connector.setIdleTimeout(30000);
+        //connector.setMaxIdleTime(30000);
         server.addConnector(connector);
     }
     
     /**
      * Setup an HTTPS connector.
      */
-    private void setHTTPSConnector(OperatorContext context, Server server, int portNumber) {
+    private void setHTTPSConnector(OperatorContext context, Server server, int httpsPort) {
         SslContextFactory sslContextFactory = new SslContextFactory();
         
         String keyStorePath = context.getParameterValues(SSL_KEYSTORE_PARAM).get(0);
@@ -225,7 +234,8 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
    
         sslContextFactory.setKeyManagerPassword(Functions.obfuscate(keyPassword));
                
-        sslContextFactory.setAllowRenegotiate(false);
+        //sslContextFactory.setAllowRenegotiate(false);
+        sslContextFactory.setRenegotiationAllowed(false);
         sslContextFactory.setIncludeProtocols("TLSv1.2", "TLSv1.1");
         sslContextFactory.setExcludeProtocols("SSLv3");
         
@@ -236,16 +246,27 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
             if (!trustStorePathFile.isAbsolute())
                 trustStorePathFile = new File(context.getPE().getApplicationDirectory(), trustStorePath);
             
-            sslContextFactory.setTrustStore(trustStorePath);
+            sslContextFactory.setTrustStorePath(trustStorePath);
             
             String trustStorePassword = context.getParameterValues(SSL_TRUSTSTORE_PASSWORD_PARAM).get(0);
             sslContextFactory.setTrustStorePassword(Functions.obfuscate(trustStorePassword));
         }
         
-        SslSelectChannelConnector connector = new SslSelectChannelConnector(sslContextFactory);
-        
-        connector.setPort(portNumber);
-        connector.setMaxIdleTime(30000);
+        HttpConfiguration http_config = new HttpConfiguration();
+		http_config.setSecureScheme("https");
+		http_config.setSecurePort(httpsPort);
+		HttpConfiguration https_config = new HttpConfiguration(http_config);
+		SecureRequestCustomizer src = new SecureRequestCustomizer();
+		src.setStsMaxAge(2000);
+		src.setStsIncludeSubDomains(true);
+		https_config.addCustomizer(src);
+
+		ServerConnector connector = new ServerConnector(server,
+				new SslConnectionFactory(sslContextFactory,HttpVersion.HTTP_1_1.asString()),
+				new HttpConnectionFactory(https_config));
+
+        connector.setPort(httpsPort);
+        connector.setIdleTimeout(30000);
         server.addConnector(connector); 
         
         isSSL = true;
@@ -391,7 +412,9 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
         t.setDaemon(false);
         t.start();
         
-        localPort = server.getConnectors()[0].getLocalPort();
+        //localPort = server.getConnectors()[0].getLocalPort();
+        ServerConnector sc = (ServerConnector)server.getConnectors()[0];
+        localPort = sc.getLocalPort();
         startingContext.getMetrics().getCustomMetric("serverPort").setValue(localPort);
     }
     
