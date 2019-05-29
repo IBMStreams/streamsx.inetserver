@@ -1,6 +1,6 @@
 /*
 # Licensed Materials - Property of IBM
-# Copyright IBM Corp. 2011, 2014  
+# Copyright IBM Corp. 2019, 2020  
 */
 package com.ibm.streamsx.inet.rest.engine;
 
@@ -46,6 +46,7 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.ThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 import com.ibm.streams.operator.OperatorContext;
@@ -69,42 +70,40 @@ import com.ibm.streamsx.inet.rest.setup.OperatorServletSetup;
  * one per defined port.
  */
 public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
-	
-    static Logger trace = Logger.getLogger(ServletEngine.class.getName());
-	
-    private static final Object syncMe = new Object();
+
+	static Logger trace = Logger.getLogger(ServletEngine.class.getName());
+
+	private static final Object syncMe = new Object();
 
 	public static final String CONTEXT_RESOURCE_BASE_PARAM = "contextResourceBase";
-    public static final String CONTEXT_PARAM = "context";
-    
-    public static final String SSL_CERT_ALIAS_PARAM = "certificateAlias";
-    public static final String SSL_KEYSTORE_PARAM = "keyStore";
-    public static final String SSL_KEYSTORE_PASSWORD_PARAM = "keyStorePassword";
-    public static final String SSL_KEY_PASSWORD_PARAM = "keyPassword";
-    
-    public static final String SSL_TRUSTSTORE_PARAM = "trustStore";
-    public static final String SSL_TRUSTSTORE_PASSWORD_PARAM = "trustStorePassword";
+	public static final String CONTEXT_PARAM = "context";
 
-    public static ServletEngineMBean getServletEngine(OperatorContext context) throws Exception {
-		
+	public static final String SSL_CERT_ALIAS_PARAM = "certificateAlias";
+	public static final String SSL_KEYSTORE_PARAM = "keyStore";
+	public static final String SSL_KEYSTORE_PASSWORD_PARAM = "keyStorePassword";
+	public static final String SSL_KEY_PASSWORD_PARAM = "keyPassword";
+
+	public static final String SSL_TRUSTSTORE_PARAM = "trustStore";
+	public static final String SSL_TRUSTSTORE_PASSWORD_PARAM = "trustStorePassword";
+
+	public static final int IDLE_TIMEOUT = 30000;
+	public static final int STRICT_TRANSPORT_SECURITY_MAX_AGE = 2000;
+
+	public static ServletEngineMBean getServletEngine(OperatorContext context) throws Exception {
 		int portNumber = 8080;
 		if (context.getParameterNames().contains("port"))
 			portNumber = Integer.valueOf(context.getParameterValues("port").get(0));
 
 		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-
-		final ObjectName jetty = new ObjectName(
-				"com.ibm.streamsx.inet.rest:type=jetty,port=" + portNumber);
-
-        synchronized (syncMe) {
-            if (!mbs.isRegistered(jetty)) {
-                try {
-                    mbs.registerMBean(new ServletEngine(jetty, context, portNumber),
-                            jetty);
-                } catch (InstanceAlreadyExistsException infe) {
-                }
-            }
-        }
+		final ObjectName jetty = new ObjectName("com.ibm.streamsx.inet.rest:type=jetty,port=" + portNumber);
+		synchronized (syncMe) {
+			if (!mbs.isRegistered(jetty)) {
+				try {
+					mbs.registerMBean(new ServletEngine(jetty, context, portNumber), jetty);
+				} catch (InstanceAlreadyExistsException infe) {
+				}
+			}
+		}
 		
 		return JMX.newMBeanProxy(ManagementFactory.getPlatformMBeanServer(), jetty, ServletEngineMBean.class);
 	}
@@ -114,150 +113,132 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 
 	private boolean started;
 	private boolean stopped;
-    
-    private final Server server;
-    private final ObjectName myObjectName;
-    private boolean isSSL;
-    // Jetty port.
-    private int localPort;
-    private final ContextHandlerCollection handlers;
-    private final Map<String, ServletContextHandler> contexts = Collections.synchronizedMap(
-            new HashMap<String, ServletContextHandler>());
-    
-    private final List<ExposedPort> exposedPorts = Collections.synchronizedList(new ArrayList<ExposedPort>());
-   
-    private ServletEngine(ObjectName myObjectName, OperatorContext context, int portNumber) throws Exception {
-        this.myObjectName = myObjectName;
-		this.startingContext = context;                
-        tpe = newContextThreadPoolExecutor(context);
-       
-        server = new Server();
-        handlers = new ContextHandlerCollection();
-        
-        if (context.getParameterNames().contains(SSL_CERT_ALIAS_PARAM))
-            setHTTPSConnector(context, server, portNumber);
-        else
-            setHTTPConnector(context, server, portNumber);
-        context.getMetrics().getCustomMetric("https").setValue(isSSL ? 1 : 0);
-        
-        /*server.setThreadPool(new ThreadPool() {
 
-            @Override
-            public boolean dispatch(Runnable runnable) {
-                try {
-                    tpe.execute(runnable);
-                } catch (RejectedExecutionException e) {
-                    return false;
-                }
-                return true; 
-            }
+	private final Server server;
+	private final ObjectName myObjectName;
+	private boolean isSSL;
+	// Jetty port.
+	private int localPort;
+	private final ContextHandlerCollection handlers;
+	private final Map<String, ServletContextHandler> contexts = Collections.synchronizedMap(new HashMap<String, ServletContextHandler>());
 
-            @Override
-            public int getIdleThreads() {
-                return tpe.getPoolSize()-tpe.getActiveCount();
-            }
+	private final List<ExposedPort> exposedPorts = Collections.synchronizedList(new ArrayList<ExposedPort>());
 
-            @Override
-            public int getThreads() {
-                 return tpe.getPoolSize();
-            }
+	private ServletEngine(ObjectName myObjectName, OperatorContext context, int portNumber) throws Exception {
+		this.myObjectName = myObjectName;
+		this.startingContext = context;
+		tpe = newContextThreadPoolExecutor(context);
 
-            @Override
-            public boolean isLowOnThreads() {
-                return tpe.getActiveCount()>=tpe.getMaximumPoolSize();
-            }
+		ThreadPool tp = new ThreadPool() {
+			@Override
+			public void execute(Runnable runnable) {
+				try {
+					tpe.execute(runnable);
+				} catch (RejectedExecutionException e) {
+				}
+			}
+			@Override
+			public int getIdleThreads() {
+				return tpe.getPoolSize() - tpe.getActiveCount();
+			}
+			@Override
+			public int getThreads() {
+				return tpe.getPoolSize();
+			}
+			@Override
+			public boolean isLowOnThreads() {
+				return tpe.getActiveCount() >= tpe.getMaximumPoolSize();
+			}
+			@Override
+			public void join() throws InterruptedException {
+				while (true) {
+					Thread.sleep(600L * 1000L);
+				}
+			}
+		};
 
-            @Override
-            public void join() throws InterruptedException {
-                while (true) {
-                    Thread.sleep(600L*1000L);
-                }
-                
-            }});
-        */
-        ServletContextHandler portsIntro = new ServletContextHandler(server, "/ports", ServletContextHandler.SESSIONS);
-        portsIntro.addServlet(new ServletHolder(
-        		new ExposedPortsInfo(exposedPorts)), "/info");       
-        addHandler(portsIntro);
-        
-       // String impl_lib_jar = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
-       // File toolkitRoot = new File(impl_lib_jar).getParentFile().getParentFile().getParentFile();
-        
-        // making a abs path by combining toolkit directory with the opt/resources dir
-        URI baseToolkitDir = context.getToolkitDirectory().toURI();
-        //File toolkitResource = new File(toolkitRoot, "opt/resources");        
-        addStaticContext(null, "streamsx.inet.resources", PathConversionHelper.convertToAbsPath(baseToolkitDir, "opt/resources"));
-        
-        String streamsInstall = System.getenv("STREAMS_INSTALL");
-        if (streamsInstall != null) {
-            File dojo = new File(streamsInstall, "ext/dojo");        
-            addStaticContext(null, "streamsx.inet.dojo", dojo.getAbsolutePath());       	
-        }
-    }
-    
-    /**
-     * Setup an HTTP connector.
-     */
-    private void setHTTPConnector(OperatorContext context, Server server, int portNumber) {
+		server = new Server(tp);
+		handlers = new ContextHandlerCollection();
+
+		if (context.getParameterNames().contains(SSL_CERT_ALIAS_PARAM))
+			setHTTPSConnector(context, server, portNumber);
+		else
+			setHTTPConnector(context, server, portNumber);
+		context.getMetrics().getCustomMetric("https").setValue(isSSL ? 1 : 0);
+
+		ServletContextHandler portsIntro = new ServletContextHandler(server, "/ports", ServletContextHandler.SESSIONS);
+		portsIntro.addServlet(new ServletHolder( new ExposedPortsInfo(exposedPorts)), "/info");
+		addHandler(portsIntro);
+
+		// making a abs path by combining toolkit directory with the opt/resources dir
+		URI baseToolkitDir = context.getToolkitDirectory().toURI();
+		addStaticContext(null, "streamsx.inet.resources", PathConversionHelper.convertToAbsPath(baseToolkitDir, "opt/resources"));
+
+		String streamsInstall = System.getenv("STREAMS_INSTALL");
+		if (streamsInstall != null) {
+			File dojo = new File(streamsInstall, "ext/dojo");
+			addStaticContext(null, "streamsx.inet.dojo", dojo.getAbsolutePath());
+		}
+	}
+
+	/**
+	 * Setup an HTTP connector.
+	 */
+	private void setHTTPConnector(OperatorContext context, Server server, int portNumber) {
 		HttpConfiguration http_config = new HttpConfiguration();
-		http_config.setSecureScheme("https");
-		//http_config.setSecurePort(httpsPort);
-		//http_config.setOutputBufferSize(32768);
+		ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory(http_config));
+		connector.setPort(portNumber);
+		connector.setIdleTimeout(IDLE_TIMEOUT);
+		server.addConnector(connector);
+	}
 
-        ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory(http_config));
-        connector.setPort(portNumber);
-        connector.setIdleTimeout(30000);
-        //connector.setMaxIdleTime(30000);
-        server.addConnector(connector);
-    }
-    
-    /**
-     * Setup an HTTPS connector.
-     */
-    private void setHTTPSConnector(OperatorContext context, Server server, int httpsPort) {
-        SslContextFactory sslContextFactory = new SslContextFactory();
-        
-        String keyStorePath = context.getParameterValues(SSL_KEYSTORE_PARAM).get(0);
-        File keyStorePathFile = new File(keyStorePath);
-        if (!keyStorePathFile.isAbsolute())
-            keyStorePathFile = new File(context.getPE().getApplicationDirectory(), keyStorePath);
-        sslContextFactory.setKeyStorePath(keyStorePathFile.getAbsolutePath());
-        
-        String keyStorePassword = context.getParameterValues(SSL_KEYSTORE_PASSWORD_PARAM).get(0);
-        sslContextFactory.setKeyStorePassword(Functions.obfuscate(keyStorePassword));
-        
-        String keyPassword;
-        if (context.getParameterNames().contains(SSL_KEY_PASSWORD_PARAM))
-            keyPassword = context.getParameterValues(SSL_KEY_PASSWORD_PARAM).get(0);
-        else
-            keyPassword = keyStorePassword;
-   
-        sslContextFactory.setKeyManagerPassword(Functions.obfuscate(keyPassword));
-               
-        //sslContextFactory.setAllowRenegotiate(false);
-        sslContextFactory.setRenegotiationAllowed(false);
-        sslContextFactory.setIncludeProtocols("TLSv1.2", "TLSv1.1");
-        sslContextFactory.setExcludeProtocols("SSLv3");
-        
-        if (context.getParameterNames().contains(SSL_TRUSTSTORE_PARAM)) {
-            String trustStorePath = context.getParameterValues(SSL_TRUSTSTORE_PARAM).get(0);
-            sslContextFactory.setNeedClientAuth(true);
-            File trustStorePathFile = new File(trustStorePath);
-            if (!trustStorePathFile.isAbsolute())
-                trustStorePathFile = new File(context.getPE().getApplicationDirectory(), trustStorePath);
-            
-            sslContextFactory.setTrustStorePath(trustStorePath);
-            
-            String trustStorePassword = context.getParameterValues(SSL_TRUSTSTORE_PASSWORD_PARAM).get(0);
-            sslContextFactory.setTrustStorePassword(Functions.obfuscate(trustStorePassword));
-        }
-        
-        HttpConfiguration http_config = new HttpConfiguration();
+	/**
+	 * Setup an HTTPS connector.
+	 */
+	private void setHTTPSConnector(OperatorContext context, Server server, int httpsPort) {
+		SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
+		//Key Store is required
+		String keyStorePath = context.getParameterValues(SSL_KEYSTORE_PARAM).get(0);
+		File keyStorePathFile = new File(keyStorePath);
+		if (!keyStorePathFile.isAbsolute())
+			keyStorePathFile = new File(context.getPE().getApplicationDirectory(), keyStorePath);
+		sslContextFactory.setKeyStorePath(keyStorePathFile.getAbsolutePath());
+		//the key store password is optional
+		if (context.getParameterNames().contains(SSL_KEYSTORE_PASSWORD_PARAM)) {
+			String keyStorePassword = context.getParameterValues(SSL_KEYSTORE_PASSWORD_PARAM).get(0);
+			sslContextFactory.setKeyStorePassword(Functions.obfuscate(keyStorePassword));
+		}
+		//Key password is required
+		String keyPassword = context.getParameterValues(SSL_KEY_PASSWORD_PARAM).get(0);
+		sslContextFactory.setKeyManagerPassword(Functions.obfuscate(keyPassword));
+		//Key alias
+		String alias = context.getParameterValues(SSL_CERT_ALIAS_PARAM).get(0);
+		sslContextFactory.setCertAlias(alias);
+		//Trust Store & password
+		if (context.getParameterNames().contains(SSL_TRUSTSTORE_PARAM)) {
+			String trustStorePath = context.getParameterValues(SSL_TRUSTSTORE_PARAM).get(0);
+			File trustStorePathFile = new File(trustStorePath);
+			if (!trustStorePathFile.isAbsolute())
+				trustStorePathFile = new File(context.getPE().getApplicationDirectory(), trustStorePath);
+			sslContextFactory.setTrustStorePath(trustStorePath);
+			sslContextFactory.setNeedClientAuth(true);
+			if (context.getParameterNames().contains(SSL_TRUSTSTORE_PASSWORD_PARAM)) {
+				String trustStorePassword = context.getParameterValues(SSL_TRUSTSTORE_PASSWORD_PARAM).get(0);
+				sslContextFactory.setTrustStorePassword(Functions.obfuscate(trustStorePassword));
+			}
+		}
+		
+		sslContextFactory.setRenegotiationAllowed(false);
+		sslContextFactory.setIncludeProtocols("TLSv1.2");
+		String[] specs = {"^.*_(MD5|SHA|SHA1)$","^TLS_RSA_.*$","^.*_NULL_.*$","^.*_anon_.*$"};
+		sslContextFactory.setExcludeCipherSuites(specs);
+
+		HttpConfiguration http_config = new HttpConfiguration();
 		http_config.setSecureScheme("https");
 		http_config.setSecurePort(httpsPort);
 		HttpConfiguration https_config = new HttpConfiguration(http_config);
 		SecureRequestCustomizer src = new SecureRequestCustomizer();
-		src.setStsMaxAge(2000);
+		src.setStsMaxAge(STRICT_TRANSPORT_SECURITY_MAX_AGE);
 		src.setStsIncludeSubDomains(true);
 		https_config.addCustomizer(src);
 
@@ -265,57 +246,55 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 				new SslConnectionFactory(sslContextFactory,HttpVersion.HTTP_1_1.asString()),
 				new HttpConnectionFactory(https_config));
 
-        connector.setPort(httpsPort);
-        connector.setIdleTimeout(30000);
-        server.addConnector(connector); 
-        
-        isSSL = true;
-    }
+		connector.setPort(httpsPort);
+		connector.setIdleTimeout(IDLE_TIMEOUT);
+		server.addConnector(connector); 
 
-
-        // Originally corePoolSize was set to a fixed: 32
-        // Jetty, however, creates its starting threads based on the number of
-        // available processors 2*(Runtime.getRuntime().availableProcessors()+3)/4    
-        // On large hosts (ppc64 with 24 processors, this can exceed 32)
-        // While many descriptions of the ThreadPoolExecuter make it seem that it will
-        // just add threads, testing has shown that this did not occur.
-        // Some literature states it will only add threads if the queue is full
-        // If Jetty never starts, then the queue will never fill, thus
-        // we need core threads to be set to at least as large as the number of threads
-        // that Jetty will start
-        // NOTE: This was based on examination of jetty 8.1.3 code
-        //       If the toolkit moves to jetty 9+ this could change
-	private ThreadPoolExecutor newContextThreadPoolExecutor(OperatorContext context) {
-                int jettyStartupThreads = 2*(Runtime.getRuntime().availableProcessors()+3)/4;      
-                trace.info("Creating ThreadPoolExecuter corePoolSize: 32+" + jettyStartupThreads);
-		return  new ThreadPoolExecutor(
-                32 + jettyStartupThreads, // corePoolSize,
-                Math.max(256, 32 + jettyStartupThreads), // maximumPoolSize,
-                60, //keepAliveTime,
-                TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(), // workQueue,
-                context.getThreadFactory());
+		isSSL = true;
 	}
-    
-    private synchronized void addHandler(ServletContextHandler newHandler) {      
-        handlers.addHandler(newHandler);
-        handlers.mapContexts();
-    }
-    
-    @Override
-	public void start() throws Exception {
 
+
+	// Originally corePoolSize was set to a fixed: 32
+	// Jetty, however, creates its starting threads based on the number of
+	// available processors 2*(Runtime.getRuntime().availableProcessors()+3)/4
+	// On large hosts (ppc64 with 24 processors, this can exceed 32)
+	// While many descriptions of the ThreadPoolExecuter make it seem that it will
+	// just add threads, testing has shown that this did not occur.
+	// Some literature states it will only add threads if the queue is full
+	// If Jetty never starts, then the queue will never fill, thus
+	// we need core threads to be set to at least as large as the number of threads
+	// that Jetty will start
+	// NOTE: This was based on examination of jetty 8.1.3 code
+	//       If the toolkit moves to jetty 9+ this could change
+	private ThreadPoolExecutor newContextThreadPoolExecutor(OperatorContext context) {
+		int jettyStartupThreads = 2*(Runtime.getRuntime().availableProcessors()+3)/4;
+		trace.info("Creating ThreadPoolExecuter corePoolSize: 32+" + jettyStartupThreads);
+		return  new ThreadPoolExecutor(
+				32 + jettyStartupThreads, // corePoolSize,
+				Math.max(256, 32 + jettyStartupThreads), // maximumPoolSize,
+				60, //keepAliveTime,
+				TimeUnit.SECONDS,
+				new LinkedBlockingQueue<Runnable>(), // workQueue,
+				context.getThreadFactory());
+	}
+
+	private synchronized void addHandler(ServletContextHandler newHandler) {
+		handlers.addHandler(newHandler);
+		handlers.mapContexts();
+	}
+
+	@Override
+	public void start() throws Exception {
 		synchronized (this) {
 			if (started) {
 				return;
 			}
 			started = true;
 		}
-
 		startWebServer();
-
 	}
-    @Override
+	
+	@Override
 	public void stop() throws Exception {
 		synchronized (this) {
 			if (stopped || !started) {
@@ -417,64 +396,58 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
         localPort = sc.getLocalPort();
         startingContext.getMetrics().getCustomMetric("serverPort").setValue(localPort);
     }
-    
-   
+
+
     private void stopWebServer() throws Exception {
         server.stop(); 
     }
-        
-    @Override
-    public void registerOperator(
-    		final String operatorClass,
-    		final OperatorContext context, Object conduit)
-            throws Exception {
-    	
-    	
 
-    	trace.info("Register servlets for operator: " + context.getName());
-    	
-        final ServletContextHandler staticContext = addOperatorStaticContext(context);
-        if (staticContext != null) {
-        	staticContext.setAttribute("operator.context", context);
-        	if (conduit != null)
-        	    staticContext.setAttribute("operator.conduit", conduit);
-        }
+	@Override
+	public void registerOperator(final String operatorClass, final OperatorContext context, Object conduit) throws Exception {
 
-        
-        // For a static context just use the name of the
-        // base operator (without the composite nesting qualifiers)
-        // as the lead in for resources exposed by this operator.
-        // Otherwise use the full name of the operator so that it is unique.
-        String leadIn = context.getName(); // .replace('.', '/');
-        if (staticContext != null && leadIn.indexOf('.') != -1) {
-            leadIn = leadIn.substring(leadIn.lastIndexOf('.') + 1);
-        }
-        
-        // Standard ports context for URLs relative to ports.
-        ServletContextHandler ports = null;
-        if (context.getNumberOfStreamingInputs() != 0 ||
-        		context.getNumberOfStreamingOutputs() != 0) {
-        	
-        	String portsContextPath = "/" + leadIn + "/ports";
-        	if (staticContext != null)
-        		portsContextPath = staticContext.getContextPath() + portsContextPath;
-        	ports = new ServletContextHandler(server, portsContextPath,
-                    ServletContextHandler.SESSIONS);
-        	
-        	ports.setAttribute("operator.context", context);
-        	if (conduit != null)
-        	     ports.setAttribute("operator.conduit", conduit);
+		trace.info("Register servlets for operator: " + context.getName());
 
-        	trace.info("Ports context: " + ports.getContextPath());
-        	
-            if (context.getParameterNames().contains(PostTuple.MAX_CONTENT_SIZE_PARAM)) {
-            	int maxContentSize = Integer.parseInt(context.getParameterValues(PostTuple.MAX_CONTENT_SIZE_PARAM).get(0)) * 1000;
-            	if (maxContentSize > 0) {
-            		trace.info("Maximum content size for context: " + ports.getContextPath() + " increased to " + maxContentSize);
-            		ports.setMaxFormContentSize(maxContentSize);
-            	}
-            }
-        }
+		final ServletContextHandler staticContext = addOperatorStaticContext(context);
+		if (staticContext != null) {
+			staticContext.setAttribute("operator.context", context);
+			if (conduit != null)
+				staticContext.setAttribute("operator.conduit", conduit);
+		}
+
+		// For a static context just use the name of the
+		// base operator (without the composite nesting qualifiers)
+		// as the lead in for resources exposed by this operator.
+		// Otherwise use the full name of the operator so that it is unique.
+		String leadIn = context.getName(); // .replace('.', '/');
+		if (staticContext != null && leadIn.indexOf('.') != -1) {
+			leadIn = leadIn.substring(leadIn.lastIndexOf('.') + 1);
+		}
+
+		// Standard ports context for URLs relative to ports.
+		ServletContextHandler ports = null;
+		if (context.getNumberOfStreamingInputs() != 0 ||
+				context.getNumberOfStreamingOutputs() != 0) {
+
+			String portsContextPath = "/" + leadIn + "/ports";
+			if (staticContext != null)
+				portsContextPath = staticContext.getContextPath() + portsContextPath;
+			ports = new ServletContextHandler(server, portsContextPath,
+					ServletContextHandler.SESSIONS);
+
+			ports.setAttribute("operator.context", context);
+			if (conduit != null)
+				ports.setAttribute("operator.conduit", conduit);
+
+			trace.info("Ports context: " + ports.getContextPath());
+
+			if (context.getParameterNames().contains(PostTuple.MAX_CONTENT_SIZE_PARAM)) {
+				int maxContentSize = Integer.parseInt(context.getParameterValues(PostTuple.MAX_CONTENT_SIZE_PARAM).get(0)) * 1000;
+				if (maxContentSize > 0) {
+					trace.info("Maximum content size for context: " + ports.getContextPath() + " increased to " + maxContentSize);
+					ports.setMaxFormContentSize(maxContentSize);
+				}
+			}
+		}
         
         // Automatically add info servlet for all output and input ports
         for (StreamingData port : context.getStreamingOutputs()) {
@@ -490,7 +463,6 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 
         // Add servlets for the operator, driven by a Setup class that implements
         // OperatorServletSetup with a name derived from the operator class name.
-        
         String setupClass = operatorClass.replace(".ops.", ".setup.").concat("Setup");
         OperatorServletSetup setup = 
         		Class.forName(setupClass).asSubclass(OperatorServletSetup.class).newInstance();

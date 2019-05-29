@@ -68,10 +68,10 @@
  * configured to use a certificate from a Java key store. Specifying a
  * certificate enables HTTPS, using TLSv1.2, TLSv1.1 or TLSv1.0.
  * A certificate is specified using these parameters:
+ * * `certificateAlias` - Alias of the certificate to use in the key store.
  * * `keyStore` - URL to the key store containing the certificate. If a relative file path then it is taken as relative to the application directory.
  * * `keyStorePassword` - Password to the key store.
- * * `certificateAlias` - Alias of the certificate to use in the key store.
- * * `keyPassword` - Password to the certificate. If not provided, defaults to the value of `keyStorePassword`.
+ * * `keyPassword` - Password to the certificate.
  *
  * All password parameters accept the Jetty obfuscated password style,
  * which provides protection from casual viewing only. If the password
