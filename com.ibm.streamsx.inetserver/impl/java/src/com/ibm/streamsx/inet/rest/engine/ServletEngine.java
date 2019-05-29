@@ -52,13 +52,13 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingData;
 import com.ibm.streams.operator.management.OperatorManagement;
-import com.ibm.streamsx.inet.http.PathConversionHelper;
 import com.ibm.streamsx.inet.rest.ops.Functions;
 import com.ibm.streamsx.inet.rest.ops.PostTuple;
 import com.ibm.streamsx.inet.rest.servlets.ExposedPortsInfo;
 import com.ibm.streamsx.inet.rest.servlets.PortInfo;
 import com.ibm.streamsx.inet.rest.setup.ExposedPort;
 import com.ibm.streamsx.inet.rest.setup.OperatorServletSetup;
+import com.ibm.streamsx.inet.util.PathConversionHelper;
 
 /**
  * Eclipse Jetty Servlet engine that can be shared by multiple operators

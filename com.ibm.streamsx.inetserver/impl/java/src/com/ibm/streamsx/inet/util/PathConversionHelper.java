@@ -1,4 +1,4 @@
-package com.ibm.streamsx.inet.http;
+package com.ibm.streamsx.inet.util;
 
 import java.io.File;
 import java.net.URI;
