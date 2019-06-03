@@ -1,6 +1,6 @@
 /*
 # Licensed Materials - Property of IBM
-# Copyright IBM Corp. 2011, 2014  
+# Copyright IBM Corp. 2019, 2020  
 */
 package com.ibm.streamsx.inet.window;
 
@@ -39,7 +39,7 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 	
 	private final List<Attribute> partitionAttributes;
 	
-	private long lastModified = System.currentTimeMillis();
+	//private long lastModified = System.currentTimeMillis();
 
 	@SuppressWarnings("unchecked")
 	public WindowContentsAtTrigger(OperatorContext context, StreamingInput<T> input) {
@@ -63,42 +63,41 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 			partitionKeys = primaryPartitionKeys;
 		}
 		if (!partitionKeys.isEmpty()) {
-		    if (!input.getStreamWindow().isPartitioned())
-		        throw new IllegalStateException("Input port " + input.getName() + "is not partitioned");
-		    
-		    
-		    if (partitionKeys.size() == 1) {
-		    WindowUtilities.registerAttributePartitioner(	            
-		            (StreamWindow<Tuple>) input.getStreamWindow(),
-		            partitionKeys.toArray(new String[0]));
-		    } else {
-		     // RTC 14070
-		        // Multiple attributes.
-		        final int[] indexes = new int[partitionKeys.size()];
-		        for (int i = 0; i < indexes.length; i++)
-		            indexes[i] = input.getStreamSchema().getAttributeIndex(partitionKeys.get(i));
-		        
-		        ((StreamWindow<Tuple>) input.getStreamWindow()).registerPartitioner(new StreamWindowPartitioner<Tuple,List<Object>>() {
+			if (!input.getStreamWindow().isPartitioned())
+				throw new IllegalStateException("Input port " + input.getName() + "is not partitioned");
 
-		            @Override
-		            public List<Object> getPartition(Tuple tuple) {
-		                final List<Object> attrs = new ArrayList<Object>(indexes.length);
-		                for (int i = 0; i < indexes.length; i++)
-		                    attrs.add(tuple.getObject(indexes[i]));
-		                return Collections.unmodifiableList(attrs);
-		            }
-		            
-		        });
-		    }
-		    
-		    List<Attribute> pa = new ArrayList<Attribute>();
-		    for (String attributeName : partitionKeys)
-		        pa.add(input.getStreamSchema().getAttribute(attributeName));
-		    partitionAttributes = Collections.unmodifiableList(pa);
+			if (partitionKeys.size() == 1) {
+			WindowUtilities.registerAttributePartitioner(
+					(StreamWindow<Tuple>) input.getStreamWindow(),
+					partitionKeys.toArray(new String[0]));
+			} else {
+				// RTC 14070
+				// Multiple attributes.
+				final int[] indexes = new int[partitionKeys.size()];
+				for (int i = 0; i < indexes.length; i++)
+					indexes[i] = input.getStreamSchema().getAttributeIndex(partitionKeys.get(i));
+
+				((StreamWindow<Tuple>) input.getStreamWindow()).registerPartitioner(new StreamWindowPartitioner<Tuple,List<Object>>() {
+
+					@Override
+					public List<Object> getPartition(Tuple tuple) {
+						final List<Object> attrs = new ArrayList<Object>(indexes.length);
+						for (int i = 0; i < indexes.length; i++)
+							attrs.add(tuple.getObject(indexes[i]));
+						return Collections.unmodifiableList(attrs);
+					}
+
+				});
+			}
+
+			List<Attribute> pa = new ArrayList<Attribute>();
+			for (String attributeName : partitionKeys)
+				pa.add(input.getStreamSchema().getAttribute(attributeName));
+			partitionAttributes = Collections.unmodifiableList(pa);
 		} else {
-            if (input.getStreamWindow().isPartitioned())
-                throw new IllegalStateException("Input port " + input.getName() + "is partitioned but partitionKey parameter is not set.");
-            partitionAttributes = Collections.emptyList();	    
+			if (input.getStreamWindow().isPartitioned())
+				throw new IllegalStateException("Input port " + input.getName() + "is partitioned but partitionKey parameter is not set.");
+			partitionAttributes = Collections.emptyList();
 		}
 
 	}
@@ -118,23 +117,23 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 			if (tuples.isEmpty())
 				windowContents.remove(partition);
 			else
-			    windowContents.put(partition, tuples);
-			lastModified = System.currentTimeMillis();
+				windowContents.put(partition, tuples);
+			//lastModified = System.currentTimeMillis();
 			break;
 		case PARTITION_EVICTION:
 			windowContents.remove(partition);
-			lastModified = System.currentTimeMillis();
+			//lastModified = System.currentTimeMillis();
 			break;
 		default:
 			break;
-			
+
 		}
 	}
 	
 	public List<T> getWindowContents(Object partition) {
-	    if (partition == null)
-	        return getAllPartitions();
-	    
+		if (partition == null)
+			return getAllPartitions();
+
 		List<T> tuples = windowContents.get(partition);
 		if (tuples == null)
 			return Collections.emptyList();
@@ -142,13 +141,13 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 	}
 	
 	private List<T> getAllPartitions() {
-	    List<T> allTuples = new ArrayList<T>();
-	    synchronized (windowContents) {
-	        for (List<T> tuples : windowContents.values()) {
-	            allTuples.addAll(tuples);
-	        }
-	    }
-	    return allTuples;
+		List<T> allTuples = new ArrayList<T>();
+		synchronized (windowContents) {
+			for (List<T> tuples : windowContents.values()) {
+				allTuples.addAll(tuples);
+			}
+		}
+		return allTuples;
 	}
 
 	public OperatorContext getContext() {
@@ -159,7 +158,7 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 		return input;
 	}
 
-    public List<Attribute> getPartitionAttributes() {
-        return partitionAttributes;
-    }
+	public List<Attribute> getPartitionAttributes() {
+		return partitionAttributes;
+	}
 }

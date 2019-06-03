@@ -1,0 +1,48 @@
+<!--
+#
+# *******************************************************************************
+# * Copyright (C)2019, International Business Machines Corporation and *
+# * others. All Rights Reserved. *
+# *******************************************************************************
+# 
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.ibm.streamsx.inetserver</groupId>
+    <artifactId>streamsx.mail</artifactId>
+    <packaging>jar</packaging>
+    <version>3.0.1</version>
+    <name>com.ibm.streamsx.inetserver</name>
+    <properties>
+        <!-- Adapt this to a version found on http://central.maven.org/maven2/org/eclipse/jetty/ -->
+        <!-- <jettyVersion>9.4.12.v20180830</jettyVersion> -->
+        <jettyVersion>9.4.18.v20190429</jettyVersion>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jettyVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${jettyVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-continuation</artifactId>
+            <version>${jettyVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+            <version>${jettyVersion}</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <sourceDirectory>.</sourceDirectory>
+        <plugins></plugins>
+    </build>
+</project>

@@ -60,7 +60,7 @@ public class InjectBLOB extends HttpServlet {
 		// Output tuple for this operator has an optional second attribute.
 		// Collect the HTTP Request headers and assign them to the second attribute which is a map<rstring, rstring>.
 		Map<RString, RString> map = new HashMap<RString, RString>();
-		Enumeration headerNames = request.getHeaderNames();
+		Enumeration<String> headerNames = request.getHeaderNames();
 
 		while (headerNames.hasMoreElements()) {
 			String str = (String)headerNames.nextElement();
