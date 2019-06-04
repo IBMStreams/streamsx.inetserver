@@ -14,26 +14,26 @@ use com.ibm.streamsx.inet.rest::*;
  * into Stream InjectedTuples which are then visible through
  * the windowed `com.ibm.streamsx.ient.rest.HTTPTupleView` operator.
  * 
- * Open the browser and enter url [http://localhost:8080]
+ * Open the browser and enter url [https://localhost:1443]
  * 
- * Tuples are injected using the form input at: [http://127.0.0.1:8080/InjectedTuples/ports/output/0/form]
+ * Tuples are injected using the form input at: [https://127.0.0.1:1443/InjectedTuples/ports/output/0/form]
  * 
- * or a POST to [http://127.0.0.1:8080/InjectedTuples/ports/output/0/inject]
+ * or a POST to [https://127.0.0.1:1443/InjectedTuples/ports/output/0/inject]
  * 
- * And then are visible as a JSON object [http://127.0.0.1:8080/InjectView/ports/input/0/tuples]
+ * And then are visible as a JSON object [https://127.0.0.1:1443/InjectView/ports/input/0/tuples]
  * 
  * This fixed URL shows information for all ports available through URLs
- * in the HTTP server [http://127.0.0.1:8080/ports/info]
+ * in the HTTP server [https://127.0.0.1:1443/ports/info]
  *
  * These URLs show the meta data for the ports using a JSON object:
- * * [http://127.0.0.1:8080/InjectedTuples/ports/output/0/info] - Output port for the injected tuples.
- * * [http://127.0.0.1:8080/InjectView/ports/input/0/info] - Input port to `HTTPTupleView`.
+ * * [https://127.0.0.1:1443/InjectedTuples/ports/output/0/info] - Output port for the injected tuples.
+ * * [https://127.0.0.1:1443/InjectView/ports/input/0/info] - Input port to `HTTPTupleView`.
  * 
  * To run this example execute:
  * 
  *     make
  *     output/bin/standalone
- *     Point browser to [http://localhost:8080] and accept the SEC_ERROR_UNKNOWN_ISSUER error and add an exception.
+ *     Point browser to [https://localhost:1443] and accept the SEC_ERROR_UNKNOWN_ISSUER error and add an exception.
  * 
  */
 public composite SimpleInject {
@@ -41,39 +41,39 @@ public composite SimpleInject {
 	graph
 		stream<ustring a_ustring, rstring b_rstring, int32 c_int32, float32 d_float32> InjectedTuples = HTTPTupleInjection() {
 			param
-				port: 8080;
+				port: 1443;
 				certificateAlias: "mykey";
 				keyStore: "etc/keystore.jks";
 				keyPassword: "changeit";
 			config
 				// Ensure the operators are in a single PE to have a single web-server
-				placement: partitionColocation("jetty8080");
+				placement: partitionColocation("jetty1443");
 		}
 	
 		() as InjectView = HTTPTupleView(InjectedTuples) {
 			window
 				InjectedTuples: sliding, count(10), count(1);
 			param
-				port: 8080;
+				port: 1443;
 				certificateAlias: "mykey";
 				keyStore: "etc/keystore.jks";
 				keyPassword: "changeit";
 			config
 				// Ensure the operators are in a single PE to have a single web-server
-				placement: partitionColocation("jetty8080");
+				placement: partitionColocation("jetty1443");
 		}
 	
 		() as WCT = WebContext() {
 			param
-				port: 8080;
+				port: 1443;
 				certificateAlias: "mykey";
 				keyStore: "etc/keystore.jks";
 				keyPassword: "changeit";
 				context: "wct";
-	 			contextResourceBase: "opt/wctest";
+				contextResourceBase: "opt/wctest";
 			config
 				// Ensure the operators are in a single PE to have a single web-server
-				placement: partitionColocation("jetty8080");
+				placement: partitionColocation("jetty1443");
 		}
 
 	config
