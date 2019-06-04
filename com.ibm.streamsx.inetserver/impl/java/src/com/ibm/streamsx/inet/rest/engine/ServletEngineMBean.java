@@ -5,6 +5,7 @@
 package com.ibm.streamsx.inet.rest.engine;
 
 import com.ibm.streams.operator.OperatorContext;
+import com.ibm.streams.operator.metrics.Metric;
 
 /**
  * Interface for sharing a servlet engine across multiple
@@ -33,7 +34,8 @@ public interface ServletEngineMBean {
 	 * or the Java operator api. The object will be available as the attribute
 	 * {@code operator.conduit} in the servlet context.
 	 */
-	public void registerOperator(String operatorClass, OperatorContext context, Object conduit) throws Exception;
+	public void registerOperator(String operatorClass, OperatorContext context, Object conduit,
+			final Metric nMissingTrackingKey, final Metric nRequestTimeouts) throws Exception;
 	
 	/**
 	 * Start the web-server. Must be called in the allPortsReady method.

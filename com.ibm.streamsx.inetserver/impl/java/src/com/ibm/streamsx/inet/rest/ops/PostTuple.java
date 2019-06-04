@@ -4,6 +4,7 @@
 */
 package com.ibm.streamsx.inet.rest.ops;
 
+import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.model.OutputPortSet;
 import com.ibm.streams.operator.model.OutputPorts;
@@ -70,5 +71,10 @@ public class PostTuple extends ServletOperator {
 	 * operator's class loader.
 	 */
 	@Parameter(optional=true, description=MAX_CONTEXT_SIZE_DESC)
-	public void setMaxContentSize(int maxContentSize) {}		
+	public void setMaxContentSize(int maxContentSize) {}
+	
+	@Override
+	public void initialize(OperatorContext context) throws Exception {
+		super.initialize(context, null, null);
+	}
 }

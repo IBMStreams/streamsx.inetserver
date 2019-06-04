@@ -222,12 +222,12 @@ public class RequestProcess extends ServletOperator {
 	 * Count some things
 	 */
 	private Metric nMessagesReceived;
+	private Metric nMessagesResponded;
+	private Metric nRequestTimeouts;
+	private Metric nMissingTrackingKey;
+	private Metric nActiveRequests;
 	private boolean jsonFormatInPort = false ;   // only one column on input port jsonString
 	private boolean jsonFormatOutPort = false;   // only one column on output port jsonString
-	private static Metric nMessagesResponded;
-	private static Metric nRequestTimeouts;	
-	private static Metric nMissingTrackingKey;
-	private static Metric nActiveRequests;	
 	
 	/**
 	 * Conduit object between operator and servlet.
@@ -247,7 +247,7 @@ public class RequestProcess extends ServletOperator {
 	@Override
 	public synchronized void initialize(OperatorContext context) throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
-		super.initialize(context);
+		super.initialize(context, nMissingTrackingKey, nRequestTimeouts);
 
 		activeMessages = Collections.synchronizedMap(new HashMap<>());
 		
@@ -398,7 +398,6 @@ public class RequestProcess extends ServletOperator {
 	/**
 	 * Setup the metrics
 	 */
-
     @CustomMetric(description="Number of requests received from web.", kind=Kind.COUNTER)
     public void setnMessagesReceived(Metric nMessagesReceived) {
         this.nMessagesReceived = nMessagesReceived;
@@ -410,29 +409,34 @@ public class RequestProcess extends ServletOperator {
     public void setnMessagesResponded(Metric nMessagesResponded) {
         this.nMessagesResponded = nMessagesResponded;
     }
-    public static Metric getnMessagesResponded() {
+    public Metric getnMessagesResponded() {
         return nMessagesResponded;
-    }    
+    }
     @CustomMetric(description="Missing tracking key count..", kind=Kind.COUNTER)
     public void setnMissingTrackingKey(Metric nMissingTrackingKey) {
         this.nMissingTrackingKey = nMissingTrackingKey;
     }
-    public static Metric getnRequestTimeouts() {
-        return nRequestTimeouts;
-    }       @CustomMetric(description="Number of timeouts waiting for response from Streams.", kind=Kind.COUNTER)
+    public Metric getnMissingTrackingKey() {
+        return nMissingTrackingKey;
+    }
+    @CustomMetric(description="Number of timeouts waiting for response from Streams.", kind=Kind.COUNTER)
     public void setnRequestTimeouts(Metric nRequestTimeouts) {
         this.nRequestTimeouts = nRequestTimeouts;
     }
-    public static Metric getnMissingTrackingKey() {
-        return nMissingTrackingKey;
-    }   
-    // 
-    
+    public Metric getnRequestTimeouts() {
+        return nRequestTimeouts;
+    }
     @CustomMetric(description="Number of requests currently being processed.", kind=Kind.GAUGE)
-    public void setnActiveRequests(Metric metric) {this.nActiveRequests = metric;}
-    public Metric getnActiveRequests() { return nActiveRequests; }    
-    
+    public void setnActiveRequests(Metric metric) {
+        this.nActiveRequests = metric;
+    }
+    public Metric getnActiveRequests() {
+        return nActiveRequests;
+    }
 
+    /*
+     * Parameters
+     */
 	@Parameter(optional = true, description = WEBTIMEOUT_DESC)
 	public void setWebTimeout(double webTimeout) {
 		this.webTimeout = webTimeout;

@@ -5,6 +5,7 @@
 package com.ibm.streamsx.inet.rest.ops;
 
 import com.ibm.streams.operator.Attribute;
+import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Type.MetaType;
@@ -33,7 +34,12 @@ public class PostXML extends ServletOperator {
 			checker.checkAttributeType(first, MetaType.XML);
 		}
 	}
-	
+
+	@Override
+	public void initialize(OperatorContext context) throws Exception {
+		super.initialize(context, null, null);
+	}
+
 	static final String DESC =
 			"Embeds a Jetty web server to allow HTTP or HTTPS POST requests to submit a tuple on " + 
 			"its output ports. Each output port corresponds to a unique URL comprising the operator name " + 

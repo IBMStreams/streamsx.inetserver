@@ -52,6 +52,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingData;
 import com.ibm.streams.operator.management.OperatorManagement;
+import com.ibm.streams.operator.metrics.Metric;
 import com.ibm.streamsx.inet.rest.ops.Functions;
 import com.ibm.streamsx.inet.rest.ops.PostTuple;
 import com.ibm.streamsx.inet.rest.servlets.ExposedPortsInfo;
@@ -403,7 +404,8 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
     }
 
 	@Override
-	public void registerOperator(final String operatorClass, final OperatorContext context, Object conduit) throws Exception {
+	public void registerOperator(final String operatorClass, final OperatorContext context, Object conduit,
+			final Metric nMissingTrackingKey, final Metric nRequestTimeouts) throws Exception {
 
 		trace.info("Register servlets for operator: " + context.getName());
 
@@ -464,15 +466,14 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
         // Add servlets for the operator, driven by a Setup class that implements
         // OperatorServletSetup with a name derived from the operator class name.
         String setupClass = operatorClass.replace(".ops.", ".setup.").concat("Setup");
-        OperatorServletSetup setup = 
-        		Class.forName(setupClass).asSubclass(OperatorServletSetup.class).newInstance();
+        OperatorServletSetup setup = Class.forName(setupClass).asSubclass(OperatorServletSetup.class).newInstance();
         
-        List<ExposedPort> operatorPorts = setup.setup(context, staticContext, ports);
+        List<ExposedPort> operatorPorts = setup.setup(context, staticContext, ports, nMissingTrackingKey, nRequestTimeouts);
         if (operatorPorts != null)
-        	exposedPorts.addAll(operatorPorts);
+            exposedPorts.addAll(operatorPorts);
         
         if (ports != null)
-        	addHandler(ports);
+            addHandler(ports);
     }
    
     public static class OperatorWebAppContext extends WebAppContext {

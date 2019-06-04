@@ -14,6 +14,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamingOutput;
+import com.ibm.streams.operator.metrics.Metric;
 import com.ibm.streamsx.inet.rest.servlets.InjectBLOB;
 
 /**
@@ -21,33 +22,30 @@ import com.ibm.streamsx.inet.rest.servlets.InjectBLOB;
  */
 public class PostBLOBSetup implements OperatorServletSetup {
 
-    /**
-     * Servlet that accepts application/octet-stream POST and submits a
-     * corresponding tuple with the first attribute being a blob attribute.
-     * @return 
-     */
+	/**
+	 * Servlet that accepts application/octet-stream POST and submits a
+	 * corresponding tuple with the first attribute being a blob attribute.
+	 * @return 
+	 */
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler handler,
-			ServletContextHandler ports) {
-		
+	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler handler, ServletContextHandler ports,
+			final Metric nMissingTrackingKey, final Metric nRequestTimeouts) {
+
 		Logger trace = Logger.getAnonymousLogger();
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
-		
-        for (StreamingOutput<OutputTuple> port : context
-                .getStreamingOutputs()) {
-        	
-            ExposedPort ep = new ExposedPort(context, port, ports.getContextPath());
-            exposed.add(ep);
 
-            String path = "/output/" + port.getPortNumber() + "/inject";
-            ports.addServlet(new ServletHolder(new InjectBLOB(port)),
-                    path);
-            ep.addURL("inject", path);
-            
-            trace.info("Injection URL (application/octet-stream): " + ports.getContextPath()
-                    + path);
-        }  
-        
-        return exposed;
+		for (StreamingOutput<OutputTuple> port : context.getStreamingOutputs()) {
+
+			ExposedPort ep = new ExposedPort(context, port, ports.getContextPath());
+			exposed.add(ep);
+
+			String path = "/output/" + port.getPortNumber() + "/inject";
+			ports.addServlet(new ServletHolder(new InjectBLOB(port)), path);
+			ep.addURL("inject", path);
+
+			trace.info("Injection URL (application/octet-stream): " + ports.getContextPath() + path);
+		}
+
+		return exposed;
 	}
 }

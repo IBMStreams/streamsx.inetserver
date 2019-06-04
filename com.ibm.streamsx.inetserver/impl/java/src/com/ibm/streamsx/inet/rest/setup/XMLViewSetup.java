@@ -14,30 +14,31 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
+import com.ibm.streams.operator.metrics.Metric;
 import com.ibm.streamsx.inet.rest.servlets.AccessXMLAttribute;
 
 public class XMLViewSetup implements OperatorServletSetup {
 
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler staticContext,
-			ServletContextHandler ports) {
-		
+	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler staticContext, ServletContextHandler ports,
+			final Metric nMissingTrackingKey, final Metric nRequestTimeouts) {
+
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
-		        
-        Logger trace = Logger.getAnonymousLogger();
 
-        // The XMLView operator only supports a single port
-        // at the moment, but code the ability to have multiple ports.
-        for (StreamingInput<Tuple> port : context.getStreamingInputs()) {
-            String path = "/input/" + port.getPortNumber() + "/attribute";
-            ports.addServlet(new ServletHolder(new AccessXMLAttribute(port)),  path);
+		Logger trace = Logger.getAnonymousLogger();
 
-            ExposedPort ep = new ExposedPort(context, port, ports.getContextPath());
-            exposed.add(ep);
-            ep.addURL("attribute", path);
-            
-            trace.info("Port XML Attribute URL: " + ports.getContextPath() + path);
-        }
-        return exposed;
+		// The XMLView operator only supports a single port
+		// at the moment, but code the ability to have multiple ports.
+		for (StreamingInput<Tuple> port : context.getStreamingInputs()) {
+			String path = "/input/" + port.getPortNumber() + "/attribute";
+			ports.addServlet(new ServletHolder(new AccessXMLAttribute(port)),  path);
+
+			ExposedPort ep = new ExposedPort(context, port, ports.getContextPath());
+			exposed.add(ep);
+			ep.addURL("attribute", path);
+
+			trace.info("Port XML Attribute URL: " + ports.getContextPath() + path);
+		}
+		return exposed;
 	}
 }
