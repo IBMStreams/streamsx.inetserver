@@ -114,22 +114,22 @@ public class RequestProcess extends ServletOperator {
 	private static final double defaultTimeout = 15.0f;	
 	
 	static final String DESC = "Operator accepts a web request and generates corresponding response.  The request is injected into "
-		+ "streams on the output port, the input port receives the response."
-	        + "This enables a developer to process HTTP form's and REST calls. The request arrives on the output port, results are " 
-	        + "presented on the input port."
-		+ "The request is coorolated to the response with an attribute 'key' that arrives with the request parameters' on the output port "
-	        + "and must accompany the response on the input port."
-		+ "\\n\\n" 
-	        + "The URLs defined by this operator are:\\n"
-	        + "* *prefix*`/ports/analyze/`*port index*`/` - Injects a tuple into the output and the response is taken from the matching tuple on the input port.\\n"
-	        + "* *prefix*`/ports/input/`*port index*`/info` - Output port meta-data including the stream attribute names and types (content type `application/json`).\\n"
-	        + "\\nThe *prefix* for the URLs is:\\n"
-	        + "* *context path*`/`*base operator name* - When the `context` parameter is set.\\n"
-	        + "* *full operator name* - When the `context` parameter is **not** set.\\n"
-	        + "\\n"
-	        + "For the `analyze` path any HTTP method can be used and any sub-path. For example with a context of "
-	        + "`api` and operator name of `Bus` then `api/Bus/ports/analyze/0/get_location` is valid."
-	        + "\\n\\n"
+			+ "streams on the output port, the input port receives the response."
+			+ "This enables a developer to process HTTP form's and REST calls. The request arrives on the output port, results are " 
+			+ "presented on the input port."
+			+ "The request is coorolated to the response with an attribute 'key' that arrives with the request parameters' on the output port "
+			+ "and must accompany the response on the input port."
+			+ "\\n\\n" 
+			+ "The URLs defined by this operator are:\\n"
+			+ "* *prefix*`/ports/analyze/`*port index*`/` - Injects a tuple into the output and the response is taken from the matching tuple on the input port.\\n"
+			+ "* *prefix*`/ports/input/`*port index*`/info` - Output port meta-data including the stream attribute names and types (content type `application/json`).\\n"
+			+ "\\nThe *prefix* for the URLs is:\\n"
+			+ "* *context path*`/`*base operator name* - When the `context` parameter is set.\\n"
+			+ "* *full operator name* - When the `context` parameter is **not** set.\\n"
+			+ "\\n"
+			+ "For the `analyze` path any HTTP method can be used and any sub-path. For example with a context of "
+			+ "`api` and operator name of `Bus` then `api/Bus/ports/analyze/0/get_location` is valid."
+			+ "\\n\\n"
 			+ "Input and output ports have two possible formats: tuple and json. With tuple format, each web input fields is mapped to an attribute. "
 			+ "Json format has one attribute ('jsonString'), each web field is mapped to a json object field. "
 			+ "\\n\\n"
@@ -138,7 +138,7 @@ public class RequestProcess extends ServletOperator {
 			+ "overridden for tuple. "
 			+ "\\n\\n" 
 			+ "The operator handles two flavors of http requests, forms and REST. In the case of forms, webpages can be served up from the contextResourceBase, "
-                        + "this can be to static html or template. . Refer to the spl example for a form processed by the operator using a template to format the response."
+			+ "this can be to static html or template. . Refer to the spl example for a form processed by the operator using a template to format the response."
 			+ "\\n\\n "
 			+ "For the input port (the web response), only the 'key' is mandatory for both json and tuple. The following lists the default values if the field or attribute is not provided. "
 			+ "\\n"
@@ -169,7 +169,7 @@ public class RequestProcess extends ServletOperator {
 	static final String WEBTIMEOUT_DESC = "Number of seconds to wait for the web request to be processed by Streams, default: \\\"" + defaultTimeout + "\\\".  ";
 
 	// common to output/input
-	static final String KEY_DESC = " Input and output port's corrolation key. The values is expected to be unchanged between the input and output, default: \\\"" + defaultKeyAttributeName + "\\\". ";	
+	static final String KEY_DESC = " Input and output port's corrolation key. The values is expected to be unchanged between the input and output, default: \\\"" + defaultKeyAttributeName + "\\\". ";
 	// output port
 	static final String REQUESTATTRNAME_DESC = "Output port's attribute name with the web request (body of the web request), default \\\"" + defaultRequestAttributeName + "\\\".  ";
 	static final String METHODATTRNAME_DESC = "Output ports's attribute name with the request method (PUT, GET, POST), default: \\\"" + defaultMethodAttributeName + "\\\".  ";
@@ -179,18 +179,17 @@ public class RequestProcess extends ServletOperator {
 	
 	// input port
 	private String responseAttributeName = defaultResponseAttributeName;
-	private String jsonStringAttributeName = defaultJsonStringAttributeName; 
+	private String jsonStringAttributeName = defaultJsonStringAttributeName;
 	private String responseJsonStringAttributeName = defaultJsonStringAttributeName;
-	private String statusAttributeName = defaultStatusAttributeName;	
+	private String statusAttributeName = defaultStatusAttributeName;
 	private String statusMessageAttributeName = defaultStatusMessageAttributeName;
-	private String responseHeaderAttributeName = defaultHeaderAttributeName;	
+	private String responseHeaderAttributeName = defaultHeaderAttributeName;
 	private String responseContentTypeAttributeName = defaultContentTypeAttributeName;
 	
 	private static final String RESPONSEATTRNAME_DESC = "Input port's attribute response (body of the web response), default:  \\\"" + defaultResponseAttributeName + "\\\".  ";
-	private static final String RESPONSEJSONSTRINGATTRNAME_DESC = "Input port's json results (complete response), default:  \\\"" + defaultJsonStringAttributeName + "\\\".  ";	
+	private static final String RESPONSEJSONSTRINGATTRNAME_DESC = "Input port's json results (complete response), default:  \\\"" + defaultJsonStringAttributeName + "\\\".  ";
 	private static final String STATUSATTRNAME_DESC = "Input port's attribute web status, default:  \\\"" + defaultStatusAttributeName + "\\\".  ";
 	private static final String STATUSMESSAGEATTRNAME_DESC = "Input port's web status message response, when the 'status' value is >= 400 (SC_BAD_REQUEST), default:  \\\"" + defaultStatusMessageAttributeName + "\\\".  ";
-	// TODO is this used ??? 
 	private static final String RESPONSECONTENTTYPE_DESC = "Input port's web response content type, default: \\\"" + defaultContentTypeAttributeName + "\\\".  ";
 	private static final String RESPONSEHEADERATTRNAME_DESC = "Input port's web response header objects<name,value>, default: \\\"" + defaultHeaderAttributeName + "\\\".  ";
 
@@ -211,7 +210,7 @@ public class RequestProcess extends ServletOperator {
 	private String keyAttributeName = defaultKeyAttributeName;
 	private String requestAttributeName = defaultRequestAttributeName;
 	private String methodAttributeName = defaultMethodAttributeName; // get/put/del/
-	private String pathInfoAttributeName = defaultPathInfoAttributeName;		
+	private String pathInfoAttributeName = defaultPathInfoAttributeName;
 	private String headerAttributeName = defaultHeaderAttributeName;
 	private String contentTypeAttributeName = defaultContentTypeAttributeName;
 	
@@ -253,17 +252,17 @@ public class RequestProcess extends ServletOperator {
 		
 		jsonFormatOutPort = (getOutput(0).getStreamSchema().getAttributeCount() == 1) && (jsonStringAttributeName.equals(getOutput(0).getStreamSchema().getAttributeNames().toArray()[0])); 
 		for (int idx = 0; getOutput(0).getStreamSchema().getAttributeCount() != idx; idx++) {
-			trace.info(String.format(" -- OutPort@initalize attribute[%d]:%s ", idx, (getOutput(0).getStreamSchema().getAttributeNames().toArray()[idx])));		
-		}		
+			trace.info(String.format(" -- OutPort@initalize attribute[%d]:%s ", idx, (getOutput(0).getStreamSchema().getAttributeNames().toArray()[idx])));
+		}
 		jsonFormatInPort = (getInput(0).getStreamSchema().getAttributeCount() == 1) && (responseJsonStringAttributeName.equals(getInput(0).getStreamSchema().getAttributeNames().toArray()[0]));
 		for (int idx = 0; getInput(0).getStreamSchema().getAttributeCount() != idx; idx++) {
-			trace.info(String.format(" -- InPort@initalize attribute[%d]:%s ", idx, (getInput(0).getStreamSchema().getAttributeNames().toArray()[idx])));		
+			trace.info(String.format(" -- InPort@initalize attribute[%d]:%s ", idx, (getInput(0).getStreamSchema().getAttributeNames().toArray()[idx])));
 		}
 
 
 		if (jsonFormatOutPort) {
 			Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " single column output ");
-		} else {			
+		} else {
 		// key, out port
 		if (getOutput(0).getStreamSchema().getAttribute(keyAttributeName) == null) {
 			throw new Exception("Could not detect the data field for output port 0. "
@@ -344,7 +343,7 @@ public class RequestProcess extends ServletOperator {
 		
 		// response, in port - getting Null exception on the else added more protection.
 		if ((getInput(0).getStreamSchema().getAttribute(responseHeaderAttributeName) == null) || 
-					(getInput(0).getStreamSchema().getAttribute(responseHeaderAttributeName).getType() == null))		
+					(getInput(0).getStreamSchema().getAttribute(responseHeaderAttributeName).getType() == null))
 		{
 			responseHeaderAttributeName = null;
 		} else {
@@ -352,7 +351,7 @@ public class RequestProcess extends ServletOperator {
 					.getMetaType();
 			if (headerParamType != MetaType.MAP)
 				throw new Exception(
-						"Only type of \"" + MetaType.MAP + "\" allowed for param " +responseHeaderAttributeName + "\"");			
+						"Only type of \"" + MetaType.MAP + "\" allowed for param " +responseHeaderAttributeName + "\"");
 		}
 		// status, in port
 		if (getInput(0).getStreamSchema().getAttribute(statusAttributeName) == null) {
@@ -391,52 +390,52 @@ public class RequestProcess extends ServletOperator {
 
 	}
 	
-	   protected Object getConduit() {
-	        return tupleCreator;
-	    }
+	protected Object getConduit() {
+		return tupleCreator;
+	}
 
 	/**
 	 * Setup the metrics
 	 */
-    @CustomMetric(description="Number of requests received from web.", kind=Kind.COUNTER)
-    public void setnMessagesReceived(Metric nMessagesReceived) {
-        this.nMessagesReceived = nMessagesReceived;
-    }
-    public Metric getnMessagesReceived() {
-        return nMessagesReceived;
-    }
-    @CustomMetric(description="Number of vaild responses sent back via web.", kind=Kind.COUNTER)
-    public void setnMessagesResponded(Metric nMessagesResponded) {
-        this.nMessagesResponded = nMessagesResponded;
-    }
-    public Metric getnMessagesResponded() {
-        return nMessagesResponded;
-    }
-    @CustomMetric(description="Missing tracking key count..", kind=Kind.COUNTER)
-    public void setnMissingTrackingKey(Metric nMissingTrackingKey) {
-        this.nMissingTrackingKey = nMissingTrackingKey;
-    }
-    public Metric getnMissingTrackingKey() {
-        return nMissingTrackingKey;
-    }
-    @CustomMetric(description="Number of timeouts waiting for response from Streams.", kind=Kind.COUNTER)
-    public void setnRequestTimeouts(Metric nRequestTimeouts) {
-        this.nRequestTimeouts = nRequestTimeouts;
-    }
-    public Metric getnRequestTimeouts() {
-        return nRequestTimeouts;
-    }
-    @CustomMetric(description="Number of requests currently being processed.", kind=Kind.GAUGE)
-    public void setnActiveRequests(Metric metric) {
-        this.nActiveRequests = metric;
-    }
-    public Metric getnActiveRequests() {
-        return nActiveRequests;
-    }
+	@CustomMetric(description="Number of requests received from web.", kind=Kind.COUNTER)
+	public void setnMessagesReceived(Metric nMessagesReceived) {
+		this.nMessagesReceived = nMessagesReceived;
+	}
+	public Metric getnMessagesReceived() {
+		return nMessagesReceived;
+	}
+	@CustomMetric(description="Number of vaild responses sent back via web.", kind=Kind.COUNTER)
+	public void setnMessagesResponded(Metric nMessagesResponded) {
+		this.nMessagesResponded = nMessagesResponded;
+	}
+	public Metric getnMessagesResponded() {
+		return nMessagesResponded;
+	}
+	@CustomMetric(description="Missing tracking key count..", kind=Kind.COUNTER)
+	public void setnMissingTrackingKey(Metric nMissingTrackingKey) {
+		this.nMissingTrackingKey = nMissingTrackingKey;
+	}
+	public Metric getnMissingTrackingKey() {
+		return nMissingTrackingKey;
+	}
+	@CustomMetric(description="Number of timeouts waiting for response from Streams.", kind=Kind.COUNTER)
+	public void setnRequestTimeouts(Metric nRequestTimeouts) {
+		this.nRequestTimeouts = nRequestTimeouts;
+	}
+	public Metric getnRequestTimeouts() {
+		return nRequestTimeouts;
+	}
+	@CustomMetric(description="Number of requests currently being processed.", kind=Kind.GAUGE)
+	public void setnActiveRequests(Metric metric) {
+		this.nActiveRequests = metric;
+	}
+	public Metric getnActiveRequests() {
+		return nActiveRequests;
+	}
 
-    /*
-     * Parameters
-     */
+	/*
+	 * Parameters
+	 */
 	@Parameter(optional = true, description = WEBTIMEOUT_DESC)
 	public void setWebTimeout(double webTimeout) {
 		this.webTimeout = webTimeout;
@@ -506,9 +505,9 @@ public class RequestProcess extends ServletOperator {
 	ReqWebMessage retrieveExchangeWebMessage(long trackingKey) {
 		ReqWebMessage activeWebMessage;
 		
-		trace.info(": trackingKey:" + trackingKey);						
+		trace.info(": trackingKey:" + trackingKey);
 		if (!activeMessages.containsKey(trackingKey)) {
-			getnMissingTrackingKey().incrementValue(1L);			      				
+			getnMissingTrackingKey().incrementValue(1L);
 			trace.error("retrieveExchangeWebMessage: failed to locate trackingKey. Has the key been corrupted or failed to propogate through the Stream? trackingKey:" + trackingKey + " missingTackingKeyCountt:" + getnMissingTrackingKey().getValue());							
 			return null;
 		}
@@ -531,21 +530,21 @@ public class RequestProcess extends ServletOperator {
 		String response = null;
 		ReqWebMessage activeWebMessage = null;
 		trace.info("processResponse ENTER");
-		long trackingKey = 0;			
+		long trackingKey = 0;
 		if (activeColumns == null) {
 			activeColumns = new HashSet<String>();
 			for (Iterator<Attribute> iterator = tuple.getStreamSchema().iterator(); iterator.hasNext();) {
 				Attribute attr = iterator.next();
-				activeColumns.add(attr.getName());					
+				activeColumns.add(attr.getName());
 			}
 			if ((activeColumns.size() != 1) && activeColumns.contains(responseJsonStringAttributeName)) {
-				trace.info("processResponse : found that '"+ responseJsonStringAttributeName+"' is not the only input port attribute, NOT using attribute. " );							
+				trace.info("processResponse : found that '"+ responseJsonStringAttributeName+"' is not the only input port attribute, NOT using attribute. " );
 			}
 		}
 
 		for (int idx = 0; getInput(0).getStreamSchema().getAttributeCount() != idx; idx++) {
-			trace.info(String.format(" -- InPort@process attribute[%d]:%s ", idx, (getInput(0).getStreamSchema().getAttributeNames().toArray()[idx])));		
-		}		
+			trace.info(String.format(" -- InPort@process attribute[%d]:%s ", idx, (getInput(0).getStreamSchema().getAttributeNames().toArray()[idx])));
+		}
 		
 		if (jsonFormatInPort)  {
 			trace.trace("processResponse - DUMP JSON:" + tuple.toString());
@@ -563,7 +562,7 @@ public class RequestProcess extends ServletOperator {
 				return;
 			}
 			if (!json.containsKey(defaultKeyAttributeName)) {
-				trace.error("processResponse JSON: Did not locate the element  '" + defaultKeyAttributeName + "' in the JSON structure : " + jsonString); 
+				trace.error("processResponse JSON: Did not locate the element  '" + defaultKeyAttributeName + "' in the JSON structure : " + jsonString);
 				return;
 			}
 			trackingKey =  (long) json.get(defaultKeyAttributeName);
@@ -574,31 +573,32 @@ public class RequestProcess extends ServletOperator {
 			// Extract the components from json. 
 			if (json.containsKey(defaultResponseAttributeName)) {
 				response = (String) json.get(defaultResponseAttributeName);
-				activeWebMessage.setResponse(response);							
+				activeWebMessage.setResponse(response);
 			} else {
 				trace.warn("processResponse JSON: Failed to extract response from JSON results, returning a 0 length string. ");
-				activeWebMessage.setResponse("");											
+				activeWebMessage.setResponse("");
 			}			
 			if (json.containsKey((String) defaultStatusAttributeName)) {
 				Long val = (Long) json.get(defaultStatusAttributeName);
 				activeWebMessage.setStatusCode(val.intValue());
 			}
 			if (json.containsKey((String) defaultStatusMessageAttributeName)) {
-				activeWebMessage.setStatusMessage((String) json.get(defaultStatusMessageAttributeName));					
+				activeWebMessage.setStatusMessage((String) json.get(defaultStatusMessageAttributeName));
 			}
 			if (json.containsKey((String) defaultHeaderAttributeName)) {
-				HashMap<String, String> mapWeb = new HashMap<String, String>();							
-				Map<String,String> mapHeader =  (Map<String, String>) json.get(defaultHeaderAttributeName);	
+				HashMap<String, String> mapWeb = new HashMap<String, String>();
+				@SuppressWarnings("unchecked")
+				Map<String,String> mapHeader = (Map<String, String>) json.get(defaultHeaderAttributeName);
 				mapHeader.forEach((key, value)->{ trace.info("processResponse JSON : header key:" + value + " value: " + value);});
 				mapHeader.forEach((key, value)->{ mapWeb.put(key,value);});
-				activeWebMessage.setResponseHeaders(mapHeader);				
+				activeWebMessage.setResponseHeaders(mapHeader);
 			}
 			
 			if (json.containsKey((String) defaultContentTypeAttributeName)) {
-				activeWebMessage.setResponseContentType((String) json.get(defaultContentTypeAttributeName));									
-			}			
+				activeWebMessage.setResponseContentType((String) json.get(defaultContentTypeAttributeName));
+			}
 		} else {
-			trace.info("processResponse TUPLE");						
+			trace.info("processResponse TUPLE");
 			trackingKey = tuple.getLong(keyAttributeName);
 
 			activeWebMessage = retrieveExchangeWebMessage(trackingKey);
@@ -606,14 +606,15 @@ public class RequestProcess extends ServletOperator {
 			
 			// Extract components for response....
 			response = (activeColumns.contains(responseAttributeName)) ? tuple.getString(responseAttributeName) : "";
-			activeWebMessage.setResponse(response);			
+			activeWebMessage.setResponse(response);
 			if (activeColumns.contains(statusAttributeName)) {
-				activeWebMessage.setStatusCode((tuple.getInt(statusAttributeName)));				
+				activeWebMessage.setStatusCode((tuple.getInt(statusAttributeName)));
 			} 
 			if (activeColumns.contains(statusMessageAttributeName)) {
 				activeWebMessage.setStatusMessage(tuple.getString(statusMessageAttributeName));
 			}
-			if (activeColumns.contains(responseHeaderAttributeName)) {			
+			if (activeColumns.contains(responseHeaderAttributeName)) {
+				@SuppressWarnings("unchecked")
 				Map<RString, RString> mapStr = (Map<RString, RString>) tuple.getMap(responseHeaderAttributeName);
 				HashMap<String, String> mapWeb = new HashMap<String, String>();
 				for (Iterator<RString> keys = mapStr.keySet().iterator(); keys.hasNext();) {
@@ -624,13 +625,13 @@ public class RequestProcess extends ServletOperator {
 			}
 			if (activeColumns.contains(responseContentTypeAttributeName)) {
 				activeWebMessage.setResponseContentType(tuple.getString(responseContentTypeAttributeName));
-			}			
+			}
 		}
 
 		getnMessagesResponded().incrementValue(1L);
 		trace.info("processResponse Received #" + getnMessagesResponded().getValue() + " response:" + response);
 		activeWebMessage.issueResponseFromStreams();
-		trace.info("processResponse EXIT response : trackingKey:" + trackingKey);		
+		trace.info("processResponse EXIT response : trackingKey:" + trackingKey);
 	}
 
 	/*
@@ -652,7 +653,7 @@ public class RequestProcess extends ServletOperator {
 		if (jsonFormatOutPort) {
 			String jsonRequestString = exchangeWebMessage.jsonRequest();
 			outTuple.setString(jsonStringAttributeName, jsonRequestString);
-			trace.info("initiateWebRequest - single attribute, contents : " + jsonRequestString);			
+			trace.info("initiateWebRequest - single attribute, contents : " + jsonRequestString);
 		} else {
 			outTuple.setLong(keyAttributeName, exchangeWebMessage.trackingKey);
 			outTuple.setString(requestAttributeName, exchangeWebMessage.getRequestPayload());
@@ -676,7 +677,7 @@ public class RequestProcess extends ServletOperator {
 				outTuple.setMap(headerAttributeName, transfer);
 			}
 			
-			trace.info("initiateWebRequest EXIT ");		
+			trace.info("initiateWebRequest EXIT ");
 		}
 		return outTuple;
 	}
