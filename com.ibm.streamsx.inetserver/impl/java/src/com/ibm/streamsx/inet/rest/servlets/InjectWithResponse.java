@@ -73,12 +73,12 @@ public class InjectWithResponse extends SubmitterServlet {
 		this.nRequestTimeouts = nRequestTimeouts;
 		// this.exchangeWebServer = exchangeWebServer;
 
-	    if (context.getParameterNames().contains("webTimeout")) {
-	        double wtd = Double.valueOf(context.getParameterValues("webTimeout").get(0));
-	        webTimeout = (long) (1000.0 * wtd);
-	    } else {
-	        webTimeout = SECONDS.toMillis(15);
-	    }
+		if (context.getParameterNames().contains("webTimeout")) {
+			double wtd = Double.valueOf(context.getParameterValues("webTimeout").get(0));
+			webTimeout = (long) (1000.0 * wtd);
+		} else {
+			webTimeout = SECONDS.toMillis(15);
+		}
 	}
 	
     @SuppressWarnings("unchecked")

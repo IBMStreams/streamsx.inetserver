@@ -90,17 +90,17 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 	public static final int IDLE_TIMEOUT = 30000;
 	public static final int STRICT_TRANSPORT_SECURITY_MAX_AGE = 2000;
 
-	public static ServletEngineMBean getServletEngine(OperatorContext context) throws Exception {
+	public static ServletEngineMBean getServletEngine(OperatorContext operatorContext) throws Exception {
 		int portNumber = 8080;
-		if (context.getParameterNames().contains("port"))
-			portNumber = Integer.valueOf(context.getParameterValues("port").get(0));
+		if (operatorContext.getParameterNames().contains("port"))
+			portNumber = Integer.valueOf(operatorContext.getParameterValues("port").get(0));
 
 		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		final ObjectName jetty = new ObjectName("com.ibm.streamsx.inet.rest:type=jetty,port=" + portNumber);
 		synchronized (syncMe) {
 			if (!mbs.isRegistered(jetty)) {
 				try {
-					mbs.registerMBean(new ServletEngine(jetty, context, portNumber), jetty);
+					mbs.registerMBean(new ServletEngine(jetty, operatorContext, portNumber), jetty);
 				} catch (InstanceAlreadyExistsException infe) {
 				}
 			}
@@ -109,8 +109,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		return JMX.newMBeanProxy(ManagementFactory.getPlatformMBeanServer(), jetty, ServletEngineMBean.class);
 	}
 
-	protected final OperatorContext startingContext;
-	protected final ThreadPoolExecutor tpe;
+	private final OperatorContext startingOperatorContext;
 
 	private boolean started;
 	private boolean stopped;
@@ -121,14 +120,13 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 	// Jetty port.
 	private int localPort;
 	private final ContextHandlerCollection handlers;
-	private final Map<String, ServletContextHandler> contexts = Collections.synchronizedMap(new HashMap<String, ServletContextHandler>());
-
+	private final Map<String, ServletContextHandler> staticContexts = Collections.synchronizedMap(new HashMap<String, ServletContextHandler>());
 	private final List<ExposedPort> exposedPorts = Collections.synchronizedList(new ArrayList<ExposedPort>());
 
-	private ServletEngine(ObjectName myObjectName, OperatorContext context, int portNumber) throws Exception {
+	private ServletEngine(ObjectName myObjectName, OperatorContext operatorContext, int portNumber) throws Exception {
 		this.myObjectName = myObjectName;
-		this.startingContext = context;
-		tpe = newContextThreadPoolExecutor(context);
+		this.startingOperatorContext = operatorContext;
+		final ThreadPoolExecutor tpe = newContextThreadPoolExecutor(operatorContext);
 
 		ThreadPool tp = new ThreadPool() {
 			@Override
@@ -161,31 +159,31 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		server = new Server(tp);
 		handlers = new ContextHandlerCollection();
 
-		if (context.getParameterNames().contains(SSL_CERT_ALIAS_PARAM))
-			setHTTPSConnector(context, server, portNumber);
+		if (operatorContext.getParameterNames().contains(SSL_CERT_ALIAS_PARAM))
+			setHTTPSConnector(operatorContext, server, portNumber);
 		else
-			setHTTPConnector(context, server, portNumber);
-		context.getMetrics().getCustomMetric("https").setValue(isSSL ? 1 : 0);
+			setHTTPConnector(operatorContext, server, portNumber);
+		operatorContext.getMetrics().getCustomMetric("https").setValue(isSSL ? 1 : 0);
 
 		ServletContextHandler portsIntro = new ServletContextHandler(server, "/ports", ServletContextHandler.SESSIONS);
 		portsIntro.addServlet(new ServletHolder( new ExposedPortsInfo(exposedPorts)), "/info");
 		addHandler(portsIntro);
 
 		// making a abs path by combining toolkit directory with the opt/resources dir
-		URI baseToolkitDir = context.getToolkitDirectory().toURI();
-		addStaticContext(null, "streamsx.inet.resources", PathConversionHelper.convertToAbsPath(baseToolkitDir, "opt/resources"));
+		URI baseToolkitDir = operatorContext.getToolkitDirectory().toURI();
+		addStaticContext("streamsx.inet.resources", PathConversionHelper.convertToAbsPath(baseToolkitDir, "opt/resources"));
 
 		String streamsInstall = System.getenv("STREAMS_INSTALL");
 		if (streamsInstall != null) {
 			File dojo = new File(streamsInstall, "ext/dojo");
-			addStaticContext(null, "streamsx.inet.dojo", dojo.getAbsolutePath());
+			addStaticContext("streamsx.inet.dojo", dojo.getAbsolutePath());
 		}
 	}
 
 	/**
 	 * Setup an HTTP connector.
 	 */
-	private void setHTTPConnector(OperatorContext context, Server server, int portNumber) {
+	private void setHTTPConnector(OperatorContext operatorContext, Server server, int portNumber) {
 		HttpConfiguration http_config = new HttpConfiguration();
 		ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory(http_config));
 		connector.setPort(portNumber);
@@ -196,35 +194,35 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 	/**
 	 * Setup an HTTPS connector.
 	 */
-	private void setHTTPSConnector(OperatorContext context, Server server, int httpsPort) {
+	private void setHTTPSConnector(OperatorContext operatorContext, Server server, int httpsPort) {
 		SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
 		//Key Store is required
-		String keyStorePath = context.getParameterValues(SSL_KEYSTORE_PARAM).get(0);
+		String keyStorePath = operatorContext.getParameterValues(SSL_KEYSTORE_PARAM).get(0);
 		File keyStorePathFile = new File(keyStorePath);
 		if (!keyStorePathFile.isAbsolute())
-			keyStorePathFile = new File(context.getPE().getApplicationDirectory(), keyStorePath);
+			keyStorePathFile = new File(operatorContext.getPE().getApplicationDirectory(), keyStorePath);
 		sslContextFactory.setKeyStorePath(keyStorePathFile.getAbsolutePath());
 		//the key store password is optional
-		if (context.getParameterNames().contains(SSL_KEYSTORE_PASSWORD_PARAM)) {
-			String keyStorePassword = context.getParameterValues(SSL_KEYSTORE_PASSWORD_PARAM).get(0);
+		if (operatorContext.getParameterNames().contains(SSL_KEYSTORE_PASSWORD_PARAM)) {
+			String keyStorePassword = operatorContext.getParameterValues(SSL_KEYSTORE_PASSWORD_PARAM).get(0);
 			sslContextFactory.setKeyStorePassword(Functions.obfuscate(keyStorePassword));
 		}
 		//Key password is required
-		String keyPassword = context.getParameterValues(SSL_KEY_PASSWORD_PARAM).get(0);
+		String keyPassword = operatorContext.getParameterValues(SSL_KEY_PASSWORD_PARAM).get(0);
 		sslContextFactory.setKeyManagerPassword(Functions.obfuscate(keyPassword));
 		//Key alias
-		String alias = context.getParameterValues(SSL_CERT_ALIAS_PARAM).get(0);
+		String alias = operatorContext.getParameterValues(SSL_CERT_ALIAS_PARAM).get(0);
 		sslContextFactory.setCertAlias(alias);
 		//Trust Store & password
-		if (context.getParameterNames().contains(SSL_TRUSTSTORE_PARAM)) {
-			String trustStorePath = context.getParameterValues(SSL_TRUSTSTORE_PARAM).get(0);
+		if (operatorContext.getParameterNames().contains(SSL_TRUSTSTORE_PARAM)) {
+			String trustStorePath = operatorContext.getParameterValues(SSL_TRUSTSTORE_PARAM).get(0);
 			File trustStorePathFile = new File(trustStorePath);
 			if (!trustStorePathFile.isAbsolute())
-				trustStorePathFile = new File(context.getPE().getApplicationDirectory(), trustStorePath);
+				trustStorePathFile = new File(operatorContext.getPE().getApplicationDirectory(), trustStorePath);
 			sslContextFactory.setTrustStorePath(trustStorePath);
 			sslContextFactory.setNeedClientAuth(true);
-			if (context.getParameterNames().contains(SSL_TRUSTSTORE_PASSWORD_PARAM)) {
-				String trustStorePassword = context.getParameterValues(SSL_TRUSTSTORE_PASSWORD_PARAM).get(0);
+			if (operatorContext.getParameterNames().contains(SSL_TRUSTSTORE_PASSWORD_PARAM)) {
+				String trustStorePassword = operatorContext.getParameterValues(SSL_TRUSTSTORE_PASSWORD_PARAM).get(0);
 				sslContextFactory.setTrustStorePassword(Functions.obfuscate(trustStorePassword));
 			}
 		}
@@ -267,7 +265,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 	// that Jetty will start
 	// NOTE: This was based on examination of jetty 8.1.3 code
 	//       If the toolkit moves to jetty 9+ this could change
-	private ThreadPoolExecutor newContextThreadPoolExecutor(OperatorContext context) {
+	private ThreadPoolExecutor newContextThreadPoolExecutor(OperatorContext operatorContext) {
 		int jettyStartupThreads = 2*(Runtime.getRuntime().availableProcessors()+3)/4;
 		trace.info("Creating ThreadPoolExecuter corePoolSize: 32+" + jettyStartupThreads);
 		return  new ThreadPoolExecutor(
@@ -276,7 +274,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 				60, //keepAliveTime,
 				TimeUnit.SECONDS,
 				new LinkedBlockingQueue<Runnable>(), // workQueue,
-				context.getThreadFactory());
+				operatorContext.getThreadFactory());
 	}
 
 	private synchronized void addHandler(ServletContextHandler newHandler) {
@@ -294,7 +292,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		}
 		startWebServer();
 	}
-	
+
 	@Override
 	public void stop() throws Exception {
 		synchronized (this) {
@@ -306,78 +304,72 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		}
 		stopWebServer();
 	}
-	
+
 	/**
 	 * Add a default servlet that allows an operator
 	 * to pull static resources from a single location.
 	 * Typically used with getThisFileDir(). 
 	 * @throws Exception 
 	 */
-	private ServletContextHandler addOperatorStaticContext(OperatorContext context) throws Exception {
-	    
-	    if (!context.getParameterNames().contains(CONTEXT_PARAM))
-	        return null;
-	    if (!context.getParameterNames().contains(CONTEXT_RESOURCE_BASE_PARAM))
-            return null;
-	    
-	    
-	    String ctxName = context.getParameterValues(CONTEXT_PARAM).get(0);
-	    String resourceBase = context.getParameterValues(CONTEXT_RESOURCE_BASE_PARAM).get(0);
-	    
-	    if ("".equals(ctxName))
-	        throw new IllegalArgumentException("Parameter " + CONTEXT_PARAM + " cannot be empty");
+	private ServletContextHandler addOperatorStaticContext(OperatorContext operatorContext) throws Exception {
 
-	    if ("".equals(resourceBase))
-            throw new IllegalArgumentException("Parameter " + CONTEXT_RESOURCE_BASE_PARAM + " cannot be empty");
+		if (!operatorContext.getParameterNames().contains(CONTEXT_PARAM))
+			return null;
+		if (!operatorContext.getParameterNames().contains(CONTEXT_RESOURCE_BASE_PARAM))
+			return null;
 
-	 // Convert resourceBase file path to absPath if it is relative, if relative, it should be relative to application directory.
-        URI baseConfigURI = context.getPE().getApplicationDirectory().toURI();
-        return addStaticContext(context, ctxName, PathConversionHelper.convertToAbsPath(baseConfigURI, resourceBase));
+		String ctxName = operatorContext.getParameterValues(CONTEXT_PARAM).get(0);
+		String resourceBase = operatorContext.getParameterValues(CONTEXT_RESOURCE_BASE_PARAM).get(0);
+
+		if ("".equals(ctxName))
+			throw new IllegalArgumentException("Parameter " + CONTEXT_PARAM + " cannot be empty");
+
+		if ("".equals(resourceBase))
+			throw new IllegalArgumentException("Parameter " + CONTEXT_RESOURCE_BASE_PARAM + " cannot be empty");
+
+		// Convert resourceBase file path to absPath if it is relative, if relative, it should be relative to application directory.
+		URI baseConfigURI = operatorContext.getPE().getApplicationDirectory().toURI();
+		return addStaticContext(ctxName, PathConversionHelper.convertToAbsPath(baseConfigURI, resourceBase));
 	}
 
-    private ServletContextHandler addStaticContext(OperatorContext opContext, String ctxName, String resourceBase) throws Exception {
-        
-        if (contexts.containsKey(ctxName))
-            return contexts.get(ctxName);
-        
-        ServletContextHandler cntx = new ServletContextHandler(server, "/" + ctxName,
-                ServletContextHandler.SESSIONS);
-        
-        cntx.setWelcomeFiles(new String[] { "index.html" });
-        cntx.setResourceBase(resourceBase);	
-        
-        ResourceHandler rh = new ResourceHandler();
-        rh.setDirectoriesListed(true);
-        cntx.setHandler(rh);
+	private ServletContextHandler addStaticContext(String ctxName, String resourceBase) throws Exception {
+		
+		if (staticContexts.containsKey(ctxName))
+			return staticContexts.get(ctxName);
+		
+		ServletContextHandler cntx = new ServletContextHandler(server, "/" + ctxName, ServletContextHandler.SESSIONS);
+		
+		cntx.setWelcomeFiles(new String[] { "index.html" });
+		cntx.setResourceBase(resourceBase);
+		
+		ResourceHandler rh = new ResourceHandler();
+		rh.setDirectoriesListed(true);
+		cntx.setHandler(rh);
 
-        addHandler(cntx);
-        contexts.put(ctxName, cntx);
-        
-        trace.info("Static context: " + cntx.getContextPath() +
-                " resource base: " + resourceBase);
+		addHandler(cntx);
+		staticContexts.put(ctxName, cntx);
+		
+		trace.info("Static context: " + cntx.getContextPath() + " resource base: " + resourceBase);
 
-        return cntx;
-    }
+		return cntx;
+	}
 
-    private void startWebServer() throws Exception {     
+    private void startWebServer() throws Exception {
 
         ResourceHandler resource_handler = new ResourceHandler();
         resource_handler.setWelcomeFiles(new String[] { "index.html" });
 
-       // File html = new File(startingContext.getPE().getDataDirectory()
-       //         .getAbsolutePath(), "html");
-        
-        URI baseResourceURI = startingContext.getPE().getApplicationDirectory().toURI();
-        
+        URI baseResourceURI = startingOperatorContext.getPE().getApplicationDirectory().toURI();
+
         resource_handler.setResourceBase(PathConversionHelper.convertToAbsPath(baseResourceURI, "opt/html"));
-        // handlers.addHandler(resource_handler);
-        
+        trace.info("Common context: index.html resource base: " + resource_handler.getResourceBase());
+
         HandlerList topLevelhandlers = new HandlerList();
         topLevelhandlers.setHandlers(new Handler[] { handlers, resource_handler, new DefaultHandler() });
-        
+
         server.setHandler(topLevelhandlers);
-        server.start();   
-        Thread t = startingContext.getThreadFactory().newThread(new Runnable() {
+        server.start();
+        Thread t = startingOperatorContext.getThreadFactory().newThread(new Runnable() {
             public void run() {
 
                 try {
@@ -391,11 +383,10 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 
         t.setDaemon(false);
         t.start();
-        
-        //localPort = server.getConnectors()[0].getLocalPort();
+
         ServerConnector sc = (ServerConnector)server.getConnectors()[0];
         localPort = sc.getLocalPort();
-        startingContext.getMetrics().getCustomMetric("serverPort").setValue(localPort);
+        startingOperatorContext.getMetrics().getCustomMetric("serverPort").setValue(localPort);
     }
 
 
@@ -404,14 +395,14 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
     }
 
 	@Override
-	public void registerOperator(final String operatorClass, final OperatorContext context, Object conduit,
+	public void registerOperator(final String operatorClass, final OperatorContext operatorContext, Object conduit,
 			final Metric nMissingTrackingKey, final Metric nRequestTimeouts) throws Exception {
 
-		trace.info("Register servlets for operator: " + context.getName());
+		trace.info("Register servlets for operator: " + operatorContext.getName());
 
-		final ServletContextHandler staticContext = addOperatorStaticContext(context);
+		final ServletContextHandler staticContext = addOperatorStaticContext(operatorContext);
 		if (staticContext != null) {
-			staticContext.setAttribute("operator.context", context);
+			staticContext.setAttribute("operator.context", operatorContext);
 			if (conduit != null)
 				staticContext.setAttribute("operator.conduit", conduit);
 		}
@@ -420,15 +411,15 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		// base operator (without the composite nesting qualifiers)
 		// as the lead in for resources exposed by this operator.
 		// Otherwise use the full name of the operator so that it is unique.
-		String leadIn = context.getName(); // .replace('.', '/');
+		String leadIn = operatorContext.getName(); // .replace('.', '/');
 		if (staticContext != null && leadIn.indexOf('.') != -1) {
 			leadIn = leadIn.substring(leadIn.lastIndexOf('.') + 1);
 		}
 
 		// Standard ports context for URLs relative to ports.
 		ServletContextHandler ports = null;
-		if (context.getNumberOfStreamingInputs() != 0 ||
-				context.getNumberOfStreamingOutputs() != 0) {
+		if (operatorContext.getNumberOfStreamingInputs() != 0 ||
+				operatorContext.getNumberOfStreamingOutputs() != 0) {
 
 			String portsContextPath = "/" + leadIn + "/ports";
 			if (staticContext != null)
@@ -436,14 +427,14 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 			ports = new ServletContextHandler(server, portsContextPath,
 					ServletContextHandler.SESSIONS);
 
-			ports.setAttribute("operator.context", context);
+			ports.setAttribute("operator.context", operatorContext);
 			if (conduit != null)
 				ports.setAttribute("operator.conduit", conduit);
 
 			trace.info("Ports context: " + ports.getContextPath());
 
-			if (context.getParameterNames().contains(PostTuple.MAX_CONTENT_SIZE_PARAM)) {
-				int maxContentSize = Integer.parseInt(context.getParameterValues(PostTuple.MAX_CONTENT_SIZE_PARAM).get(0)) * 1000;
+			if (operatorContext.getParameterNames().contains(PostTuple.MAX_CONTENT_SIZE_PARAM)) {
+				int maxContentSize = Integer.parseInt(operatorContext.getParameterValues(PostTuple.MAX_CONTENT_SIZE_PARAM).get(0)) * 1000;
 				if (maxContentSize > 0) {
 					trace.info("Maximum content size for context: " + ports.getContextPath() + " increased to " + maxContentSize);
 					ports.setMaxFormContentSize(maxContentSize);
@@ -452,14 +443,14 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		}
         
         // Automatically add info servlet for all output and input ports
-        for (StreamingData port : context.getStreamingOutputs()) {
+        for (StreamingData port : operatorContext.getStreamingOutputs()) {
             String path = "/output/" + port.getPortNumber() + "/info";
-            ports.addServlet(new ServletHolder(new PortInfo(context, port)),  path);
+            ports.addServlet(new ServletHolder(new PortInfo(operatorContext, port)),  path);
             trace.info("Port information servlet URL : " + ports.getContextPath() + path);
         }
-        for (StreamingData port : context.getStreamingInputs()) {
+        for (StreamingData port : operatorContext.getStreamingInputs()) {
             String path = "/input/" + port.getPortNumber() + "/info";
-            ports.addServlet(new ServletHolder(new PortInfo(context, port)),  path);
+            ports.addServlet(new ServletHolder(new PortInfo(operatorContext, port)),  path);
             trace.info("Port information servlet URL : " + ports.getContextPath() + path);
         }
 
@@ -468,7 +459,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
         String setupClass = operatorClass.replace(".ops.", ".setup.").concat("Setup");
         OperatorServletSetup setup = Class.forName(setupClass).asSubclass(OperatorServletSetup.class).newInstance();
         
-        List<ExposedPort> operatorPorts = setup.setup(context, staticContext, ports, nMissingTrackingKey, nRequestTimeouts);
+        List<ExposedPort> operatorPorts = setup.setup(operatorContext, staticContext, ports, nMissingTrackingKey, nRequestTimeouts);
         if (operatorPorts != null)
             exposedPorts.addAll(operatorPorts);
         

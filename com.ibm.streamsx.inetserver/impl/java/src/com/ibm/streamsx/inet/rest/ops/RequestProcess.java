@@ -206,7 +206,7 @@ public class RequestProcess extends ServletOperator {
 	 * @throws Exception
 	 *             Operator failure, will cause the enclosing PE to terminate.
 	 */
-	private Map<Long, ReqWebMessage> activeMessages;
+	private Map<Long, ReqWebMessage> activeRequests;
 	private String keyAttributeName = defaultKeyAttributeName;
 	private String requestAttributeName = defaultRequestAttributeName;
 	private String methodAttributeName = defaultMethodAttributeName; // get/put/del/
@@ -230,7 +230,7 @@ public class RequestProcess extends ServletOperator {
 	
 	/**
 	 * Conduit object between operator and servlet.
-	 * [0] - activeMessages
+	 * [0] - activeRequests
 	 * [1] - function to create output tuple.
 	 Notes - 
 	 	This is the heart of the 'conduit' which uses Function pointers. The function
@@ -245,10 +245,10 @@ public class RequestProcess extends ServletOperator {
 
 	@Override
 	public synchronized void initialize(OperatorContext context) throws Exception {
-		// Must call super.initialize(context) to correctly setup an operator.
+		// Must call super.initialize(...) to correctly setup an operator.
 		super.initialize(context, nMissingTrackingKey, nRequestTimeouts);
 
-		activeMessages = Collections.synchronizedMap(new HashMap<>());
+		activeRequests = Collections.synchronizedMap(new HashMap<>());
 		
 		jsonFormatOutPort = (getOutput(0).getStreamSchema().getAttributeCount() == 1) && (jsonStringAttributeName.equals(getOutput(0).getStreamSchema().getAttributeNames().toArray()[0])); 
 		for (int idx = 0; getOutput(0).getStreamSchema().getAttributeCount() != idx; idx++) {
@@ -263,74 +263,74 @@ public class RequestProcess extends ServletOperator {
 		if (jsonFormatOutPort) {
 			Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " single column output ");
 		} else {
-		// key, out port
-		if (getOutput(0).getStreamSchema().getAttribute(keyAttributeName) == null) {
-			throw new Exception("Could not detect the data field for output port 0. "
-					+ "Specify a valid value for \"keyAttributeName\"");
-		}
-		MetaType keyParamType = getOutput(0).getStreamSchema().getAttribute(keyAttributeName)
-				.getType().getMetaType();
-		if (keyParamType != MetaType.INT64)
-			throw new Exception(
-					"Only types \"" + MetaType.INT64 + "\" allowed for param " + keyAttributeName + "\"");
-		
-		
-		// request, out port
-		if (getOutput(0).getStreamSchema().getAttribute(requestAttributeName) == null) {
-			throw new Exception("Could not detect the data field for output port 0. "
-					+ "Specify a valid value for \"requestAttributeName\"");
-		}
-		MetaType requestParamType = getOutput(0).getStreamSchema().getAttribute(requestAttributeName).getType()
-				.getMetaType();
-		if (requestParamType != MetaType.USTRING && requestParamType != MetaType.RSTRING)
-			throw new Exception("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-					+ "\" allowed for param " + requestAttributeName + "\"");
-
-		// header, out port
-		if (getOutput(0).getStreamSchema().getAttribute(headerAttributeName) == null) {
-			headerAttributeName = null;
-		} else {
-			MetaType headerParamType= getOutput(0).getStreamSchema().getAttribute(headerAttributeName).getType()
-					.getMetaType();
-			if (headerParamType != MetaType.MAP)
+			// key, out port
+			if (getOutput(0).getStreamSchema().getAttribute(keyAttributeName) == null) {
+				throw new Exception("Could not detect the data field for output port 0. "
+						+ "Specify a valid value for \"keyAttributeName\"");
+			}
+			MetaType keyParamType = getOutput(0).getStreamSchema().getAttribute(keyAttributeName)
+					.getType().getMetaType();
+			if (keyParamType != MetaType.INT64)
 				throw new Exception(
-						"Only type of \"" + MetaType.MAP + "\" allowed for param " + headerAttributeName + "\"");
-		}
-		// method, out port
-		if (getOutput(0).getStreamSchema().getAttribute(methodAttributeName) == null) {
-			methodAttributeName = null;
-		} else {
-			MetaType methodParamType = getOutput(0).getStreamSchema().getAttribute(methodAttributeName).getType()
+						"Only types \"" + MetaType.INT64 + "\" allowed for param " + keyAttributeName + "\"");
+			
+			
+			// request, out port
+			if (getOutput(0).getStreamSchema().getAttribute(requestAttributeName) == null) {
+				throw new Exception("Could not detect the data field for output port 0. "
+						+ "Specify a valid value for \"requestAttributeName\"");
+			}
+			MetaType requestParamType = getOutput(0).getStreamSchema().getAttribute(requestAttributeName).getType()
 					.getMetaType();
-			if (methodParamType != MetaType.USTRING && methodParamType != MetaType.RSTRING)
+			if (requestParamType != MetaType.USTRING && requestParamType != MetaType.RSTRING)
 				throw new Exception("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-						+ "\" allowed for param " + methodAttributeName + "\"");
-		}
-		// pathInfo, out port
-		if (getOutput(0).getStreamSchema().getAttribute(pathInfoAttributeName) == null) {
-			pathInfoAttributeName = null;
-		} else {
-			MetaType pathInfoParamType = getOutput(0).getStreamSchema().getAttribute(pathInfoAttributeName).getType()
-					.getMetaType();
-			if (pathInfoParamType != MetaType.USTRING && pathInfoParamType != MetaType.RSTRING)
-				throw new Exception("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-						+ "\" allowed for param " + pathInfoAttributeName + "\"");
-		}
-		// contentType, out port
-		if (getOutput(0).getStreamSchema().getAttribute(contentTypeAttributeName) == null) {
-			contentTypeAttributeName = null;
-		} else {
-			MetaType methodParamType = getOutput(0).getStreamSchema().getAttribute(contentTypeAttributeName).getType()
-					.getMetaType();
-			if (methodParamType != MetaType.USTRING && methodParamType != MetaType.RSTRING)
-				throw new Exception("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-						+ "\" allowed for param " + contentTypeAttributeName + "\"");
-		}
+						+ "\" allowed for param " + requestAttributeName + "\"");
+	
+			// header, out port
+			if (getOutput(0).getStreamSchema().getAttribute(headerAttributeName) == null) {
+				headerAttributeName = null;
+			} else {
+				MetaType headerParamType= getOutput(0).getStreamSchema().getAttribute(headerAttributeName).getType()
+						.getMetaType();
+				if (headerParamType != MetaType.MAP)
+					throw new Exception(
+							"Only type of \"" + MetaType.MAP + "\" allowed for param " + headerAttributeName + "\"");
+			}
+			// method, out port
+			if (getOutput(0).getStreamSchema().getAttribute(methodAttributeName) == null) {
+				methodAttributeName = null;
+			} else {
+				MetaType methodParamType = getOutput(0).getStreamSchema().getAttribute(methodAttributeName).getType()
+						.getMetaType();
+				if (methodParamType != MetaType.USTRING && methodParamType != MetaType.RSTRING)
+					throw new Exception("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
+							+ "\" allowed for param " + methodAttributeName + "\"");
+			}
+			// pathInfo, out port
+			if (getOutput(0).getStreamSchema().getAttribute(pathInfoAttributeName) == null) {
+				pathInfoAttributeName = null;
+			} else {
+				MetaType pathInfoParamType = getOutput(0).getStreamSchema().getAttribute(pathInfoAttributeName).getType()
+						.getMetaType();
+				if (pathInfoParamType != MetaType.USTRING && pathInfoParamType != MetaType.RSTRING)
+					throw new Exception("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
+							+ "\" allowed for param " + pathInfoAttributeName + "\"");
+			}
+			// contentType, out port
+			if (getOutput(0).getStreamSchema().getAttribute(contentTypeAttributeName) == null) {
+				contentTypeAttributeName = null;
+			} else {
+				MetaType methodParamType = getOutput(0).getStreamSchema().getAttribute(contentTypeAttributeName).getType()
+						.getMetaType();
+				if (methodParamType != MetaType.USTRING && methodParamType != MetaType.RSTRING)
+					throw new Exception("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
+							+ "\" allowed for param " + contentTypeAttributeName + "\"");
+			}
 		}
 		if (jsonFormatInPort) {
 			Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " single column input ");
 		} else {
-		// key, in port
+			// key, in port
 			if (getOutput(0).getStreamSchema().getAttribute(keyAttributeName) == null) {
 				throw new Exception("Could not detect the data field for output port 0. "
 					+ "Specify a valid value for \"keyAttributeName\"");
@@ -343,8 +343,7 @@ public class RequestProcess extends ServletOperator {
 		
 		// response, in port - getting Null exception on the else added more protection.
 		if ((getInput(0).getStreamSchema().getAttribute(responseHeaderAttributeName) == null) || 
-					(getInput(0).getStreamSchema().getAttribute(responseHeaderAttributeName).getType() == null))
-		{
+					(getInput(0).getStreamSchema().getAttribute(responseHeaderAttributeName).getType() == null)) {
 			responseHeaderAttributeName = null;
 		} else {
 			MetaType headerParamType = getOutput(0).getStreamSchema().getAttribute(responseHeaderAttributeName).getType()
@@ -502,18 +501,18 @@ public class RequestProcess extends ServletOperator {
 		this.responseContentTypeAttributeName = responseContentType;
 	}
 
-	ReqWebMessage retrieveExchangeWebMessage(long trackingKey) {
+	private ReqWebMessage retrieveExchangeWebMessage(long trackingKey) {
 		ReqWebMessage activeWebMessage;
 		
 		trace.info(": trackingKey:" + trackingKey);
-		if (!activeMessages.containsKey(trackingKey)) {
+		if (!activeRequests.containsKey(trackingKey)) {
 			getnMissingTrackingKey().incrementValue(1L);
 			trace.error("retrieveExchangeWebMessage: failed to locate trackingKey. Has the key been corrupted or failed to propogate through the Stream? trackingKey:" + trackingKey + " missingTackingKeyCountt:" + getnMissingTrackingKey().getValue());							
 			return null;
 		}
-		getnActiveRequests().setValue((long)activeMessages.size());
-		activeWebMessage = activeMessages.get(trackingKey);
-		activeMessages.remove(trackingKey);
+		getnActiveRequests().setValue((long)activeRequests.size());
+		activeWebMessage = activeRequests.get(trackingKey);
+		activeRequests.remove(trackingKey);
 		return activeWebMessage;
 	}
 
@@ -642,7 +641,7 @@ public class RequestProcess extends ServletOperator {
 	private OutputTuple initiateRequestFromWeb(ReqWebMessage exchangeWebMessage) {
 		getnMessagesReceived().incrementValue(1L);
 		trace.info("initiateWebRequest ENTER # " + getnMessagesReceived().getValue() +" trackingKey: " + exchangeWebMessage.trackingKey);
-		activeMessages.put(exchangeWebMessage.trackingKey, exchangeWebMessage);
+		activeRequests.put(exchangeWebMessage.trackingKey, exchangeWebMessage);
 		StreamingOutput<OutputTuple> outStream = getOutput(0);
 		OutputTuple outTuple = outStream.newTuple();
 		trace.info("initiateWebRequest Sending key - attr name:" + keyAttributeName + " trackingKey:"
