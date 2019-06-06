@@ -48,7 +48,7 @@ public class PostJSON extends ServletOperator {
 
 	@Override
 	public void initialize(OperatorContext context) throws Exception {
-		super.initialize(context, null, null);
+		super.initialize(context);
 	}
 
 	static final String DESC =

@@ -14,7 +14,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamingOutput;
-import com.ibm.streams.operator.metrics.Metric;
 import com.ibm.streamsx.inet.rest.servlets.InjectWithResponse;
 
 /**
@@ -28,8 +27,7 @@ public class RequestProcessSetup implements OperatorServletSetup {
 	 * @return 
 	 */
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler handler, ServletContextHandler ports,
-			final Metric nMissingTrackingKey, final Metric nRequestTimeouts) {
+	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler handler, ServletContextHandler ports) {
 		
 		Logger trace = Logger.getAnonymousLogger();
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
@@ -40,7 +38,7 @@ public class RequestProcessSetup implements OperatorServletSetup {
 			exposed.add(ep);
 
 			String path = "/analyze/" + port.getPortNumber() + "/*";
-			ports.addServlet(new ServletHolder(new InjectWithResponse(context, port, nMissingTrackingKey, nRequestTimeouts)), path);
+			ports.addServlet(new ServletHolder(new InjectWithResponse(context, port)), path);
 			ep.addURL("analyze", path);
 
 			trace.info("Analyze URL: " + ports.getContextPath() + path);

@@ -45,6 +45,12 @@ import com.ibm.streams.operator.metrics.Metric;
  *
  */
 public class InjectWithResponse extends SubmitterServlet {
+	
+	private static final long serialVersionUID = 1L;
+
+	public static final String METRIC_NAME_MISSING_TRACKING_KEY = "nMissingTrackingKey";
+	public static final String METRIC_NAME_REQUEST_TIMEOUT = "nRequestTimeouts";
+	
 	static Logger trace = Logger.getLogger(InjectWithResponse.class.getName());
 	String greeting;
 	String body;
@@ -67,14 +73,13 @@ public class InjectWithResponse extends SubmitterServlet {
 	
 	private Function<ReqWebMessage,OutputTuple> tupleCreator;
 
-	public InjectWithResponse(OperatorContext context, StreamingOutput<OutputTuple> port, final Metric nMissingTrackingKey, final Metric nRequestTimeouts) {
-		super(context, port);
-		this.nMissingTrackingKey = nMissingTrackingKey;
-		this.nRequestTimeouts = nRequestTimeouts;
-		// this.exchangeWebServer = exchangeWebServer;
+	public InjectWithResponse(OperatorContext operatorContext, StreamingOutput<OutputTuple> port) {
+		super(operatorContext, port);
+		this.nMissingTrackingKey = operatorContext.getMetrics().getCustomMetric(METRIC_NAME_MISSING_TRACKING_KEY);
+		this.nRequestTimeouts = operatorContext.getMetrics().getCustomMetric(METRIC_NAME_REQUEST_TIMEOUT);
 
-		if (context.getParameterNames().contains("webTimeout")) {
-			double wtd = Double.valueOf(context.getParameterValues("webTimeout").get(0));
+		if (operatorContext.getParameterNames().contains("webTimeout")) {
+			double wtd = Double.valueOf(operatorContext.getParameterValues("webTimeout").get(0));
 			webTimeout = (long) (1000.0 * wtd);
 		} else {
 			webTimeout = SECONDS.toMillis(15);

@@ -52,7 +52,6 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingData;
 import com.ibm.streams.operator.management.OperatorManagement;
-import com.ibm.streams.operator.metrics.Metric;
 import com.ibm.streamsx.inet.rest.ops.Functions;
 import com.ibm.streamsx.inet.rest.ops.PostTuple;
 import com.ibm.streamsx.inet.rest.servlets.ExposedPortsInfo;
@@ -89,6 +88,9 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 
 	public static final int IDLE_TIMEOUT = 30000;
 	public static final int STRICT_TRANSPORT_SECURITY_MAX_AGE = 2000;
+	
+	public static final String METRIC_NAME_HTTPS = "https";
+	public static final String METRIC_NAME_PORT = "serverPort";
 
 	public static ServletEngineMBean getServletEngine(OperatorContext operatorContext) throws Exception {
 		int portNumber = 8080;
@@ -163,7 +165,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 			setHTTPSConnector(operatorContext, server, portNumber);
 		else
 			setHTTPConnector(operatorContext, server, portNumber);
-		operatorContext.getMetrics().getCustomMetric("https").setValue(isSSL ? 1 : 0);
+		operatorContext.getMetrics().getCustomMetric(METRIC_NAME_HTTPS).setValue(isSSL ? 1 : 0);
 
 		ServletContextHandler portsIntro = new ServletContextHandler(server, "/ports", ServletContextHandler.SESSIONS);
 		portsIntro.addServlet(new ServletHolder( new ExposedPortsInfo(exposedPorts)), "/info");
@@ -391,12 +393,11 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 
 
     private void stopWebServer() throws Exception {
-        server.stop(); 
+        server.stop();
     }
 
 	@Override
-	public void registerOperator(final String operatorClass, final OperatorContext operatorContext, Object conduit,
-			final Metric nMissingTrackingKey, final Metric nRequestTimeouts) throws Exception {
+	public void registerOperator(final String operatorClass, final OperatorContext operatorContext, Object conduit) throws Exception {
 
 		trace.info("Register servlets for operator: " + operatorContext.getName());
 
@@ -459,7 +460,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
         String setupClass = operatorClass.replace(".ops.", ".setup.").concat("Setup");
         OperatorServletSetup setup = Class.forName(setupClass).asSubclass(OperatorServletSetup.class).newInstance();
         
-        List<ExposedPort> operatorPorts = setup.setup(operatorContext, staticContext, ports, nMissingTrackingKey, nRequestTimeouts);
+        List<ExposedPort> operatorPorts = setup.setup(operatorContext, staticContext, ports);
         if (operatorPorts != null)
             exposedPorts.addAll(operatorPorts);
         

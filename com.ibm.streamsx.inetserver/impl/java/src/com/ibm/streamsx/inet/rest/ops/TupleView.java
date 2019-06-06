@@ -35,7 +35,7 @@ public class TupleView extends ServletOperator {
 
 	@Override
 	public void initialize(OperatorContext context) throws Exception {
-		super.initialize(context, null, null);
+		super.initialize(context);
 	}
 
 	static final String DESC = "REST HTTP or HTTPS API to view tuples from windowed input ports.\\n" + 

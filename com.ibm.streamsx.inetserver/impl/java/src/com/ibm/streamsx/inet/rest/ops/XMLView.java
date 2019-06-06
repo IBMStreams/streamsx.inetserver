@@ -46,7 +46,7 @@ public class XMLView extends ServletOperator {
 	private int attributeIndex = -1;
 	@Override
 	public void initialize(OperatorContext context) throws Exception {
-		super.initialize(context, null, null);
+		super.initialize(context);
 		
 		for (Attribute attr : getInput(0).getStreamSchema()) {
 			if (attr.getType().getMetaType() == MetaType.XML) {

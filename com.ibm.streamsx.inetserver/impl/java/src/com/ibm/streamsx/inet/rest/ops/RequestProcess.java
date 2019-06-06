@@ -246,7 +246,7 @@ public class RequestProcess extends ServletOperator {
 	@Override
 	public synchronized void initialize(OperatorContext context) throws Exception {
 		// Must call super.initialize(...) to correctly setup an operator.
-		super.initialize(context, nMissingTrackingKey, nRequestTimeouts);
+		super.initialize(context);
 
 		activeRequests = Collections.synchronizedMap(new HashMap<>());
 		

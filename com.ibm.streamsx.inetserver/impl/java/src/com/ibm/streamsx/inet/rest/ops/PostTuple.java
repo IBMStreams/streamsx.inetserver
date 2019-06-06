@@ -75,6 +75,6 @@ public class PostTuple extends ServletOperator {
 	
 	@Override
 	public void initialize(OperatorContext context) throws Exception {
-		super.initialize(context, null, null);
+		super.initialize(context);
 	}
 }

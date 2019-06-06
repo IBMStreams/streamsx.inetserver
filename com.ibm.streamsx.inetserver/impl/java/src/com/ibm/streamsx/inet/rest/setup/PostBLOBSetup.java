@@ -14,7 +14,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamingOutput;
-import com.ibm.streams.operator.metrics.Metric;
 import com.ibm.streamsx.inet.rest.servlets.InjectBLOB;
 
 /**
@@ -28,8 +27,7 @@ public class PostBLOBSetup implements OperatorServletSetup {
 	 * @return 
 	 */
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler handler, ServletContextHandler ports,
-			final Metric nMissingTrackingKey, final Metric nRequestTimeouts) {
+	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler handler, ServletContextHandler ports) {
 
 		Logger trace = Logger.getAnonymousLogger();
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();

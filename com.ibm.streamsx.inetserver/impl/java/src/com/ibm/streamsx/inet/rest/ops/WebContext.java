@@ -30,7 +30,7 @@ public class WebContext extends ServletOperator {
 	
 	@Override
 	public void initialize(OperatorContext context) throws Exception {
-		super.initialize(context, null, null);
+		super.initialize(context);
 	}
 
 	static final String DESC = "Embeds a Jetty web server to provide HTTP or HTTPS REST access to files defined by the `context` and `contextResourceBase` parameters.\\n" + 

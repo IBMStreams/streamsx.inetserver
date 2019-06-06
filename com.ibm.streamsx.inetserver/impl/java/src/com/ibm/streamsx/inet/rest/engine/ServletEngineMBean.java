@@ -34,8 +34,7 @@ public interface ServletEngineMBean {
 	 * or the Java operator api. The object will be available as the attribute
 	 * {@code operator.conduit} in the servlet context.
 	 */
-	public void registerOperator(String operatorClass, OperatorContext context, Object conduit,
-			final Metric nMissingTrackingKey, final Metric nRequestTimeouts) throws Exception;
+	public void registerOperator(String operatorClass, OperatorContext context, Object conduit) throws Exception;
 	
 	/**
 	 * Start the web-server. Must be called in the allPortsReady method.

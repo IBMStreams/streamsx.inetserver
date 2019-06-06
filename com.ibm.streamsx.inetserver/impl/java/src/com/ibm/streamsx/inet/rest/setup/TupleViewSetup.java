@@ -14,7 +14,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
-import com.ibm.streams.operator.metrics.Metric;
 import com.ibm.streams.operator.window.StreamWindow;
 import com.ibm.streamsx.inet.rest.servlets.AccessWindowContents;
 import com.ibm.streamsx.inet.window.WindowContentsAtTrigger;
@@ -23,8 +22,7 @@ import com.ibm.streamsx.inet.window.WindowContentsAtTrigger;
 public class TupleViewSetup implements OperatorServletSetup {
 
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler staticContext, ServletContextHandler ports,
-			final Metric nMissingTrackingKey, final Metric nRequestTimeouts) {
+	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler staticContext, ServletContextHandler ports) {
 
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
 

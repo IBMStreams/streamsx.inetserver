@@ -29,13 +29,14 @@ public abstract class ServletOperator extends AbstractOperator {
 		this.jetty = jetty;
 	}
 
-	public void initialize(OperatorContext context, final Metric nMissingTrackingKey, final Metric nRequestTimeouts) throws Exception {
+	@Override
+	public void initialize(OperatorContext context) throws Exception {
 
 		super.initialize(context);
 
 		setJetty(ServletEngine.getServletEngine(context));
 		
-		getJetty().registerOperator(getClass().getName(), context, getConduit(), nMissingTrackingKey, nRequestTimeouts);
+		getJetty().registerOperator(getClass().getName(), context, getConduit());
 
 		createAvoidCompletionThreadIfNoInputs();
 	}
