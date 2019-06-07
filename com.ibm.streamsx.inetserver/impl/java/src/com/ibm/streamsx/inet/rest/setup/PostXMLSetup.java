@@ -6,6 +6,7 @@ package com.ibm.streamsx.inet.rest.setup;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -15,6 +16,7 @@ import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streamsx.inet.rest.servlets.InjectXML;
+import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 
 /**
  * Sets up the single servlet for XML injection.
@@ -27,7 +29,7 @@ public class PostXMLSetup implements OperatorServletSetup {
 	 * @return 
 	 */
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler handler, ServletContextHandler ports) {
+	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler handler, ServletContextHandler ports, double webTimeout, Map<Long, ReqWebMessage> activeRequests) {
 
 		Logger trace = Logger.getAnonymousLogger();
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();

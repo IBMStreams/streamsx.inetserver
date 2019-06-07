@@ -6,6 +6,7 @@ package com.ibm.streamsx.inet.rest.setup;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -16,13 +17,14 @@ import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.window.StreamWindow;
 import com.ibm.streamsx.inet.rest.servlets.AccessWindowContents;
+import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 import com.ibm.streamsx.inet.window.WindowContentsAtTrigger;
 
 
 public class TupleViewSetup implements OperatorServletSetup {
 
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler staticContext, ServletContextHandler ports) {
+	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler staticContext, ServletContextHandler ports, double webTimeout, Map<Long, ReqWebMessage> activeRequests) {
 
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
 

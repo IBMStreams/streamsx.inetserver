@@ -192,6 +192,8 @@ $(document.body).append(html);});
 
 			}
 
-	}
+	config
+		restartable: false;
+}
 
 

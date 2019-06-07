@@ -4,6 +4,8 @@
 */
 package com.ibm.streamsx.inet.rest.ops;
 
+import java.util.Map;
+
 import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
@@ -15,11 +17,17 @@ import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.SharedLoader;
 import com.ibm.streamsx.inet.rest.engine.ServletEngine;
 import com.ibm.streamsx.inet.rest.engine.ServletEngineMBean;
+import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 
 @SharedLoader
 public abstract class ServletOperator extends AbstractOperator {
 	
+	public static final double DEFAULT_WEB_TIMEOUT = 15.0;
+	public static final String WEB_TIMEOUT_PARAM = "webTimeout";
+
 	private ServletEngineMBean jetty;
+	protected double webTimeout;
+	protected Map<Long, ReqWebMessage> activeRequests;
 
 	public synchronized ServletEngineMBean getJetty() {
 		return jetty;
@@ -33,10 +41,16 @@ public abstract class ServletOperator extends AbstractOperator {
 	public void initialize(OperatorContext context) throws Exception {
 
 		super.initialize(context);
+		
+		if (context.getParameterNames().contains("WEB_TIMEOUT_PARAM")) {
+			webTimeout = Double.valueOf(context.getParameterValues(WEB_TIMEOUT_PARAM).get(0));
+		}
+		
+		activeRequests = null;
 
 		setJetty(ServletEngine.getServletEngine(context));
 		
-		getJetty().registerOperator(getClass().getName(), context, getConduit());
+		getJetty().registerOperator(getClass().getName(), context, getConduit(), webTimeout, activeRequests);
 
 		createAvoidCompletionThreadIfNoInputs();
 	}

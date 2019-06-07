@@ -56,6 +56,7 @@ import com.ibm.streamsx.inet.rest.ops.Functions;
 import com.ibm.streamsx.inet.rest.ops.PostTuple;
 import com.ibm.streamsx.inet.rest.servlets.ExposedPortsInfo;
 import com.ibm.streamsx.inet.rest.servlets.PortInfo;
+import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 import com.ibm.streamsx.inet.rest.setup.ExposedPort;
 import com.ibm.streamsx.inet.rest.setup.OperatorServletSetup;
 import com.ibm.streamsx.inet.util.PathConversionHelper;
@@ -75,6 +76,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 
 	private static final Object syncMe = new Object();
 
+	public static final int DEFAULT_PORT = 8080;
 	public static final String CONTEXT_RESOURCE_BASE_PARAM = "contextResourceBase";
 	public static final String CONTEXT_PARAM = "context";
 
@@ -93,7 +95,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 	public static final String METRIC_NAME_PORT = "serverPort";
 
 	public static ServletEngineMBean getServletEngine(OperatorContext operatorContext) throws Exception {
-		int portNumber = 8080;
+		int portNumber = DEFAULT_PORT;
 		if (operatorContext.getParameterNames().contains("port"))
 			portNumber = Integer.valueOf(operatorContext.getParameterValues("port").get(0));
 
@@ -397,7 +399,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
     }
 
 	@Override
-	public void registerOperator(final String operatorClass, final OperatorContext operatorContext, Object conduit) throws Exception {
+	public void registerOperator(final String operatorClass, final OperatorContext operatorContext, Object conduit, double webTimeout, Map<Long, ReqWebMessage> activeRequests) throws Exception {
 
 		trace.info("Register servlets for operator: " + operatorContext.getName());
 
@@ -442,40 +444,40 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 				}
 			}
 		}
-        
-        // Automatically add info servlet for all output and input ports
-        for (StreamingData port : operatorContext.getStreamingOutputs()) {
-            String path = "/output/" + port.getPortNumber() + "/info";
-            ports.addServlet(new ServletHolder(new PortInfo(operatorContext, port)),  path);
-            trace.info("Port information servlet URL : " + ports.getContextPath() + path);
-        }
-        for (StreamingData port : operatorContext.getStreamingInputs()) {
-            String path = "/input/" + port.getPortNumber() + "/info";
-            ports.addServlet(new ServletHolder(new PortInfo(operatorContext, port)),  path);
-            trace.info("Port information servlet URL : " + ports.getContextPath() + path);
-        }
 
-        // Add servlets for the operator, driven by a Setup class that implements
-        // OperatorServletSetup with a name derived from the operator class name.
-        String setupClass = operatorClass.replace(".ops.", ".setup.").concat("Setup");
-        OperatorServletSetup setup = Class.forName(setupClass).asSubclass(OperatorServletSetup.class).newInstance();
-        
-        List<ExposedPort> operatorPorts = setup.setup(operatorContext, staticContext, ports);
-        if (operatorPorts != null)
-            exposedPorts.addAll(operatorPorts);
-        
-        if (ports != null)
-            addHandler(ports);
-    }
-   
-    public static class OperatorWebAppContext extends WebAppContext {
-        public OperatorWebAppContext() {
-        }
-    }
+		// Automatically add info servlet for all output and input ports
+		for (StreamingData port : operatorContext.getStreamingOutputs()) {
+			String path = "/output/" + port.getPortNumber() + "/info";
+			ports.addServlet(new ServletHolder(new PortInfo(operatorContext, port)),  path);
+			trace.info("Port information servlet URL : " + ports.getContextPath() + path);
+		}
+		for (StreamingData port : operatorContext.getStreamingInputs()) {
+			String path = "/input/" + port.getPortNumber() + "/info";
+			ports.addServlet(new ServletHolder(new PortInfo(operatorContext, port)),  path);
+			trace.info("Port information servlet URL : " + ports.getContextPath() + path);
+		}
 
-    @Override
-    public void postDeregister() {
-    }
+		// Add servlets for the operator, driven by a Setup class that implements
+		// OperatorServletSetup with a name derived from the operator class name.
+		String setupClass = operatorClass.replace(".ops.", ".setup.").concat("Setup");
+		OperatorServletSetup setup = Class.forName(setupClass).asSubclass(OperatorServletSetup.class).newInstance();
+		
+		List<ExposedPort> operatorPorts = setup.setup(operatorContext, staticContext, ports, webTimeout, activeRequests);
+		if (operatorPorts != null)
+			exposedPorts.addAll(operatorPorts);
+		
+		if (ports != null)
+			addHandler(ports);
+	}
+
+	public static class OperatorWebAppContext extends WebAppContext {
+		public OperatorWebAppContext() {
+		}
+	}
+
+	@Override
+	public void postDeregister() {
+	}
 
     /**
      * On PE shutdown unregister this MBean, allows unit tests
