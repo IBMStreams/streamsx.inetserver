@@ -1,7 +1,6 @@
 namespace application ;
 
 use com.ibm.streamsx.inet.rest::HTTPRequestProcess ;
-use com.ibm.streamsx.inet.rest::WebContext ;
 use com.ibm.streamsx.inet.rest::HTTPRequest ;
 
 /**
@@ -187,6 +186,7 @@ $(document.body).append(html);});
 						I.header [ "Content-Type" ] = "text/html" ;
 						// TODO * this should be done in the operator
 						I.header [ "Content-Length" ] =(rstring) length(I.response) ;
+						I.status = 200;
 						submit(I, O) ;
 					}
 

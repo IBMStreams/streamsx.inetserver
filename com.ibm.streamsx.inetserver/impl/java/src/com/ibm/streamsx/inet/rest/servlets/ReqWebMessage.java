@@ -6,7 +6,6 @@ package com.ibm.streamsx.inet.rest.servlets;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.AsyncContext;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
@@ -20,7 +19,6 @@ public class ReqWebMessage {
 	private static AtomicLong trackingKeyGenerator = new AtomicLong();
 
 	private final long trackingKey;
-	private final HttpServletRequest request;
 	private final AsyncContext asyncContext;
 
 	/*
@@ -28,9 +26,8 @@ public class ReqWebMessage {
 	 * where it's used to correlate the request and response.
 	 */
 
-	public ReqWebMessage(HttpServletRequest request, AsyncContext asyncContext) {
+	public ReqWebMessage(AsyncContext asyncContext) {
 		this.trackingKey = trackingKeyGenerator.incrementAndGet();
-		this.request = request;
 		this.asyncContext = asyncContext;
 	}
 	
@@ -40,9 +37,6 @@ public class ReqWebMessage {
 	// Servlet concept 
 	public AsyncContext getAsyncContext() {
 		return this.asyncContext;
-	}
-	public HttpServletRequest getRequest() {
-		return request;
 	}
 
 }

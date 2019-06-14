@@ -29,7 +29,7 @@ public class InjectWithResponseListener implements AsyncListener {
 	
 	@Override
 	public void onComplete(AsyncEvent event) throws IOException {
-		trace.error("onComplete: trackingKey: " + trackingKey);
+		trace.debug("onComplete: trackingKey: " + trackingKey);
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public class InjectWithResponseListener implements AsyncListener {
 
 	@Override
 	public void onStartAsync(AsyncEvent event) throws IOException {
-		trace.info("onStartAsync: trackingKey: " + trackingKey);
+		trace.debug("onStartAsync: trackingKey: " + trackingKey);
 	}
 
 	/**
@@ -48,19 +48,19 @@ public class InjectWithResponseListener implements AsyncListener {
 	 */
 	@Override
 	public void onTimeout(AsyncEvent event) throws IOException {
-		trace.info("onError trackingKey: " + trackingKey);
+		trace.debug("onTimeout trackingKey: " + trackingKey);
 		ReqWebMessage reqWebMessage = activeRequests.remove(trackingKey);
 		if (reqWebMessage == null) {
 			//the tracking key was already processed from operator process method -> do nothing
-			trace.info("onError trackingKey: " + trackingKey + " not in activeRequests -> no action required");
+			trace.debug("onTimeout trackingKey: " + trackingKey + " not in activeRequests -> no action required");
 			//dispatch (and close) this async context again and set the timeout to 0 -> done
 			event.getAsyncContext().dispatch();
 		} else {
-			trace.error("onError trackingKey: " + trackingKey + " timeout");
+			trace.error("onTimeout trackingKey: " + trackingKey + " timeout");
 			nRequestTimeouts.increment();
 			nActiveRequests.setValue(activeRequests.size());
 			//send response and close the async context here
-			InjectWithResponse.buildWebErrResponse(reqWebMessage, HttpServletResponse.SC_REQUEST_TIMEOUT);
+			InjectWithResponse.buildWebErrResponse(reqWebMessage, HttpServletResponse.SC_REQUEST_TIMEOUT, null);
 		}
 	}
 

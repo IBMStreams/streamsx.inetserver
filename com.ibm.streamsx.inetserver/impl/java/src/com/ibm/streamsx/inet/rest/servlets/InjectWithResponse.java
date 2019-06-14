@@ -87,26 +87,21 @@ public class InjectWithResponse extends SubmitterServlet {
 	 * Build the web response and close the async context
 	 * @throws IOException 
 	 */
+	@SuppressWarnings("deprecation")
 	public static void buildWebResponse(ReqWebMessage exchangeWebMessage,
 			String response, int statusCode, String statusMessage,
 			Map<String, String> responseHeaders, String responseContentType) throws IOException {
 		
-		trace.info("buildWebResponse - statusCode:" + statusCode );
+		trace.debug("buildWebResponse - statusCode:" + statusCode + " contentType: " + responseContentType + " tracking key: " + exchangeWebMessage.getTrackingKey());
 		AsyncContext asyncContext = exchangeWebMessage.getAsyncContext();
 		HttpServletResponse webResponse = (HttpServletResponse)asyncContext.getResponse();
 		
-		if (statusCode >= HttpServletResponse.SC_BAD_REQUEST) {
-			trace.info("buildWebResponse error - statusCode:" + statusCode );
+		if ((statusMessage == null) || statusMessage.isEmpty()) {
+			webResponse.setStatus(statusCode);
 		} else {
-			trace.info("buildWebResponse : statusCode: " + statusCode);
-		}
-		if (statusMessage != null) {
-			webResponse.sendError(statusCode, statusMessage);
-		} else {
-			webResponse.sendError(statusCode);
+			webResponse.setStatus(statusCode, statusMessage);
 		}
 		
-		trace.info("buildWebResponse : contentType: " + responseContentType);
 		// The jetty server seems to add more onto the contentType than I provided. 
 		webResponse.setContentType(responseContentType);
 
@@ -124,21 +119,22 @@ public class InjectWithResponse extends SubmitterServlet {
 	/**
 	 * Build the web error response an close the async context
 	 * @param exchangeWebMessage
-	 * @param errCode
-	 * @throws IOException
+	 * @param statusCode
+	 * @param statusMessage
 	 */
-	public static void buildWebErrResponse(ReqWebMessage exchangeWebMessage, int errCode) throws IOException {
-		trace.warn("buildWebErrResponse - errCode:" + errCode + " tracking key: " + exchangeWebMessage.getTrackingKey());
+	public static void buildWebErrResponse(ReqWebMessage exchangeWebMessage, int statusCode, String statusMessage) {
+		trace.debug("buildWebErrResponse - statusCode:" + statusCode + " tracking key: " + exchangeWebMessage.getTrackingKey());
 		AsyncContext asyncContext = exchangeWebMessage.getAsyncContext();
 		HttpServletResponse response = (HttpServletResponse)asyncContext.getResponse();
 
-		response.setContentType("text/html; charset=utf-8"); // this should be
-		PrintWriter out = response.getWriter();
-		response.setStatus(errCode);
-		if (errCode == HttpServletResponse.SC_REQUEST_TIMEOUT) {
-			out.print("<h1>Request timeout</h1>");
-		} else {
-			out.print("<h1>Unanticipated error : " + errCode +  "</h1>");
+		try {
+			if ((statusMessage == null) || statusMessage.isEmpty()) {
+				response.sendError(statusCode);
+			} else {
+			response.sendError(statusCode, statusMessage);
+			}
+		} catch (IOException e) {
+			trace.error(e.getMessage(), e);
 		}
 
 		asyncContext.complete();
@@ -158,11 +154,11 @@ public class InjectWithResponse extends SubmitterServlet {
 		final AsyncContext asyncContext = request.startAsync();
 		if (dispatcherType.ordinal() == DispatcherType.ASYNC.ordinal()) {
 			//the servlet was started from async timeout thread and must be closed without generating a response
-			trace.info("service dispatcherType == DispatcherType.ASYNC");
+			trace.debug("service dispatcherType == DispatcherType.ASYNC");
 			asyncContext.setTimeout(0); //no new thread with this context will be started
 		} else {
 			//the servlet was started the first time set timeout supervision and event listener
-			ReqWebMessage exchangeWebMessage = new ReqWebMessage(request, asyncContext);
+			ReqWebMessage exchangeWebMessage = new ReqWebMessage(asyncContext);
 			trace.info("service new trackingKey: " + exchangeWebMessage.getTrackingKey());
 			asyncContext.setTimeout(webTimeout);
 			InjectWithResponseListener myListener = new InjectWithResponseListener(exchangeWebMessage.getTrackingKey(), activeRequests, nRequestTimeouts, nActiveRequests);
