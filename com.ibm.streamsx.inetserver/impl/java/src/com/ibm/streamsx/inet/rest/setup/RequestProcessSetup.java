@@ -6,7 +6,6 @@ package com.ibm.streamsx.inet.rest.setup;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -16,7 +15,6 @@ import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streamsx.inet.rest.servlets.InjectWithResponse;
-import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 
 /**
  * Sets up the single servlet for HTTPRequestProcess.
@@ -24,23 +22,22 @@ import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 public class RequestProcessSetup implements OperatorServletSetup {
 
 	/**
-	 * Servlet that accepts application/json POST and submits a
-	 * corresponding tuple with the first attribute being an XML attribute.
+	 * Servlet that injects a tuple at request with function from conduit
 	 * @return 
 	 */
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler handler, ServletContextHandler ports, double webTimeout, Map<Long, ReqWebMessage> activeRequests) {
+	public List<ExposedPort> setup(OperatorContext operatorContext, ServletContextHandler handler, ServletContextHandler ports) {
 		
 		Logger trace = Logger.getAnonymousLogger();
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
 
-		for (StreamingOutput<OutputTuple> port : context.getStreamingOutputs()) {
+		for (StreamingOutput<OutputTuple> port : operatorContext.getStreamingOutputs()) {
 
-			ExposedPort ep = new ExposedPort(context, port, ports.getContextPath());
+			ExposedPort ep = new ExposedPort(operatorContext, port, ports.getContextPath());
 			exposed.add(ep);
 
 			String path = "/analyze/" + port.getPortNumber() + "/*";
-			ServletHolder servletHolder = new ServletHolder(new InjectWithResponse(context, port, webTimeout, activeRequests));
+			ServletHolder servletHolder = new ServletHolder(new InjectWithResponse(operatorContext, port));
 			ports.addServlet(servletHolder, path);
 			servletHolder.setAsyncSupported(true);
 			

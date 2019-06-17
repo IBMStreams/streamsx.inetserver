@@ -5,12 +5,10 @@
 package com.ibm.streamsx.inet.rest.setup;
 
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
 import com.ibm.streams.operator.OperatorContext;
-import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 
 /**
  * Interface to set up the servlets for an operator using Jetty.
@@ -25,9 +23,7 @@ import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
  */
 public interface OperatorServletSetup {
 	
-	public List<ExposedPort> setup(OperatorContext context,
+	public List<ExposedPort> setup(OperatorContext operatorContext,
 			ServletContextHandler handler,
-			ServletContextHandler ports,
-			double webTimeout,
-			Map<Long, ReqWebMessage> activeRequests);
+			ServletContextHandler ports);
 }

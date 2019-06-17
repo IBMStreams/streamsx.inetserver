@@ -42,7 +42,6 @@ import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streams.operator.types.RString;
-import com.ibm.streamsx.inet.rest.engine.ServletEngine;
 import com.ibm.streamsx.inet.rest.servlets.InjectWithResponse;
 import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 
@@ -50,10 +49,10 @@ import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
  * <p>
  * HTTPRequestProcess - Enable Streams to process web requests . A request arrives via the web which injects a
  * tuple out the output port; processing happens; input port receives the processing results which are
- * communicated to the orgininating web requester. This is a gateway between web requests and Streams processing of the requests.
+ * communicated to the originating web requester. This is a gateway between web requests and Streams processing of the requests.
  * </p>
  * <p>
- * This relies on an embedded Jetty server. The Jetty portion: accepts a request from the web, suspends the web request
+ * This relies on an embedded Jetty server. The Jetty portion: accepts a request from the web, starts the AsyncContext of the web request 
  * while Stream's processes the request, continues the web connection when Streams completes the processing and finally responds to 
  * the original request. 
  * </p>
@@ -61,26 +60,10 @@ import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
  * The following is a brief description of the classes and their interaction. 
  * </p>
  * <dl>
- * <dt>{@link HTTPReqeustProcess}</dt>
+ * <dt>{@link HTTPRequestProcess}</dt>
  * <dd>
  * Operator Entry.  Web requests for Streams are injected into the Streams via the operators Output port. Responses, 
  * completed requests enter via the Input port. The request and response are packaged into ReqWebMessage objects.
- * </dd>
- * <dt>ReqWebServer </dt>
- * <dd>
- * Invoked by HTTPTupleRequest, starts the Jetty Web server. Sets up callback framework to accept requests {@link ReqHandlerInterface} from the web to Streams.
- * </dd>
- * <dt>ReqWebMessage</dt>
- * <dd>
- * Bridge between the Streams and WWW portion of the processing.
- * </dd>
- * <dt>ReqHandlerInterface</dt>
- * <dd>
- * Enable request from web into Streams.
- * </dd>
- * <dt>ReqHandlerSuspend extends AbstractHandler</dt>
- * <dd>
- * Waits around for an answer
  * </dd>
  * </dl>
  * <p>
@@ -101,7 +84,6 @@ import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 public class RequestProcess extends ServletOperator {
 	static Logger trace = Logger.getLogger(RequestProcess.class.getName());
 
-	
 	// communication
 	public static final String defaultContentTypeAttributeName = "contentType";
 	public static final String defaultContextPathAttributeName = "contextPath";
@@ -114,14 +96,12 @@ public class RequestProcess extends ServletOperator {
 	public static final String defaultPathInfoAttributeName = "pathInfo";
 	public static final String defaultStatusAttributeName = "status";
 	public static final String defaultStatusMessageAttributeName = "statusMessage";
-	public static final String defaultContext = "/streams";
+	//public static final String defaultContext = "/streams";
 	public static final String defaultJsonStringAttributeName = "jsonString";
 	
 	public static final String defaultResponseContentType = "text/html; charset=utf-8";
-	public static int defaultStatusCode = HttpServletResponse.SC_OK;
-	
+	public static final int defaultStatusCode = HttpServletResponse.SC_OK;
 
-	
 	static final String DESC = "Operator accepts a web request and generates corresponding response.  The request is injected into "
 			+ "streams on the output port, the input port receives the response."
 			+ "This enables a developer to process HTTP form's and REST calls. The request arrives on the output port, results are " 
@@ -171,34 +151,12 @@ public class RequestProcess extends ServletOperator {
 			+ "\\n\\n";
 
 
-	
-	
-	static final String PORT_DESC = "Port the that requests will be recieved on, default: \\\"" + ServletEngine.DEFAULT_PORT + "\\\".";
-	static final String CONTEXT_DESC = "Specify a URL context path base that requests will be accepted. Request's path beyond the base will be accepted, the 'pathInfo' attribute will have path beyond the base. "
-			+ "If the context path is '/work' requests to '/work/translate' will have 'pathInfo' of '/translate and requests to '/work/translate/speakeasy' with hava 'pathInfo' of '/translate/speakeasy', default: \\\"" + defaultContext  + "\\\". ";
-
-	static final String WEBTIMEOUT_DESC = "Number of seconds to wait for the web request to be processed by Streams, default: \\\"" + ServletOperator.DEFAULT_WEB_TIMEOUT + "\\\".  ";
+	static final double DEFAULT_WEB_TIMEOUT = 15.0;
+	static final String WEBTIMEOUT_DESC = "Number of seconds to wait for the web request to be processed by Streams, default: \\\"" + DEFAULT_WEB_TIMEOUT + "\\\".  ";
 
 	// common to output/input
 	static final String KEY_DESC = " Input and output port's corrolation key. The values is expected to be unchanged between the input and output, default: \\\"" + defaultKeyAttributeName + "\\\". ";
-	// output port
-	static final String REQUESTATTRNAME_DESC = "Output port's attribute name with the web request (body of the web request), default \\\"" + defaultRequestAttributeName + "\\\".  ";
-	static final String METHODATTRNAME_DESC = "Output ports's attribute name with the request method (PUT, GET, POST), default: \\\"" + defaultMethodAttributeName + "\\\".  ";
-	static final String PATHINFOATTRNAME_DESC = "Output ports's attribute of the content path below the base, default \\\"" + defaultPathInfoAttributeName + "\\\".  ";
-	static final String CONTEXTPATHATTRNAME_DESC = "Output ports's attribute of the context path \\\"" + defaultContextPathAttributeName + "\\\".  ";
-	static final String URLATTRNAME_DESC = "Output ports's attribute of the url \\\"" + defaultUrlAttributeName + "\\\".  ";
-	static final String CONTENTTYPEATTRNAME_DESC = "Output port's attribute with content-type will be provided in, default: \\\"" + defaultContentTypeAttributeName + "\\\".  ";
-	static final String HEADERATTRNAME_DESC = "Output port's web request headers, in the form of a objects<name, value>, default: \\\"" + defaultHeaderAttributeName + "\\\".  ";
-	
 	// input port
-	private String responseAttributeName = defaultResponseAttributeName;
-	private String jsonStringAttributeName = defaultJsonStringAttributeName;
-	private String responseJsonStringAttributeName = defaultJsonStringAttributeName;
-	private String statusAttributeName = defaultStatusAttributeName;
-	private String statusMessageAttributeName = defaultStatusMessageAttributeName;
-	private String responseHeaderAttributeName = defaultHeaderAttributeName;
-	private String responseContentTypeAttributeName = defaultContentTypeAttributeName;
-	
 	private static final String RESPONSEATTRNAME_DESC = "Input port's attribute response (body of the web response), default:  \\\"" + defaultResponseAttributeName + "\\\".  ";
 	private static final String RESPONSEJSONSTRINGATTRNAME_DESC = "Input port's json results (complete response), default:  \\\"" + defaultJsonStringAttributeName + "\\\".  ";
 	private static final String STATUSATTRNAME_DESC = "Input port's attribute web status, default:  \\\"" + defaultStatusAttributeName + "\\\".  ";
@@ -207,6 +165,28 @@ public class RequestProcess extends ServletOperator {
 	private static final String RESPONSECONTENTTYPE_DESC = "Input port's web response content type, default: \\\"" + defaultContentTypeAttributeName + "\\\". "
 			+ "If null or an empty string is delivered, the default content type '" +  defaultResponseContentType + "' is used.  ";
 	private static final String RESPONSEHEADERATTRNAME_DESC = "Input port's web response header objects<name,value>, default: \\\"" + defaultHeaderAttributeName + "\\\".  ";
+	// output port
+	static final String REQUESTATTRNAME_DESC = "Output port's attribute name with the web request (body of the web request), default \\\"" + defaultRequestAttributeName + "\\\".  ";
+	static final String METHODATTRNAME_DESC = "Output ports's attribute name with the request method (PUT, GET, POST), default: \\\"" + defaultMethodAttributeName + "\\\".  ";
+	static final String PATHINFOATTRNAME_DESC = "Output ports's attribute of the content path below the base, default \\\"" + defaultPathInfoAttributeName + "\\\".  ";
+	static final String CONTEXTPATHATTRNAME_DESC = "Output ports's attribute of the context path \\\"" + defaultContextPathAttributeName + "\\\".  ";
+	static final String URLATTRNAME_DESC = "Output ports's attribute of the url \\\"" + defaultUrlAttributeName + "\\\".  ";
+	static final String CONTENTTYPEATTRNAME_DESC = "Output port's attribute with content-type will be provided in, default: \\\"" + defaultContentTypeAttributeName + "\\\".  ";
+	static final String HEADERATTRNAME_DESC = "Output port's web request headers, in the form of a objects<name, value>, default: \\\"" + defaultHeaderAttributeName + "\\\".  ";
+
+	/**
+	 * Operator state
+	 */
+	private double webTimeout = DEFAULT_WEB_TIMEOUT;
+
+	// input port
+	private String responseAttributeName = defaultResponseAttributeName;
+	private String jsonStringAttributeName = defaultJsonStringAttributeName;
+	private String responseJsonStringAttributeName = defaultJsonStringAttributeName;
+	private String statusAttributeName = defaultStatusAttributeName;
+	private String statusMessageAttributeName = defaultStatusMessageAttributeName;
+	private String responseHeaderAttributeName = defaultHeaderAttributeName;
+	private String responseContentTypeAttributeName = defaultContentTypeAttributeName;
 
 	//output port
 	private String keyAttributeName = defaultKeyAttributeName;
@@ -218,36 +198,49 @@ public class RequestProcess extends ServletOperator {
 	private String headerAttributeName = defaultHeaderAttributeName;
 	private String contentTypeAttributeName = defaultContentTypeAttributeName;
 	
-	//private Boolean jsonStringResponse = false;
+	//internal state
+	private boolean jsonFormatInPort = false ;   // only one column on input port jsonString
+	private boolean jsonFormatOutPort = false;   // only one column on output port jsonString
 	private Collection<String> activeColumns = null;
-	
-	/*
-	 * Count some things
-	 */
+	private Map<Long, ReqWebMessage> activeRequests = null;
+
+	// Metrics
 	private Metric nMessagesReceived;
 	private Metric nMessagesResponded;
-	@SuppressWarnings("unused")
 	private Metric nRequestTimeouts;
 	private Metric nMissingTrackingKey;
 	private Metric nTrackingKeyNotFound;
 	private Metric nActiveRequests;
-	private boolean jsonFormatInPort = false ;   // only one column on input port jsonString
-	private boolean jsonFormatOutPort = false;   // only one column on output port jsonString
 	
 	/**
 	 * Conduit object between operator and servlet.
-	 * [0] - activeRequests
-	 * [1] - function to create output tuple.
-	 Notes - 
-	 	This is the heart of the 'conduit' which uses Function pointers. The function
-	 	pointer is tupleCreated invokes the initiateRequestFrom web via an apply function, 
-	 	which can be found in the injectWtihResponse.java.  
-	 	** TODO * need a complete explanation. 
-	 	The initalization is getting gets the iniitRequestFromWeb function handle to 
-	 	the servlet in order that messages arrive at the servlet get to the Streams code. 
-	 	
+	 * [0] - function to create output tuple.
+	 * [1] - the web timeout
+	 * [2] - the metric nRequestTimeouts
+	 * [3] - the metric nActiveRequests
+	 * [4] - the synchronized map with tracking-key AsyncContext association
 	 */
-	private Function<ReqWebMessage,OutputTuple> tupleCreator = this::initiateRequestFromWeb;
+	public static class RequestProcessConduit {
+		final public Function<ReqWebMessage,OutputTuple> tupleCreator;
+		final public double webTimeout;
+		final public Metric nRequestTimeouts;
+		final public Metric nActiveRequests;
+		final public Map<Long, ReqWebMessage> activeRequests;
+		
+		public RequestProcessConduit(
+				Function<ReqWebMessage,OutputTuple> tupleCreator, double webTimeout, 
+				Metric nRequestTimeouts, Metric nActiveRequests, Map<Long, ReqWebMessage> activeRequests) {
+			this.tupleCreator = tupleCreator;
+			this.webTimeout = webTimeout;
+			this.nRequestTimeouts = nRequestTimeouts;
+			this.nActiveRequests = nActiveRequests;
+			this.activeRequests = activeRequests;
+		}
+	}
+
+	protected Object getConduit() {
+		return new RequestProcessConduit(this::initiateRequestFromWeb, webTimeout, nRequestTimeouts, nActiveRequests, activeRequests);
+	}
 
 	/**
 	 * Initialize this operator. Called once before any tuples are processed.
@@ -421,10 +414,6 @@ public class RequestProcess extends ServletOperator {
 
 	}
 	
-	protected Object getConduit() {
-		return tupleCreator;
-	}
-
 	/**
 	 * Setup the metrics
 	 */

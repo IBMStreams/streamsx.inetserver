@@ -6,7 +6,6 @@ package com.ibm.streamsx.inet.rest.setup;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -17,33 +16,32 @@ import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.window.StreamWindow;
 import com.ibm.streamsx.inet.rest.servlets.AccessWindowContents;
-import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 import com.ibm.streamsx.inet.window.WindowContentsAtTrigger;
 
 
 public class TupleViewSetup implements OperatorServletSetup {
 
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler staticContext, ServletContextHandler ports, double webTimeout, Map<Long, ReqWebMessage> activeRequests) {
+	public List<ExposedPort> setup(OperatorContext operatorContext, ServletContextHandler staticContext, ServletContextHandler ports) {
 
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
 
-		final List<WindowContentsAtTrigger<Tuple>> windows = new ArrayList<WindowContentsAtTrigger<Tuple>>(context.getNumberOfStreamingOutputs());
+		final List<WindowContentsAtTrigger<Tuple>> windows = new ArrayList<WindowContentsAtTrigger<Tuple>>(operatorContext.getNumberOfStreamingOutputs());
 
 		Logger trace = Logger.getAnonymousLogger();
 
-		for (StreamingInput<Tuple> port : context.getStreamingInputs()) {
+		for (StreamingInput<Tuple> port : operatorContext.getStreamingInputs()) {
 
 			StreamWindow<Tuple> window = port.getStreamWindow();
 
-			WindowContentsAtTrigger<Tuple> contents = new WindowContentsAtTrigger<Tuple>(context, port);
+			WindowContentsAtTrigger<Tuple> contents = new WindowContentsAtTrigger<Tuple>(operatorContext, port);
 			windows.add(contents);
 			window.registerListener(contents, false);
 
 			String path = "/input/" + port.getPortNumber() + "/tuples";
 			ports.addServlet(new ServletHolder(new AccessWindowContents(contents)),  path);
 
-			ExposedPort ep = new ExposedPort(context, port, ports.getContextPath());
+			ExposedPort ep = new ExposedPort(operatorContext, port, ports.getContextPath());
 			exposed.add(ep);
 			ep.addURL("tuples", path);
 

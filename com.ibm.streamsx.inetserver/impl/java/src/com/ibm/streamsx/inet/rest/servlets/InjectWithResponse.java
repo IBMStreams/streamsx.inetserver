@@ -24,63 +24,38 @@ import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.metrics.Metric;
+import com.ibm.streamsx.inet.rest.ops.RequestProcess.RequestProcessConduit;
 /**
  * <p>
  * Processes the message from the web and builds the response, timeout (Streams taking too long) are handled here as well. 
  * </p>
- * <p>
- * Dependent on how Jetty drives the interaction.
- * Web request arrives via Jetty, the actions that ensue are dependent on the state of the request's state: 
- *</p>
- * <ul>
- *  <li>Initial : A new request has arrived, move the request into a Streams tuple, the web request is suspended. 
- *     The suspended request pushed back to Jetty with a timeout. </li>
- * 	<li>Resumed : Streams has finished processing the request and the answer is ready to be returned, the suspended web request
- * has been continued by the arrival of the tuple on the operators Input port.  All the initial web request values are available. 
- * The response is built from the arriving tuple and sent out the web.   </li>   
- * 	<li>Expired : Streams has taken too long and the request has expired, generate a timeout response.</li> 
- * 	<li>Suspend : Streams is still working on the request, this should not happen.</li>
- * </ul>
- *
  */
 public class InjectWithResponse extends SubmitterServlet {
 	
 	private static final long serialVersionUID = 1L;
 
-	public static final String METRIC_NAME_REQUEST_TIMEOUT = "nRequestTimeouts";
-	public static final String METRIC_NAME_ACTIVE_REQUESTS = "nActiveRequests";
-	
 	static final Logger trace = Logger.getLogger(InjectWithResponse.class.getName());
 	
-	// Number of timeouts that have occurred. Used on timeout error message, attempting to 
-	// hint where a possible problem is occurring. 
-	public static int timeoutCount = 0;
-
-	interface Constant {
-		public static final String EXCHANGEWEBMESSAGE = "exchangeWebMessage";
-	}
-
-	private final long webTimeout;
-	private final Map<Long, ReqWebMessage> activeRequests;
-	private final Metric nRequestTimeouts;
-	private final Metric nActiveRequests;
-	
+	private long webTimeout;
+	private Map<Long, ReqWebMessage> activeRequests;
+	private Metric nRequestTimeouts;
+	private Metric nActiveRequests;
 	private Function<ReqWebMessage,OutputTuple> tupleCreator;
 
-	public InjectWithResponse(OperatorContext operatorContext, StreamingOutput<OutputTuple> port, double webTimeout, Map<Long, ReqWebMessage> activeRequests) {
+	public InjectWithResponse(OperatorContext operatorContext, StreamingOutput<OutputTuple> port) {
 		super(operatorContext, port);
-		this.webTimeout = (long) (webTimeout * 1000.0);
-		this.activeRequests = activeRequests;
-		this.nRequestTimeouts = operatorContext.getMetrics().getCustomMetric(METRIC_NAME_REQUEST_TIMEOUT);
-		this.nActiveRequests = operatorContext.getMetrics().getCustomMetric(METRIC_NAME_ACTIVE_REQUESTS);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 
-		tupleCreator = (Function<ReqWebMessage, OutputTuple>) config.getServletContext().getAttribute("operator.conduit");
+		RequestProcessConduit requestProcessConduit = (RequestProcessConduit) config.getServletContext().getAttribute("operator.conduit");
+		webTimeout = (long) (requestProcessConduit.webTimeout * 1000.0);
+		activeRequests = requestProcessConduit.activeRequests;
+		nRequestTimeouts = requestProcessConduit.nRequestTimeouts;
+		nActiveRequests = requestProcessConduit.nActiveRequests;
+		tupleCreator = requestProcessConduit.tupleCreator;
 	}
 
 	/**

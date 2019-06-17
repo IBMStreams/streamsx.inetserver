@@ -6,7 +6,6 @@ package com.ibm.streamsx.inet.rest.setup;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -16,12 +15,11 @@ import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streamsx.inet.rest.servlets.AccessXMLAttribute;
-import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 
 public class XMLViewSetup implements OperatorServletSetup {
 
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler staticContext, ServletContextHandler ports, double webTimeout, Map<Long, ReqWebMessage> activeRequests) {
+	public List<ExposedPort> setup(OperatorContext operatorContext, ServletContextHandler staticContext, ServletContextHandler ports) {
 
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
 
@@ -29,11 +27,11 @@ public class XMLViewSetup implements OperatorServletSetup {
 
 		// The XMLView operator only supports a single port
 		// at the moment, but code the ability to have multiple ports.
-		for (StreamingInput<Tuple> port : context.getStreamingInputs()) {
+		for (StreamingInput<Tuple> port : operatorContext.getStreamingInputs()) {
 			String path = "/input/" + port.getPortNumber() + "/attribute";
 			ports.addServlet(new ServletHolder(new AccessXMLAttribute(port)),  path);
 
-			ExposedPort ep = new ExposedPort(context, port, ports.getContextPath());
+			ExposedPort ep = new ExposedPort(operatorContext, port, ports.getContextPath());
 			exposed.add(ep);
 			ep.addURL("attribute", path);
 

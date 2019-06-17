@@ -56,7 +56,6 @@ import com.ibm.streamsx.inet.rest.ops.Functions;
 import com.ibm.streamsx.inet.rest.ops.PostTuple;
 import com.ibm.streamsx.inet.rest.servlets.ExposedPortsInfo;
 import com.ibm.streamsx.inet.rest.servlets.PortInfo;
-import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 import com.ibm.streamsx.inet.rest.setup.ExposedPort;
 import com.ibm.streamsx.inet.rest.setup.OperatorServletSetup;
 import com.ibm.streamsx.inet.util.PathConversionHelper;
@@ -399,7 +398,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
     }
 
 	@Override
-	public void registerOperator(final String operatorClass, final OperatorContext operatorContext, Object conduit, double webTimeout, Map<Long, ReqWebMessage> activeRequests) throws Exception {
+	public void registerOperator(final String operatorClass, final OperatorContext operatorContext, Object conduit) throws Exception {
 
 		trace.info("Register servlets for operator: " + operatorContext.getName());
 
@@ -462,7 +461,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		String setupClass = operatorClass.replace(".ops.", ".setup.").concat("Setup");
 		OperatorServletSetup setup = Class.forName(setupClass).asSubclass(OperatorServletSetup.class).newInstance();
 		
-		List<ExposedPort> operatorPorts = setup.setup(operatorContext, staticContext, ports, webTimeout, activeRequests);
+		List<ExposedPort> operatorPorts = setup.setup(operatorContext, staticContext, ports);
 		if (operatorPorts != null)
 			exposedPorts.addAll(operatorPorts);
 		
