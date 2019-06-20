@@ -12,188 +12,157 @@ use com.ibm.streamsx.inet.rest::HTTPRequest ;
 * * Using th context put up the index.html page in /opt/html, which includes a form.
 * * The forms action (/livepage/HttpTuple/ports/analyze/0/login) post to the operator.
 * * The HTTPTupleProcess operator outputs the request, note the use of pathInfo to route the request.
-* * On completion of the processing, the response is input to the originaling HTTPTupleProcess operator. 
+* * On completion of the processing, the response is input to the originating HTTPTupleProcess operator. 
 *    
 * The goal:
 * * Demonstrate the processing of forms.
 * * Reinterate how important it is NOT to mess with the id. 
 */
-public composite DynTuple
-{
-	type		
-		ReqProc = HTTPRequest reqRsp, rstring templateFile, map<rstring,
-			rstring> context ;
+public composite DynTuple {
+
 	graph
-		(stream<HTTPRequest> httpRequest) as HttpTuple = HTTPRequestProcess(httpResponse)
-		{
+		
+		/*
+		 * Receive a HTTP request and forward the content into the RequestStrream 
+		 * Receive the answer from Streams in ResponseStream1 build the HTTP response
+		 */
+		(stream<HTTPRequest> RequestStream as O) as HttpTuple = HTTPRequestProcess(ResponseStream1) {
 			param
 				context : "livepage" ;
 				contextResourceBase : getThisToolkitDir() + "/opt/html" ;
 				port : 8080 ;
 		}
 
-		(stream<HTTPRequest> functorLogin as O) as LoginFilter = Functor(httpRequest as I)
-		{ // /login request ? drop on floor if not. Real code with have multiple branches. 
-
+		/*
+		 * Print out the received request parameters
+		 */
+		stream<HTTPRequest> RequestStream1 as O = Custom(RequestStream as I) {
+			logic
+				onTuple I: {
+					printStringLn("REQUEST:" + (rstring)I);
+					submit(I, O);
+				}
+				onPunct I: printStringLn("REQUEST:" + (rstring)currentPunct());
+		}
+		
+		/*
+		 * Filter the requests 
+		 * /login request ? drop on floor if not. Real code with have multiple branches.
+		 */
+		stream<HTTPRequest> LoginStream as O = Functor(RequestStream1 as I) {
 			param
 				filter : I.pathInfo == "/login" ;
-			output
-				O : response = upper(I.request) ;
 		}
 
-		(stream<ReqProc> normalizedRequest as O) as Normalize = Custom(functorLogin
-			as I)
-		{
+		/*
+		 * Parse form parameters
+		 */
+		stream<int64 key, map<rstring, rstring> formdata, rstring error> FormStream as O = Custom(LoginStream as I) {
 			logic
-				state :
-				{
-					mutable ReqProc rProc ;
-					mutable map<rstring, rstring> context ;
-					map<rstring, rstring> contextError = { "ERROR-requestInput" :
-						"had no entry parsed" } ;
-					mutable list<rstring> dict ;
-					mutable list<rstring> keyval ;
-				}
-
-				onTuple I :
-				{
-					dict = tokenize(I.request, "&", true) ;
-					clearM(context) ;
-					if(size(dict) > 0)
-					{
-						for(rstring entry in dict)
-						{
-						println("entry:" + entry);
-							keyval = tokenize(entry, "=", true) ;
-							if(size(keyval) > 1) context = insert(context, keyval [ 0 ], keyval [ 1
-								]) ;
-							else if(size(keyval) == 1) context = insert(context, keyval [ 0 ], "") ;
-							else context = insert(context, "ERROR-nameValueParse", "FAILUE") ;
+				onTuple I : {
+					//transfer the tracking key
+					mutable O otuple = {};
+					otuple.key = I.key;
+					//get the form data
+					otuple.error = "";
+					mutable list<rstring> dict = [];
+					dict = tokenize(I.request, "&", true);
+					if(size(dict) > 0) {
+						for(rstring entry in dict) {
+							println("entry:" + entry);
+							list<rstring> keyval = tokenize(entry, "=", true) ;
+							if(size(keyval) > 1) {
+								insertM(otuple.formdata, keyval[0], keyval[1]);
+							} else if(size(keyval) == 1) {
+								insertM(otuple.formdata, keyval[0], "");
+							} else {
+								otuple.error = "ERROR-nameValueParse";
+							}
 						}
-
+					} else {
+						otuple.error = "ERROR-noFormData";
 					}
-
-					else
-					{
-						keyval = tokenize(I.request, "=", true) ;
-						if(size(keyval) > 1) context = insert(context, keyval [ 0 ], keyval [ 1
-							]) ;
-						else if(size(keyval) == 1) context = insert(context, keyval [ 0 ], "") ;
-						else context = insert(context, "ERROR-nameValueParse",
-							"FAILURE single entry") ;
-					}
-
-					assignFrom(rProc.reqRsp, I) ;
-					rProc.context = context ;
-					submit(rProc, O) ;
+					println(otuple);
+					submit(otuple, O) ;
 				}
+		}
 
-			}
-
-		(stream<normalizedRequest> processed as O) as ProcessingPhase =
-				Custom(normalizedRequest as I)
-			{
-				logic
-					state :
-					{
-						mutable rstring normalFile = "/normal.hbs" ;
-						mutable rstring junkFile = "/junk.hbs" ;
-						mutable rstring name ;
-						map<rstring, rstring> newShort = { "occupation" : "developer software",
-							"profession" : "create software" } ;
-						map<rstring, rstring> newLong = { "occupation" : "developer land",
-							"profession" : "build buildings" } ;
-						mutable map<rstring, rstring> newContext ;
-					}
-
-					onTuple I :
-					{
-						I.templateFile =(length(I.context [ 'password' ]) > 0) ? normalFile :
-							junkFile ;
-						name = I.context [ 'name' ] ;
-						I.context =(length(name) > 4) ? newLong : newShort ;
-						I.context = insert(I.context, "name", name) ;
-						submit(I, O) ;
-					}
-
-			}
-
-			/*
-		 * This is very hack but it's cool - This builds the HTML that is to returned to the browser. 
-		 * The page will invokes the template passed in the I.templateFile attribute, the variables
-		 * that the template file will be using variables that are in the I.context (map<rstring, rstring>).
+		/*
+		 * Build the response: Accept request with any password. Emulate an error if the password is empty
+		 * This builds the HTML that is to returned to the browser. 
+		 * The page will invoke the template normal.hbs or junk.hbspassed, the variables
+		 * that the template file will be using variables that are in the I.formdata (map<rstring, rstring>).
 		 * When the html page gets loaded it invokes the <script> that gets the template file then invokes
 		 * the template file with the variables, javascript + jquery cool like dynamite and dangerous - like 
 		 * nitro-glycerince. 
 		 */
-		(stream<HTTPRequest> htmlFormatted as O) as BuildHtml = Custom(processed as I)
-			{
-				logic
-					state :
-					{
-						mutable HTTPRequest rRsp ;
-						mutable rstring bstr ;
-						rstring preHtml =
-							'<!DOCTYPE html> <html lang="en"><title>Demonstration</title><head><script>' ;
-						mutable rstring buildResponse ;
-						mutable rstring dataForTemplate_File = // example of how it should look. 
-						'var templateFile = "/junk.hbs";' ;
-						mutable rstring dataForTemplate_Context = // example of how it should look.
-						'var context = { "name" : "Joe Shome", "occupation" : "developer" , "profession" : "hack"};' ;
-						rstring postHtml = '</script><meta charset="UTF-8">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
-</script><script src="/libs/handlebars.min-latest.js">
-</script></head><body><script>
+		stream<HTTPRequest> ResponseStream as O = Custom(FormStream as I) {
+			logic
+				state : {
+					rstring preHtml = '<!DOCTYPE html> <html lang="en"><title>Demonstration</title><head><script>';
+					// example of how it should look. 
+					mutable rstring dataForTemplate_File = 'var templateFile = "/junk.hbs";';
+					mutable rstring dataForTemplate_Context = 'var context = { "name" : "Joe Shome", "occupation" : "developer" , "profession" : "hack"};' ;
+					rstring postHtml = '</script><meta charset="UTF-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="/libs/handlebars.min-latest.js"></script>
+</head><body>
+<script>
 $.get(templateFile).done(function(template) {
 var templateScript = Handlebars.compile(template);
 var html = templateScript(context);
 $(document.body).append(html);});
-</script></body>' ;
-					}
-
-					onTuple I :
-					{
-						assignFrom(rRsp, I.reqRsp) ;
-						dataForTemplate_File = 'var templateFile = "' + I.templateFile + '";' ;
-						bstr = 'var context = {' ;
-						for(rstring key in keys(I.context))
-						{
-							bstr += '"' + key + '":"' + I.context [ key ] + '",' ;
+</script>
+</body>';
+				}
+				onTuple I : {
+					//transfer the tracking key
+					mutable O otuple = {};
+					otuple.key = I.key;
+					if (I.error == "") {
+						if (has(I.formdata, "name") && has(I.formdata, "password") && has(I.formdata, "profession")) {
+							if (I.formdata["name"] == "") {
+								otuple.status = 400; //Status code (400) indicating the request sent by the client was syntactically incorrect.
+								otuple.response = "ERROR-nameRequired";
+							} else {
+								if (I.formdata["password"] == "") {
+									otuple.status = 401; //Status code (401) indicating that the request requires HTTP authentication.
+									dataForTemplate_File = 'var templateFile = "/junk.hbs";';
+								} else {
+									otuple.status = 200; //Status code (200) indicating the request succeeded normally.
+									dataForTemplate_File = 'var templateFile = "/normal.hbs";';
+								}
+								mutable rstring bstr = 'var context = {' ;
+								for(rstring key in keys(I.formdata)) {
+									bstr += '"' + key + '":"' + I.formdata[key] + '",' ;
+								}
+								dataForTemplate_Context = bstr + '};' ;
+								otuple.response = preHtml + dataForTemplate_File + dataForTemplate_Context + postHtml ;
+							}
+						} else {
+							otuple.status = 400; //Status code (400) indicating the request sent by the client was syntactically incorrect.
+							otuple.response = "ERROR-notRequiredParams";
 						}
-
-						dataForTemplate_Context = bstr + '};' ;
-						buildResponse = preHtml + dataForTemplate_File + dataForTemplate_Context
-							+ postHtml ;
-						rRsp.response = buildResponse ;
-						submit(rRsp, O) ;
+					} else {
+						otuple.status = 400; //Status code (400) indicating the request sent by the client was syntactically incorrect.
+						otuple.response = I.error;
 					}
+					submit(otuple, O);
+				}
+		}
 
-			}
-
-		() as DebugView = FileSink(httpRequest as Functor_7_out0)
-			{
-				param
-					file : "/dev/stdout" ;
-					flush : 1u ;
-			}
-
-		(stream<HTTPRequest> httpResponse as O) as PrepHttp = Custom(htmlFormatted as I)
-			{
-				logic
-					onTuple I :
-					{
-					// TODO * default? done by operator?
-						I.header [ "Content-Type" ] = "text/html" ;
-						// TODO * this should be done in the operator
-						I.header [ "Content-Length" ] =(rstring) length(I.response) ;
-						I.status = 200;
-						submit(I, O) ;
-					}
-
-			}
+		/*
+		 * Print the response stream
+		 */
+		stream<HTTPRequest> ResponseStream1 as O = Custom(ResponseStream as I) {
+			logic
+				onTuple I: {
+					printStringLn("RESPONSE:" + (rstring)I);
+					submit(I, O);
+				}
+				onPunct I: printStringLn("RESPONSE:" + (rstring)currentPunct());
+		}
 
 	config
 		restartable: false;
 }
-
-
