@@ -1,6 +1,6 @@
 /*
 # Licensed Materials - Property of IBM
-# Copyright IBM Corp. 2014 
+# Copyright IBM Corp. 2014, 2019
 */
 package com.ibm.streamsx.inet.rest.servlets;
 

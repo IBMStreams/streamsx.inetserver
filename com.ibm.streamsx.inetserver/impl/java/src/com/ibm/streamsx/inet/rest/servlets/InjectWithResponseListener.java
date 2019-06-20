@@ -1,3 +1,8 @@
+/**
+# Licensed Materials - Property of IBM
+# Copyright IBM Corp. 2019
+*/
+
 package com.ibm.streamsx.inet.rest.servlets;
 
 import java.io.IOException;

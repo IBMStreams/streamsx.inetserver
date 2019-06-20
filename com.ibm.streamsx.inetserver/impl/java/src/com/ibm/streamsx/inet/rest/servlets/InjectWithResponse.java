@@ -1,6 +1,6 @@
 /**
 # Licensed Materials - Property of IBM
-# Copyright IBM Corp. 2017
+# Copyright IBM Corp. 2019
 */
 
 package com.ibm.streamsx.inet.rest.servlets;
@@ -62,20 +62,15 @@ public class InjectWithResponse extends SubmitterServlet {
 	 * Build the web response and close the async context
 	 * @throws IOException 
 	 */
-	@SuppressWarnings("deprecation")
 	public static void buildWebResponse(ReqWebMessage exchangeWebMessage,
-			String response, int statusCode, String statusMessage,
+			String response, int statusCode,
 			Map<String, String> responseHeaders, String responseContentType) throws IOException {
 		
 		trace.debug("buildWebResponse - statusCode:" + statusCode + " contentType: " + responseContentType + " tracking key: " + exchangeWebMessage.getTrackingKey());
 		AsyncContext asyncContext = exchangeWebMessage.getAsyncContext();
 		HttpServletResponse webResponse = (HttpServletResponse)asyncContext.getResponse();
 		
-		if ((statusMessage == null) || statusMessage.isEmpty()) {
-			webResponse.setStatus(statusCode);
-		} else {
-			webResponse.setStatus(statusCode, statusMessage);
-		}
+		webResponse.setStatus(statusCode);
 		
 		// The jetty server seems to add more onto the contentType than I provided. 
 		webResponse.setContentType(responseContentType);

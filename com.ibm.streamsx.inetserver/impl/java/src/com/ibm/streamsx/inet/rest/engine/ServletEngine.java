@@ -393,9 +393,10 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
     }
 
 
-    private void stopWebServer() throws Exception {
-        server.stop();
-    }
+	private void stopWebServer() throws Exception {
+		trace.info("Stop Jetty web server");
+		server.stop();
+	}
 
 	@Override
 	public void registerOperator(final String operatorClass, final OperatorContext operatorContext, Object conduit) throws Exception {
