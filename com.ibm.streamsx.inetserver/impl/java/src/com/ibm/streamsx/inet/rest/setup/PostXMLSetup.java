@@ -21,33 +21,29 @@ import com.ibm.streamsx.inet.rest.servlets.InjectXML;
  */
 public class PostXMLSetup implements OperatorServletSetup {
 
-    /**
-     * Servlet that accepts application/xml POST and submits a
-     * corresponding tuple with the first attribute being an XML attribute.
-     * @return 
-     */
+	/**
+	 * Servlet that accepts application/xml POST and submits a
+	 * corresponding tuple with the first attribute being an XML attribute.
+	 * @return 
+	 */
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler handler,
-			ServletContextHandler ports) {
-		
+	public List<ExposedPort> setup(OperatorContext operatorContext, ServletContextHandler handler, ServletContextHandler ports) {
+
 		Logger trace = Logger.getAnonymousLogger();
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
-		
-        for (StreamingOutput<OutputTuple> port : context
-                .getStreamingOutputs()) {
-        	
-            ExposedPort ep = new ExposedPort(context, port, ports.getContextPath());
-            exposed.add(ep);
 
-            String path = "/output/" + port.getPortNumber() + "/inject";
-            ports.addServlet(new ServletHolder(new InjectXML(context, port)),
-                    path);
-            ep.addURL("inject", path);
-            
-            trace.info("Injection URL (application/xml): " + ports.getContextPath()
-                    + path);
-        }  
-        
-        return exposed;
+		for (StreamingOutput<OutputTuple> port : operatorContext.getStreamingOutputs()) {
+
+			ExposedPort ep = new ExposedPort(operatorContext, port, ports.getContextPath());
+			exposed.add(ep);
+
+			String path = "/output/" + port.getPortNumber() + "/inject";
+			ports.addServlet(new ServletHolder(new InjectXML(operatorContext, port)), path);
+			ep.addURL("inject", path);
+
+			trace.info("Injection URL (application/xml): " + ports.getContextPath() + path);
+		}
+
+		return exposed;
 	}
 }

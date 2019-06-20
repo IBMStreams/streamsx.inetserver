@@ -33,7 +33,7 @@ public abstract class ServletOperator extends AbstractOperator {
 	public void initialize(OperatorContext context) throws Exception {
 
 		super.initialize(context);
-
+		
 		setJetty(ServletEngine.getServletEngine(context));
 		
 		getJetty().registerOperator(getClass().getName(), context, getConduit());
@@ -65,7 +65,7 @@ public abstract class ServletOperator extends AbstractOperator {
 	 * context, as that is an object that is not specific to each
 	 * operator's class loader.
 	 */
-	@Parameter(optional=true, description="Port number for the embedded Jetty HTTP server. Defaults to 8080.")
+	@Parameter(optional=true, description="Port number for the embedded Jetty HTTP server, default: \\\"" + ServletEngine.DEFAULT_PORT + "\\\".")
 	public void setPort(int port) {}
 	@Parameter(optional=true, description=CONTEXT_DESC)
 	public void setContext(String context) {}

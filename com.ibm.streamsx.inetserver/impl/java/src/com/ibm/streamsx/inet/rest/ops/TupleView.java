@@ -4,6 +4,7 @@
 */
 package com.ibm.streamsx.inet.rest.ops;
 
+import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.model.InputPortSet;
 import com.ibm.streams.operator.model.InputPortSet.WindowMode;
@@ -23,15 +24,20 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
 @Icons(location32="icons/"+TupleView.opName+"_32.gif", location16="icons/"+TupleView.opName+"_16.gif")
 
 public class TupleView extends ServletOperator {
-    static final String opName = "HTTPTupleView";
+	static final String opName = "HTTPTupleView";
 	// Parameter setters just to define the parameters in the SPL operator model.
 	@Parameter(optional=true, cardinality=-1, description="Names of attributes to partition the window by. If the cardinality of this parameter is > 1,"
 			+ "then every value represents one attribute name. If the cadinality equals to 1, the value may contain one attribute name or a comma separated list of attribute names.")
 	public void setPartitionKey(String[] attributeNames) {}
 	
-    @Parameter(optional = true, description = "List of headers to insert into the http reply. Formatted as header:value")
-    public void setHeaders(String[] headers) {}
-    
+	@Parameter(optional = true, description = "List of headers to insert into the http reply. Formatted as header:value")
+	public void setHeaders(String[] headers) {}
+
+	@Override
+	public void initialize(OperatorContext context) throws Exception {
+		super.initialize(context);
+	}
+
 	static final String DESC = "REST HTTP or HTTPS API to view tuples from windowed input ports.\\n" + 
 			"Embeds a Jetty web server to provide HTTP REST access to the collection of tuples in " + 
 			"the input port window at the time of the last eviction for tumbling windows, " + 

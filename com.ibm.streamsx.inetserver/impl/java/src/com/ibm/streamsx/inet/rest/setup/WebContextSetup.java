@@ -17,8 +17,7 @@ import com.ibm.streams.operator.OperatorContext;
 public class WebContextSetup implements OperatorServletSetup {
 
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler handler,
-			ServletContextHandler ports) {
+	public List<ExposedPort> setup(OperatorContext operatorContext, ServletContextHandler handler, ServletContextHandler ports) {
 		return null;
 	}
 }

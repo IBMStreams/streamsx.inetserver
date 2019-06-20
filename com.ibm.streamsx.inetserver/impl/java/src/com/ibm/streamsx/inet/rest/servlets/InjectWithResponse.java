@@ -1,10 +1,9 @@
 /**
 # Licensed Materials - Property of IBM
-# Copyright IBM Corp. 2017
+# Copyright IBM Corp. 2019
 */
 
 package com.ibm.streamsx.inet.rest.servlets;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,211 +11,129 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
 
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.eclipse.jetty.continuation.Continuation;
-import org.eclipse.jetty.continuation.ContinuationSupport;
 
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamingOutput;
-import com.ibm.streamsx.inet.rest.ops.RequestProcess;
+import com.ibm.streams.operator.metrics.Metric;
+import com.ibm.streamsx.inet.rest.ops.RequestProcess.RequestProcessConduit;
 /**
  * <p>
  * Processes the message from the web and builds the response, timeout (Streams taking too long) are handled here as well. 
  * </p>
- * <p>
- * Dependent on how Jetty drives the interaction.
- * Web request arrives via Jetty, the actions that ensue are dependent on the state of the request's state: 
- *</p>
- * <ul>
- *  <li>Initial : A new request has arrived, move the request into a Streams tuple, the web request is suspended. 
- *     The suspended request pushed back to Jetty with a timeout. </li>
- * 	<li>Resumed : Streams has finished processing the request and the answer is ready to be returned, the suspended web request
- * has been continued by the arrival of the tuple on the operators Input port.  All the initial web request values are available. 
- * The response is built from the arriving tuple and sent out the web.   </li>   
- * 	<li>Expired : Streams has taken too long and the request has expired, generate a timeout response.</li> 
- * 	<li>Suspend : Streams is still working on the request, this should not happen.</li>
- * </ul>
- *
  */
 public class InjectWithResponse extends SubmitterServlet {
-	static Logger trace = Logger.getLogger(InjectWithResponse.class.getName());
-	String greeting;
-	String body;
 	
-	// Number of timeouts that have occurred. Used on timeout error message, attempting to 
-	// hint where a possible problem is occurring. 
-	public static int timeoutCount = 0;
+	private static final long serialVersionUID = 1L;
 
-	interface Constant {
-		public static final String EXCHANGEWEBMESSAGE = "exchangeWebMessage";
-	}
-
-	// ReqWebServer exchangeWebServer = null;
-
-	// Integer trackingKey = 0;
+	static final Logger trace = Logger.getLogger(InjectWithResponse.class.getName());
 	
-	private final long webTimeout;
-	
+	private long webTimeout;
+	private Map<Long, ReqWebMessage> activeRequests;
+	private Metric nRequestTimeouts;
+	private Metric nActiveRequests;
 	private Function<ReqWebMessage,OutputTuple> tupleCreator;
 
-	public InjectWithResponse(OperatorContext context, StreamingOutput<OutputTuple> port) {
-	    super(context, port);
-		// this.exchangeWebServer = exchangeWebServer;
-
-	    if (context.getParameterNames().contains("webTimeout")) {
-	        double wtd = Double.valueOf(context.getParameterValues("webTimeout").get(0));
-	        webTimeout = (long) (1000.0 * wtd);
-	    } else {
-	        webTimeout = SECONDS.toMillis(15);
-	    }
-	}
-	
-    @SuppressWarnings("unchecked")
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-
-        tupleCreator = (Function<ReqWebMessage, OutputTuple>) config.getServletContext()
-                .getAttribute("operator.conduit");
-    }
-
-	/**
-	 * Callback from Streams side with the results, the results are in the from
-	 * streams.
-	 * 
-	 * @param ewm
-	 */
-	public void asyncResume(ReqWebMessage ewm) {
-		trace.info("asyncResume - Web to transmit Stream response trackingKey:" + ewm.trackingKey);
-
-		Continuation resuming = ewm.getContinuation();
-		if (!resuming.isSuspended()) {
-			trace.warn("asyncResume - WEB NOT suspended, possible timeout, data not returned to requestor. trackingKey "
-					+ ewm.trackingKey);
-			String state = "";
-			if (resuming.isExpired()) {
-				state += "isExpired ";
-			}
-			if (resuming.isInitial()) {
-				state += "isInitial ";
-			}
-			if (resuming.isResponseWrapped()) {
-				state += "isWrapped ";
-			}
-			if (resuming.isSuspended()) {
-				state += "isSuspended ";
-			}
-			trace.warn("asyncResume WEB NOT suspending trackinKey:" + ewm.trackingKey + " current state(s) : " + state);
-			return;
-		}
-		trace.info("asyncResume - WEB connection resuming, trackingKey: " + ewm.trackingKey);
-		resuming.resume();
-	}
-	/**
-	 * Return false if we generated an error 
-	 */
-	private boolean buildWebResponse(HttpServletResponse response, ReqWebMessage exchangeWebMessage) throws IOException {
-        if (exchangeWebMessage.isErrorStatus()) {
-        	trace.info("buildWebResponse - statusCode:" + exchangeWebMessage.statusCode );    	        	
-        	if (exchangeWebMessage.getStatusMessage() != null) {
-        		response.sendError(exchangeWebMessage.statusCode, exchangeWebMessage.getStatusMessage()); 
-        	} else {
-        		response.sendError(exchangeWebMessage.statusCode);
-        	}    
-        	return false;
-        }
-        trace.info("buildWebResponse : contentType: " + exchangeWebMessage.getResponseContentType());
-        // The jetty server seems to add more onto the contentType than I provided. 
-        response.setContentType(exchangeWebMessage.getResponseContentType());
-
-        
-        trace.info("buildWebResponse : statusCode: " + exchangeWebMessage.statusCode);
-        response.setStatus(exchangeWebMessage.statusCode());        	
-       
-        Map<String,String>headers = exchangeWebMessage.getResponseHeaders();
-        for (Iterator<String> iterator = headers.keySet().iterator(); iterator.hasNext();) {
-			String key = iterator.next();
-			response.setHeader(key, headers.get(key));
-		}
-        PrintWriter out = response.getWriter();
-        out.print(exchangeWebMessage.getResponse());
-        out.flush();
-        out.close();
-        return true;
-    }
-
-	private void buildWebErrResponse(HttpServletResponse response, ReqWebMessage exchangeWebMessage, int errCode)
-			throws IOException {
-		trace.warn("buildWebErrResponse - errCode:" + errCode + " tracking key: " + exchangeWebMessage.trackingKey);
-		response.setContentType("text/html; charset=utf-8"); // this should be
-		PrintWriter out = response.getWriter();
-		switch(errCode) {
-		case HttpServletResponse.SC_REQUEST_TIMEOUT:
-			response.setStatus(errCode);
-			if (RequestProcess.getnMissingTrackingKey().getValue() > 0) {
-				out.print("<h1>Request timeout. Unable to find tracking key #" + RequestProcess.getnMissingTrackingKey().getValue() +" times is it being dropped/corrupted?</h1>");				
-			} else {
-				out.print("<h1>Request timeout</h1>");
-			}
-			break;
-		default:
-			response.setStatus(errCode);
-			out.print("<h1>Unanticipated error : " + errCode +  "</h1>");						
-		}
-
-		out.flush();
-		out.close();
+	public InjectWithResponse(OperatorContext operatorContext, StreamingOutput<OutputTuple> port) {
+		super(operatorContext, port);
 	}
 
 	@Override
-	public void service(HttpServletRequest request, HttpServletResponse response)
-	            throws ServletException, IOException {
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
 
-		Continuation continuation = ContinuationSupport.getContinuation(request);
-		ReqWebMessage exchangeWebMessage = null;
+		RequestProcessConduit requestProcessConduit = (RequestProcessConduit) config.getServletContext().getAttribute("operator.conduit");
+		webTimeout = (long) (requestProcessConduit.webTimeout * 1000.0);
+		activeRequests = requestProcessConduit.activeRequests;
+		nRequestTimeouts = requestProcessConduit.nRequestTimeouts;
+		nActiveRequests = requestProcessConduit.nActiveRequests;
+		tupleCreator = requestProcessConduit.tupleCreator;
+	}
 
-		trace.info("continuation ::: " + " initial : " + continuation.isInitial() + ", resume  : "
-				+ continuation.isResumed() + ", suspend : " + continuation.isSuspended() + ", expired : "
-				+ continuation.isExpired() + ", wrapped : " + continuation.isResponseWrapped());
+	/**
+	 * Build the web response and close the async context
+	 * @throws IOException 
+	 */
+	public static void buildWebResponse(ReqWebMessage exchangeWebMessage,
+			String response, int statusCode,
+			Map<String, String> responseHeaders, String responseContentType) throws IOException {
+		
+		trace.debug("buildWebResponse - statusCode:" + statusCode + " contentType: " + responseContentType + " tracking key: " + exchangeWebMessage.getTrackingKey());
+		AsyncContext asyncContext = exchangeWebMessage.getAsyncContext();
+		HttpServletResponse webResponse = (HttpServletResponse)asyncContext.getResponse();
+		
+		webResponse.setStatus(statusCode);
+		
+		// The jetty server seems to add more onto the contentType than I provided. 
+		webResponse.setContentType(responseContentType);
 
-		if (continuation.isExpired()) {
-			RequestProcess.getnRequestTimeouts().incrementValue(1L);
-			exchangeWebMessage = (ReqWebMessage) continuation.getAttribute(Constant.EXCHANGEWEBMESSAGE);
-			trace.warn("continuation - expired, timeout response sent. trackingKey:" + exchangeWebMessage.trackingKey
-					+ " REQ:" + request.getQueryString());
-			buildWebErrResponse(response, exchangeWebMessage, HttpServletResponse.SC_REQUEST_TIMEOUT);
-		} else if (continuation.isResumed()) {
-			exchangeWebMessage = (ReqWebMessage) continuation.getAttribute(Constant.EXCHANGEWEBMESSAGE);
-			trace.info("continuation - resumed, web response being sent trackingKey:" + exchangeWebMessage.trackingKey
-					+ " RSP:" + exchangeWebMessage.getResponse());
-			if (!buildWebResponse(response, exchangeWebMessage)) {
-				trace.info("continuation - Complete with ERR web response trackingKey:" + exchangeWebMessage.trackingKey);
+		for (Iterator<String> iterator = responseHeaders.keySet().iterator(); iterator.hasNext();) {
+			String key = iterator.next();
+			webResponse.setHeader(key, responseHeaders.get(key));
+		}
+		PrintWriter out = webResponse.getWriter();
+		out.print(response);
+
+		asyncContext.complete();
+		return;
+	}
+
+	/**
+	 * Build the web error response an close the async context
+	 * @param exchangeWebMessage
+	 * @param statusCode
+	 * @param statusMessage
+	 */
+	public static void buildWebErrResponse(ReqWebMessage exchangeWebMessage, int statusCode, String statusMessage) {
+		trace.debug("buildWebErrResponse - statusCode:" + statusCode + " tracking key: " + exchangeWebMessage.getTrackingKey());
+		AsyncContext asyncContext = exchangeWebMessage.getAsyncContext();
+		HttpServletResponse response = (HttpServletResponse)asyncContext.getResponse();
+
+		try {
+			if ((statusMessage == null) || statusMessage.isEmpty()) {
+				response.sendError(statusCode);
+			} else {
+			response.sendError(statusCode, statusMessage);
 			}
-			trace.info("continuation - Complete, with NO ERR web response trackingKey:" + exchangeWebMessage.trackingKey);
+		} catch (IOException e) {
+			trace.error(e.getMessage(), e);
+		}
+
+		asyncContext.complete();
+	}
+
+	/**
+	 * Service an incoming http request.
+	 * Create the ReqWebMessage and start the timeout.
+	 * If this method is called from async context disable timeout and send no response
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@Override
+	public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		final DispatcherType dispatcherType = request.getDispatcherType();
+		final AsyncContext asyncContext = request.startAsync();
+		if (dispatcherType.ordinal() == DispatcherType.ASYNC.ordinal()) {
+			//the servlet was started from async timeout thread and must be closed without generating a response
+			trace.debug("service dispatcherType == DispatcherType.ASYNC");
+			asyncContext.setTimeout(0); //no new thread with this context will be started
 		} else {
-			exchangeWebMessage = new ReqWebMessage(this, request);
-			trace.info("continuation - Initiated, send request to streams and suspend, trackingKey:"
-					+ exchangeWebMessage.trackingKey + " REQ:" + request.getQueryString());
-
-			exchangeWebMessage.setContinuation(continuation);
-			continuation.setAttribute(Constant.EXCHANGEWEBMESSAGE, exchangeWebMessage);
-			if (webTimeout != 0) {
-				continuation.setTimeout(webTimeout);
-			}
-			continuation.suspend();         // !important suspend before sending request
-			submit(tupleCreator.apply(exchangeWebMessage)); // send request
-			trace.info("continuation - Suspending trackingKey : " + exchangeWebMessage.trackingKey + "timeout:"
-					+ webTimeout);
-			if (!continuation.isSuspended()) {
-				trace.warn("continuation - failed to suspend, trackingKey:" + exchangeWebMessage.trackingKey
-						+ "timeout:" + webTimeout);
-			}
+			//the servlet was started the first time set timeout supervision and event listener
+			ReqWebMessage exchangeWebMessage = new ReqWebMessage(asyncContext);
+			trace.info("service new trackingKey: " + exchangeWebMessage.getTrackingKey());
+			asyncContext.setTimeout(webTimeout);
+			InjectWithResponseListener myListener = new InjectWithResponseListener(exchangeWebMessage.getTrackingKey(), activeRequests, nRequestTimeouts, nActiveRequests);
+			asyncContext.addListener(myListener);
+			submit(tupleCreator.apply(exchangeWebMessage));
 		}
 	}
 

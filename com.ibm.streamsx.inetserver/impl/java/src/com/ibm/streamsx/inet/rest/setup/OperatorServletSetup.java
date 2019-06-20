@@ -23,7 +23,7 @@ import com.ibm.streams.operator.OperatorContext;
  */
 public interface OperatorServletSetup {
 	
-	public List<ExposedPort> setup(OperatorContext context,
+	public List<ExposedPort> setup(OperatorContext operatorContext,
 			ServletContextHandler handler,
 			ServletContextHandler ports);
 }

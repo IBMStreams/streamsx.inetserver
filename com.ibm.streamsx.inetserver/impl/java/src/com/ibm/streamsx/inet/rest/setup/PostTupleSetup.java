@@ -22,40 +22,34 @@ import com.ibm.streamsx.inet.rest.servlets.InjectTuple;
  */
 public class PostTupleSetup implements OperatorServletSetup {
 
-    /**
-     * Servlet that injects tuples based upon a application/x-www-form-urlencoded POST
-     * Servlet that provides a basic HTML form for tuple injection.
-     * @return 
-     */
+	/**
+	 * Servlet that injects tuples based upon a application/x-www-form-urlencoded POST
+	 * Servlet that provides a basic HTML form for tuple injection.
+	 * @return 
+	 */
 	@Override
-	public List<ExposedPort> setup(OperatorContext context, ServletContextHandler haXXndler,
-			ServletContextHandler ports) {
-		
+	public List<ExposedPort> setup(OperatorContext operatorContext, ServletContextHandler handler, ServletContextHandler ports) {
+
 		Logger trace = Logger.getAnonymousLogger();
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
-				
-        for (StreamingOutput<OutputTuple> port : context
-                .getStreamingOutputs()) {
-        	
-            ExposedPort ep = new ExposedPort(context, port, ports.getContextPath());
-            exposed.add(ep);
-            
-            String path = "/output/" + port.getPortNumber() + "/inject";
-            ports.addServlet(new ServletHolder(new InjectTuple(context, port)),
-                    path);
-            
-            ep.addURL("inject", path);
-            trace.info("Injection URL (application/x-www-form-urlencoded): " + ports.getContextPath()
-                    + path);
 
-            path = "/output/" + port.getPortNumber() + "/form";
-            ports.addServlet(new ServletHolder(new InjectForm(port)),
-                    path);
-            ep.addURL("form", path);
-            trace.info("Injection FORM URL: " + ports.getContextPath()
-                    + path); 
-        }
-        
-        return exposed;
+		for (StreamingOutput<OutputTuple> port : operatorContext.getStreamingOutputs()) {
+
+			ExposedPort ep = new ExposedPort(operatorContext, port, ports.getContextPath());
+			exposed.add(ep);
+
+			String path = "/output/" + port.getPortNumber() + "/inject";
+			ports.addServlet(new ServletHolder(new InjectTuple(operatorContext, port)), path);
+
+			ep.addURL("inject", path);
+			trace.info("Injection URL (application/x-www-form-urlencoded): " + ports.getContextPath() + path);
+
+			path = "/output/" + port.getPortNumber() + "/form";
+			ports.addServlet(new ServletHolder(new InjectForm(port)), path);
+			ep.addURL("form", path);
+			trace.info("Injection FORM URL: " + ports.getContextPath() + path);
+		}
+
+		return exposed;
 	}
 }

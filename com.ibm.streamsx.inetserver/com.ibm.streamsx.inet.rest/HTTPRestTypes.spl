@@ -11,8 +11,7 @@ namespace com.ibm.streamsx.inet.rest;
  *  * method - method of request, possible values : (PUT, GET, POST, DELETE)
  *  * pathInfo - requests path beyond the context's base
  *  * status - indicates of the request completion. 
- *  * statusMessage - on request, only populated if status is > 300.  
  */
 type HTTPRequest = int64 key, rstring request, rstring contentType, map<rstring,
             rstring> header, rstring response, rstring method, rstring pathInfo,
-            int32 status, rstring statusMessage ;
+            int32 status ;

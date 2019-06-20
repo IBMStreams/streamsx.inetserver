@@ -24,8 +24,8 @@ public interface ServletEngineMBean {
 	 * 
 	 * Registers any output ports as injection of tuples into the stream.
 	 * 
-	 * @param injectPorts True if all output ports are to be added as injection ports
-	 * @param viewPorts True if all input ports are to be added as viewable ports
+	 * @param operatorClass
+	 * @param operatorContext
 
 	 * @param conduit adds a conduit object to pass data between the operator and the servlet.
 	 * The conduit object must only use classes that will be in common between
@@ -33,7 +33,7 @@ public interface ServletEngineMBean {
 	 * or the Java operator api. The object will be available as the attribute
 	 * {@code operator.conduit} in the servlet context.
 	 */
-	public void registerOperator(String operatorClass, OperatorContext context, Object conduit) throws Exception;
+	public void registerOperator(String operatorClass, OperatorContext operatorContext, Object conduit) throws Exception;
 	
 	/**
 	 * Start the web-server. Must be called in the allPortsReady method.

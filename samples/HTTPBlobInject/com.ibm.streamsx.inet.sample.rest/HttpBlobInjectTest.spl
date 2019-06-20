@@ -70,4 +70,7 @@ public composite HttpBlobInjectTest {
 
 				}
 		}
+		
+	config
+		restartable: false;
 }
