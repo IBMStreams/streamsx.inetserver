@@ -28,8 +28,9 @@
 		description="Main target: Build the toolkit code, build the samples index and generate the spl documentation - incremental build"
 	/>
 
-	<target name="clean" depends="spldoc-clean,samples-clean,toolkit-clean,releaseinfo-clean"
-		description="Main target: clean up toolkit code, samples code and all spldocs">
+	<target name="clean" depends="spldoc-clean,samples-clean,releaseinfo-clean"
+		description="Main target: clean up toolkit code, samples code, all spldocs and downloaded libs">
+		<ant dir="${toolkit.dir}" target="clean" />
 	</target>
 
 	<target name="toolkit" depends="get_name"
@@ -37,9 +38,9 @@
 		<ant dir="${toolkit.dir}" target="toolkit"/>
 	</target>
 
-	<target name="toolkit-clean"
-		description="Main target: Clean all generated and downloaded toolkit files and cleans samples">
-		<ant dir="${toolkit.dir}" target="clean-all" />
+	<target name="toolkit-clean" depends="samples-clean"
+		description="Main target: Clean all generated toolkit files and cleans samples">
+		<ant dir="${toolkit.dir}" target="toolkit-clean" />
 	</target>
 
 	<target name="get_name">
@@ -68,7 +69,7 @@
 
 	<target name="spldoc-clean"
 		description="Clean the toolkit documentation">
-		<delete dir="${doc.string}"/>
+		<delete dir="${doc.dir}"/>
 		<delete dir="${samples.doc.dir}"/>
 	</target>
 
@@ -123,6 +124,7 @@
 		<exec executable="make" failonerror="true" dir="${basedir}">
 			<arg value="clean" />
 		</exec>
+		<delete dir="output"/>
 	</target>
 
 	<!-- Test targets -->
@@ -158,17 +160,17 @@
 	</target>
 
 	<!-- Targets to build releases -->
-	<target name="release" description="Make a toolkit release archive - purge workspace and build toolkit from scratch" depends="clean">
+	<target name="release" depends="clean"
+		description="Make a toolkit release archive - purge workspace and build toolkit from scratch">
 		<antcall target="release-target" inheritAll="true"/>
 	</target>
 
-	<target name="release-target" depends="releaseinfo">
+	<target name="release-target" depends="releaseinfo,get_name">
 		<!-- prepare toolkit code and docs -->
 		<antcall target="spldoc"/>
 		<antcall target="samples"/> <!-- check if samples are compile clean -->
 		<antcall target="samples-clean"/> <!-- remove samples build artifacts -->
-		<xmlproperty file="${toolkit.dir}/info.xml" prefix="tkinfo" keepRoot="no"/>
-		<echo message="Make releasefile Toolkit Version: ${tkinfo.info:identity.info:version}"/>
+		<echo message="Make releasefile Toolkit ${tkinfo.identity.name} Version: ${tkinfo.identity.version}"/>
 		<!-- Extract the git commit hash -->
 		<exec executable="git" outputproperty="commithash.short">
 				<arg value="rev-parse"/>
@@ -181,15 +183,16 @@
 		<tar compression="gzip" longfile="gnu"
 					destfile="${releasefilename}"
 					basedir="${basedir}"
-					includes="${tkinfo.identity.name}/** samples/** README.md LICENSE"
-					excludes="**/.gitignore **/.gitkeep ${toolkit.string}/.project ${toolkit.string}/.settings/** ${toolkit.string}/.classpath ${toolkit.string}/impl/java/ ${toolkit.string}/icons/ ${toolkit.string}/build.xml"
+					includes="${toolkit.dir}/** samples/** ${doc.string}/** README.md LICENSE"
+					excludes="**/.toolkitList **/.gitignore **/.gitkeep ${toolkit.dir}/.project ${toolkit.dir}/.settings/ ${toolkit.dir}/.classpath ${toolkit.dir}/impl/java/ ${toolkit.dir}/icons/ ${toolkit.dir}/build.xml ${toolkit.dir}/pom.xml"
 		/>
 		<checksum file="${releasefilename}"/>
 		<checksum algorithm="sha1" file="${releasefilename}"/>
 	</target>
 
 	<!-- Extract the git commit hash and make release info -->
-	<target name="releaseinfo" depends="clean-ignored" description="Make the release information file ${release.info.file}">
+	<target name="releaseinfo" depends="clean-ignored"
+		description="Make the release information file ${release.info.file}">
 		<exec executable="git" outputproperty="commithash.long" failonerror="true">
 			<arg value="rev-parse" />
 			<arg value="HEAD" />
@@ -211,12 +214,14 @@
 		<xmlproperty file="${toolkit}/info.xml" prefix="tkinfo" keepRoot="no"/>
 	</target>
 
-	<target name="releaseinfo-clean" description="remove the release information file ${release.info.file}">
+	<target name="releaseinfo-clean"
+		description="remove the release information file">
 		<delete file="${release.info.file}"/>
 	</target>
 
 	<!--- Targets to purge the workspace before a release archive is ptroduced -->
-	<target name="clean-ignored" depends="warn-unclean" description="Remove all git-ignored files (exclude model files) and warn if workspace has uncommited changes"/>
+	<!-- Remove all git-ignored files (exclude model files) and warn if workspace has uncommited changes -->
+	<target name="clean-ignored" depends="warn-unclean"/>
 
 	<target name="warn-unclean" depends="check-unclean" if="has.uncommited">
 		<echo>!Your workspace is not clean!</echo>

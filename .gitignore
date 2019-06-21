@@ -19,7 +19,8 @@ toolkit.xml
 /com.ibm.streamsx.inetserver/build.info
 /com.ibm.streamsx.inetserver/opt/downloaded/
 /release/
-doc/
+/doc/spldoc/
+/samples/doc/spldoc/
 
 # generated operator models and icon files for java primitive operators
 /com.ibm.streamsx.inetserver/com.ibm.streamsx.inet.rest/*/*.xml
