@@ -23,7 +23,12 @@ description="Emits a tuple for each POST request on the inject URL with port ind
 description="Optional additional ports that emit a tuple for each POST request on the inject URL with the corresponding port index")})
 @Icons(location32="icons/HTTPTupleInjection_32.gif", location16="icons/HTTPTupleInjection_16.gif")
 public class PostJSON extends ServletOperator {
-	
+
+	@Override
+	protected String getSetupClass() {
+		return com.ibm.streamsx.inet.rest.setup.PostJSONSetup.class.getName();
+	}
+
 	/**
 	 * Verify the either the schema contains an attribute of type
 	 * rstring jsonString, or the first attribute is an rstring  for each output port.
@@ -71,4 +76,5 @@ public class PostJSON extends ServletOperator {
 			"**Limitations**:\\n" + 
 			"* Error handling is limited, incorrect URLs can crash the application.\\n" + 
 			"* By default no security access is provided to the data, HTTPS must be explicitly configured.";
+
 }

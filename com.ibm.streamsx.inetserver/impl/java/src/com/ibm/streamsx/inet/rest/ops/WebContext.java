@@ -27,7 +27,12 @@ public class WebContext extends ServletOperator {
 	public void setContext(String context) {}
 	@Parameter(description=CRB_DESC)
 	public void setContextResourceBase(String base) {}
-	
+
+	@Override
+	protected String getSetupClass() {
+		return com.ibm.streamsx.inet.rest.setup.WebContextSetup.class.getName();
+	}
+
 	@Override
 	public void initialize(OperatorContext context) throws Exception {
 		super.initialize(context);

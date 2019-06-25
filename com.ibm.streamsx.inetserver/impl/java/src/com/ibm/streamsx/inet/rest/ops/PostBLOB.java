@@ -22,7 +22,12 @@ description="Emits a tuple for each POST request on the inject URL with port ind
 description="Optional additional ports that emit a tuple for each POST request on the inject URL with the corresponding port index")})
 @Icons(location32="icons/HTTPBLOBInjection_32.gif", location16="icons/HTTPBLOBInjection_16.gif")
 public class PostBLOB extends ServletOperator {
-	
+
+	@Override
+	protected String getSetupClass() {
+		return com.ibm.streamsx.inet.rest.setup.PostBLOBSetup.class.getName();
+	}
+
 	/**
 	 * Verify the first attribute is a BLOB attribute for each output port.
 	 */
@@ -59,4 +64,5 @@ public class PostBLOB extends ServletOperator {
 			"**Limitations**:\\n" + 
 			"* Error handling is limited, incorrect URLs can crash the application.\\n" + 
 			"* By default no security access is provided to the data, HTTPS must be explicitly configured.";
+
 }

@@ -77,4 +77,9 @@ public class PostTuple extends ServletOperator {
 	public void initialize(OperatorContext context) throws Exception {
 		super.initialize(context);
 	}
+
+	@Override
+	protected String getSetupClass() {
+		return com.ibm.streamsx.inet.rest.setup.PostTupleSetup.class.getName();
+	}
 }

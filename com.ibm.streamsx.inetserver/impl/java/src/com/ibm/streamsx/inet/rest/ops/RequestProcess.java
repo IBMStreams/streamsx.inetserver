@@ -234,6 +234,11 @@ public class RequestProcess extends ServletOperator {
 		return new RequestProcessConduit(this::initiateRequestFromWeb, webTimeout, nRequestTimeouts, nActiveRequests, activeRequests);
 	}
 
+	@Override
+	protected String getSetupClass() {
+		return com.ibm.streamsx.inet.rest.setup.RequestProcessSetup.class.getName();
+	}
+
 	/**
 	 * Initialize this operator. Called once before any tuples are processed.
 	 * 
@@ -751,4 +756,5 @@ public class RequestProcess extends ServletOperator {
 		}
 		return outTuple;
 	}
+
 }

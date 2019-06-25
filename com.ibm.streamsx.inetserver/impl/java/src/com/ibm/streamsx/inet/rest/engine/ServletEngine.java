@@ -399,7 +399,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 	}
 
 	@Override
-	public void registerOperator(final String operatorClass, final OperatorContext operatorContext, Object conduit) throws Exception {
+	public void registerOperator(final String operatorSetupClass, final OperatorContext operatorContext, Object conduit) throws Exception {
 
 		trace.info("Register servlets for operator: " + operatorContext.getName());
 
@@ -457,10 +457,8 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 			trace.info("Port information servlet URL : " + ports.getContextPath() + path);
 		}
 
-		// Add servlets for the operator, driven by a Setup class that implements
-		// OperatorServletSetup with a name derived from the operator class name.
-		String setupClass = operatorClass.replace(".ops.", ".setup.").concat("Setup");
-		OperatorServletSetup setup = Class.forName(setupClass).asSubclass(OperatorServletSetup.class).newInstance();
+		// Add servlets for the operator, driven by a Setup class that implements OperatorServletSetup.
+		OperatorServletSetup setup = Class.forName(operatorSetupClass).asSubclass(OperatorServletSetup.class).newInstance();
 		
 		List<ExposedPort> operatorPorts = setup.setup(operatorContext, staticContext, ports);
 		if (operatorPorts != null)

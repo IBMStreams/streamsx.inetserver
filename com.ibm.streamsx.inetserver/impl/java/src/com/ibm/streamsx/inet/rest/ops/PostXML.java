@@ -22,7 +22,12 @@ description="Emits a tuple for each POST request on the inject URL with port ind
 description="Optional additional ports that emit a tuple for each POST request on the inject URL with the corresponding port index")})
 @Icons(location32="icons/HTTPXMLInjection_32.gif", location16="icons/HTTPXMLInjection_16.gif")
 public class PostXML extends ServletOperator {
-	
+
+	@Override
+	protected String getSetupClass() {
+		return com.ibm.streamsx.inet.rest.setup.PostXMLSetup.class.getName();
+	}
+
 	/**
 	 * Verify the first attribute is an XML attribute for each output port.
 	 */
@@ -59,4 +64,5 @@ public class PostXML extends ServletOperator {
 			"**Limitations**:\\n" + 
 			"* Error handling is limited, incorrect URLs can crash the application.\\n" + 
 			"* By default no security access is provided to the data, HTTPS must be explicitly configured.";
+
 }

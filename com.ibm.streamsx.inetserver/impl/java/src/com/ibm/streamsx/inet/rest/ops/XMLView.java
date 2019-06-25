@@ -55,18 +55,22 @@ public class XMLView extends ServletOperator {
 			}
 		}
 	}
-	
+
 	protected Object getConduit() {
 		return portData;
 	}
-	
-	
+
+	@Override
+	protected String getSetupClass() {
+		return com.ibm.streamsx.inet.rest.setup.XMLViewSetup.class.getName();
+	}
+
 	@Override
 	public void process(StreamingInput<Tuple> port, Tuple tuple)
 			throws Exception {
 		portData.put(port.getPortNumber(), new Object[] {tuple.getXML(attributeIndex), System.currentTimeMillis()});
 	}
-	
+
 	static final String DESC = "REST API to view tuples from input ports.\\n" + 
 			"Embeds a Jetty web server to provide HTTP or HTTPS REST access to the first XML attribute of the last tuple received by " + 
 			"the input port." +
