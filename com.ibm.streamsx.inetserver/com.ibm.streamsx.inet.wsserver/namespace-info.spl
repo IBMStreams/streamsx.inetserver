@@ -1,0 +1,9 @@
+/**
+ * The Interne Server Toolkit provides support HTTP- and Websocket-Server functions. The functionality is based 
+ * on an embedded jetty webserver.
+ * 
+ * # HTTPS Support and Sharing the Jetty Server
+ * see also [namespace:com.ibm.streamsx.inet]
+*/
+
+namespace com.ibm.streamsx.inet.wsserver;

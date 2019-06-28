@@ -63,6 +63,8 @@ public class PostXML extends ServletOperator {
 			"\\n" + 
 			"**Limitations**:\\n" + 
 			"* Error handling is limited, incorrect URLs can crash the application.\\n" + 
-			"* By default no security access is provided to the data, HTTPS must be explicitly configured.";
+			"* By default no security access is provided to the data, HTTPS must be explicitly configured.\\n"
+			+ "# HTTPS Support and Sharing the Jetty Server\\n"
+			+ "see also [namespace:com.ibm.streamsx.inet]";
 
 }

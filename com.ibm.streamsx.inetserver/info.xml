@@ -5,15 +5,16 @@
   <identity>
     <name>com.ibm.streamsx.inetserver</name>
     <description>
-The Internet Toolkit provides support for common internet rest protocol and web socket server protocol.
-This toolkit is a split from streamsx.inet 2.9.6
+The Internet Server Toolkit provides support HTTP- and Websocket-Server functions. The functionality is based on an embedded 
+jetty webserver. It may be used for rest protocol and web socket protocol applications.
+The toolkit origin is a split from internet toolkit streamsx.inet 2.9.6
 
 This toolkit separates its functionality into a number of namespaces:
-* [namespace:com.ibm.streamsx.inet.rest|com.ibm.streamsx.inet.rest]: Operators that embed a HTTP server to provide a REST-style API to streaming data.
-* [namespace:com.ibm.streamsx.inet.wsserver|com.ibm.streamsx.inet.wsserver]: Operators that embed a WebSocket server to expose streaming data as WebSocket messages.
+* [namespace:com.ibm.streamsx.inet.rest|com.ibm.streamsx.inet.rest]: Operators that embed a (jetty) HTTP server to provide a REST-style API to streaming data.
+* [namespace:com.ibm.streamsx.inet.wsserver|com.ibm.streamsx.inet.wsserver]: Operators that embed a (jetty) WebSocket server to expose streaming data as WebSocket messages.
 
     </description>
-    <version>3.0.1.__dev__</version>
+    <version>3.1.0.__dev__</version>
     <requiredProductVersion>4.0.1.0</requiredProductVersion>
   </identity>
   <dependencies/>

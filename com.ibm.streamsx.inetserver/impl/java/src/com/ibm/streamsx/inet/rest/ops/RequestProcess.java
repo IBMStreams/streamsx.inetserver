@@ -70,7 +70,6 @@ import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
  * </p> 
  *
  */
-
 @PrimitiveOperator(name = "HTTPRequestProcess", description = RequestProcess.DESC)
 @InputPorts({
 		@InputPortSet(description = "Response to be returned to the web requestor.", cardinality = 1, optional = false, controlPort=true, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious)})
@@ -144,7 +143,9 @@ public class RequestProcess extends ServletOperator {
 			+ "* context/pathInfo relationship : A request's context path beyond the base is accepted, the 'pathInfo' attribute will have path beyond the base.  "
 			+ "  If the context path is */work* requests to */work/translate* will have a 'pathInfo' of */translate* and requests "
 			+ "  to */work/translate/speakeasy* will have a 'pathInfo' of */translate/speakeasy*. "
-			+ "\\n\\n";
+			+ "\\n"
+			+ "# HTTPS Support and Sharing the Jetty Server\\n "
+			+ "see also [namespace:com.ibm.streamsx.inet]";
 
 
 	static final double DEFAULT_WEB_TIMEOUT = 15.0;

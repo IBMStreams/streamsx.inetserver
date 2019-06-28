@@ -54,7 +54,9 @@ public class WebSocketSend extends ServletOperator {
 			+ "Upon startup, this operator is registered to the common pe-wide jetty web server. "
 			+ "Clients may connect to the websocket context under /input/0/wssend. "
 			+ "As tuple arrives on the input port a message is triggered and transmitted to all currently connected clients. "
-			+ "Clients can connect and disconnect at anytime.";
+			+ "Clients can connect and disconnect at anytime.\\n"
+			+ "# HTTPS Support and Sharing the Jetty Server\\n "
+			+ "see also [namespace:com.ibm.streamsx.inet]";
 
 	static final String INPUT_PORT_DESCR =
 			"Input port: Tuples received on this port generate a message to be transmitted over to "

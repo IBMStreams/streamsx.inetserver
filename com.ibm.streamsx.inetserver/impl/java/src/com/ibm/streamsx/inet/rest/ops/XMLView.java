@@ -85,6 +85,8 @@ public class XMLView extends ServletOperator {
 			"The input port schema must contain an XML attribute whose value will be made available through the `/tuple` URL.\\n" + 
 			"\\n" + 
 			"**Limitations**:\\n" + 
-			"* By default no security access is provided to the data, HTTPS must be explicitly configured.\\n";
+			"* By default no security access is provided to the data, HTTPS must be explicitly configured.\\n"
+			+ "# HTTPS Support and Sharing the Jetty Server\\n "
+			+ "see also [namespace:com.ibm.streamsx.inet]";
 
 }

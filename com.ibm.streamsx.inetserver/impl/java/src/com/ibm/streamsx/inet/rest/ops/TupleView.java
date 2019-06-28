@@ -92,6 +92,8 @@ public class TupleView extends ServletOperator {
 			"\\n" + 
 			"**Limitations**:\\n" + 
 			"* Error handling is limited, incorrect URLs can crash the application, e.g. providing the wrong number of partition values.\\n" + 
-			"* By default no security access is provided to the data, HTTPS must be explicitly configured.\\n";
+			"* By default no security access is provided to the data, HTTPS must be explicitly configured.\\n"
+			+ "# HTTPS Support and Sharing the Jetty Server\\n "
+			+ "see also [namespace:com.ibm.streamsx.inet]";
 
 }

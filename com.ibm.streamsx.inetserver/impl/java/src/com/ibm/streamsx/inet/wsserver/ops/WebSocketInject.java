@@ -52,7 +52,9 @@ public class WebSocketInject extends ServletOperator {
 			+ "Upon startup, this operator is registered to the common pe-wide jetty web server. "
 			+ "Clients may connect to the websocket URL **/output/0/wsinject**. "
 			+ " Each received message is output as tuple. The data received is dependent upon "
-			+ " the input ports schema.";
+			+ " the input ports schema.\\n"
+			+ "# HTTPS Support and Sharing the Jetty Server\\n "
+			+ "see also [namespace:com.ibm.streamsx.inet]";
 
 	static final String OUTPUT_PORT_DESCR = 
 			"This output port injects the received web socket messages into the Streams application. If the port has one "

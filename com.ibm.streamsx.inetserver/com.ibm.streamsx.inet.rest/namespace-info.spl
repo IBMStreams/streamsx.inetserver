@@ -1,5 +1,5 @@
 /**
- * A set of operators using HTTP REST apis to interact with
+ * A set of operators using HTTP (REST) apis to interact with
  * streaming data.
  *
  * These operators all embed an instance of Eclipse Jetty
@@ -12,7 +12,8 @@
  * the operator's state.
  *
  * Data can be injected into a stream through 
- * [HTTPTupleInjection] and [HTTPXMLInjection] operators.
+ * [HTTPTupleInjection], [HTTPXMLInjection], [HTTPBLOBInjection] and
+ * [HTTPJSONInjection] operators.
  * Each operators extracts data from an `HTTP POST` and
  * submits a tuple on an output port.
  *
@@ -22,11 +23,10 @@
  * also support a fixed context using the `context` and
  * `contextResourceBase` operator parameters. 
  *
- * Multiple operators share a single web-server by being
- * partition colocated in the same partition (fused in the same proccessing element).
- * This allows operators to expose streams through the same webserver
- * without having to be connected in the SPL graph.
- *
+ * The [HTTPRequestProcess] operator enables a developer to process HTTP form's 
+ * and REST calls in a Streams application and deliver the appropriate response to 
+ * the HTTP client.
+ * 
  * Overall, these set of operators allow a complete web-application
  * to be self-contained within an SPL application. In addition to
  * the operators the webserver will serve up HTML and Javascript
@@ -53,71 +53,9 @@
  * * *JSON Data* - Link that provides the raw JSON data.
  * This tables use the Dojo Javascript library from the Steams install, and thus do
  * not require external internet connectivity.
- *
- * + HTTPS Support
- * Overview of HTTP and HTTPS support for
- * `com.ibm.streamsx.inet.rest` operators.
  * 
- * # HTTP Support
- * By default the REST operators provide open ports with no authentication
- * or encryption. This mode is useful for development, testing, proof-of-concept
- * applications and demonstrations. The only configuration is
- * the port number for the HTTP server, which defaults to 8080.
- * 
- * # HTTPS Support
- * HTTPS (SSL/TLS encryption) is supported for all of the operators in
- * `com.ibm.streamsx.inet.rest`. To use HTTPS, the operators are
- * configured to use a certificate from a Java key store. Specifying a
- * certificate enables HTTPS, using TLSv1.2, TLSv1.1 or TLSv1.0.
- * A certificate is specified using these parameters:
- * * `certificateAlias` - Alias of the certificate to use in the key store.
- * * `keyStore` - URL to the key store containing the certificate. If a relative file path then it is taken as relative to the application directory.
- * * `keyStorePassword` - Password to the key store.
- * * `keyPassword` - Password to the certificate.
- *
- * All password parameters accept the Jetty obfuscated password style,
- * which provides protection from casual viewing only. If the password
- * values starts with `OBF:` then it is assumed to be already obfuscated,
- * otherwise it is obfuscated before being passed to Jetty. The
- * Jetty utility `org.eclipse.jetty.util.security.Password` may be
- * used to obfuscate passwords, for example when passing them as
- * submission time values. In addition the SPL function [obfuscate(T)]
- * is provided as an option to obfuscate values.
- *
- * The port number can be specified, and defaults to 8080.
- *
- * Note that a single Jetty instance (potentially shared by multiple
- * operators) either uses HTTPS or HTTP, not both.
- * 
- * # Certificate client authentication
- * Once HTTPS is enabled, then certificate client authentication is enabled by using these parameters:
- * * `trustStore` - URL to the key store containing trusted client certificates. If a relative file path then it is taken as relative to the application directory.
- * * `trustStorePassword` - Password to the trust store.
- *
- * # Server Key and Certificate
- * To generate a server key pair use the following command: 
- *     keytool -genkeypair -keyalg RSA -alias mykey -keypass changeit -storepass changeit -validity 1000 -keystore etc/keystore.jks -dname "CN=<name/hostname>, OU=<org unit>, O=<organization>, L=<locality>, ST=<state>, C=<two-letter country code>"
- * 
- * Check the content of an keystore file:
- *     keytool -list -v -keystore etc/keystore.jks
- * 
- * Extract the certificate for the client trust manager:
- *     keytool -export -rfc -alias mykey -file etc/servercert.pem -storepass changeit -keystore etc/keystore.jks
- * 
- * Insert the the certificate into a new truststore at the client site:
- *     keytool -import -file etc/servercert.pem -alias mykey -keystore etc/cacert.jks -storepass changeit -trustcacerts'
- * 
- * # Client Key and Certificate
- * 
- * The `dname` of an client key must match to the `dname` of the server key. To generate a client key use the following commands:
- *     keytool -genkeypair -keyalg RSA -alias myclientkey -keypass changeit -storepass changeit -keystore etc/clientkey.jks -dname '<the dname string from the server certificate>'
- * 
- * Extract the certificate for the server trust manager:
- *     keytool -export -rfc -alias myclientkey -file etc/clientkey.pem -keystore etc/clientkey.jks -storepass changeit -keypass changeit
- * 
- * Insert the the certificate into a new truststore at the srver site:
- *     keytool -import -file etc/clientkey.pem -alias myclientkey -keystore etc/cacert.jks -storepass changeit -trustcacerts
+ * # HTTPS Support and Sharing the Jetty Server
+ * see also [namespace:com.ibm.streamsx.inet]
 */
 
 namespace com.ibm.streamsx.inet.rest;
-

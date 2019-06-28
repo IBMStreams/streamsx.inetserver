@@ -40,6 +40,8 @@ public class WebContext extends ServletOperator {
 
 	static final String DESC = "Embeds a Jetty web server to provide HTTP or HTTPS REST access to files defined by the `context` and `contextResourceBase` parameters.\\n" + 
 			"**Limitations**:\\n" + 
-			" * By default no security access is provided to the data, HTTPS must be explicitly configured.";
+			" * By default no security access is provided to the data, HTTPS must be explicitly configured.\\n"
+			+ "# HTTPS Support and Sharing the Jetty Server\\n "
+			+ "see also [namespace:com.ibm.streamsx.inet]";
 
 }
