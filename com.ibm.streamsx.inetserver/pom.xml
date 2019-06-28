@@ -31,8 +31,8 @@
             <version>${jettyVersion}</version>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-continuation</artifactId>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-server</artifactId>
             <version>${jettyVersion}</version>
         </dependency>
         <dependency>

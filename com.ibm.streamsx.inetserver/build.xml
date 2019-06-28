@@ -41,9 +41,6 @@ artifacts were left around and caused issues with the ant build.
 	</path>
 
 	<path id="cp.manifest">
-		<fileset dir="opt">
-			<include name="wssupport/Java-WebSocket-1.3.0.jar"/>
-		</fileset>
 		<fileset dir="${lib.dir}">
 			<include name="*.jar"/>
 		</fileset>

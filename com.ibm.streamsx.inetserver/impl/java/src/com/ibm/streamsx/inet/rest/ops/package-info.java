@@ -30,7 +30,7 @@
  *  
  * 3) Create a implementation of OperatorServletSetup that creates the servlet(s) for the operator.
  * The servlet engine uses the OperatorServletSetup based upon the operator's full class
- * name, replacing '.ops.' with '.setup.' and appending Setup, for example
+ * name.
  * 
  * operator class - com.ibm.streamsx.rest.ops.PostXML
  * setup class    - com.ibm.streamsx.rest.setup.PostXMLSetup
