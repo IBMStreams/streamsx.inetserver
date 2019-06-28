@@ -62,5 +62,7 @@ public composite Main {
 
 	config
 		restartable: false;
+		// Ensure the operators are in a single PE to have a single web-server
+		placement: partitionColocation("jettyinstance");
 
 }
