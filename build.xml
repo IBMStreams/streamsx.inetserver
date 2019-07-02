@@ -5,14 +5,16 @@
 	<!-- set global properties for this build -->
 	<property environment="env" />
 	<property name="streams.install"     value="${env.STREAMS_INSTALL}" />
-	<property name="toolkit.dir"         value="com.ibm.streamsx.inetserver"/>
+	<property name="toolkit.string"      value="com.ibm.streamsx.inetserver"/>
+	<property name="toolkit.dir"         location="${toolkit.string}"/> <!-- must be absolute because is used in called test scripts -->
 	<property name="doc.string"          value="doc"/>
 	<property name="doc.dir"             value="${doc.string}/spldoc"/>
 	<property name="samples.dir"         value="samples"/>
 	<property name="samples.doc.dir"     value="samples/${doc.string}/spldoc"/>
 	<property name="test.dir"            value="tests"/>
+	<property name="junit.test.dir"      value="${test.dir}/junit"/>
 	<property name="release.dir"         value="release" />
-	<property name="release.info.file"   value="${toolkit.dir}/build.info"/>
+	<property name="release.info.file"   value="${toolkit.string}/build.info"/>
 
 	<property name="tktitle"             value="IBMStreams ${ant.project.name} Toolkit" />
 	<property name="tkauthor"            value="IBMStreams Open Source Community at GitHub - https://github.com/IBMStreams/${ant.project.name}" />
@@ -28,7 +30,7 @@
 		description="Main target: Build the toolkit code, build the samples index and generate the spl documentation - incremental build"
 	/>
 
-	<target name="clean" depends="spldoc-clean,samples-clean,releaseinfo-clean"
+	<target name="clean" depends="spldoc-clean,samples-clean,releaseinfo-clean,test-clean"
 		description="Main target: clean up toolkit code, samples code, all spldocs and downloaded libs">
 		<ant dir="${toolkit.dir}" target="clean" />
 	</target>
@@ -44,7 +46,7 @@
 	</target>
 
 	<target name="get_name">
-		<xmlproperty file="${toolkit.dir}/info.xml" prefix="tkinfo" keepRoot="no"/>
+		<xmlproperty file="${toolkit.string}/info.xml" prefix="tkinfo" keepRoot="no"/>
 		<echo message="Toolkit Name: ${tkinfo.identity.name}"/>
 		<echo message="Toolkit Version: ${tkinfo.identity.version}"/>
 	</target>
@@ -59,7 +61,7 @@
 			<arg value="--doc-title" />
 			<arg value="${tktitle}" />
 			<arg value="--directory" />
-			<arg value="${toolkit.dir}" />
+			<arg value="${toolkit.string}" />
 			<arg value="--warn-no-comments"/>
 			<arg value="--copy-image-files" />
 			<arg value="--output-directory" />
@@ -128,8 +130,8 @@
 	</target>
 
 	<!-- Test targets -->
-	<target name="test" depends="toolkit"
-		description="Execute the toolkit test. Requires an up to date toolkit build">
+	<target name="test" depends="test-junit"
+		description="Main target: Execute all toolkit test. Includes junit tests.">
 		<echo message="Start full test"/>
 		<exec executable="./runTest.sh" dir="${test.dir}/frameworktests" failonerror="true">
 			<arg value="--noprompt"/>
@@ -137,8 +139,8 @@
 		</exec>
 	</target>
 
-	<target name="test-quick" depends="toolkit"
-		description="Execute the toolkit quick test. Requires an up to date toolkit build">
+	<target name="test-quick" depends="test-junit"
+		description="Main target: Execute the toolkit quick test. Includes junit tests.">
 		<echo message="Start quick test"/>
 		<exec executable="./runTest.sh" dir="${test.dir}/frameworktests" failonerror="true">
 			<arg value="--noprompt"/>
@@ -150,13 +152,15 @@
 
 	<target name="test-clean"
 		description="Clean up all generated test artifacts">
+		<ant dir="${junit.test.dir}" target="clean-all"/>
 		<delete dir="${test.dir}/frameworktests/workdir"/>
 		<delete dir="${test.dir}/frameworktests/scripts"/>
 	</target>
 
-	<target name="tests" depends="toolkit">
-		<ant dir="${toolkit.dir}" target="test"/>
-		<ant dir="${toolkit.test}" target="all"/>
+	<target name="test-junit" depends="toolkit"
+		description="Execute the junit tests">
+		<echo message="Execute the junit tests"/>
+		<ant dir="${junit.test.dir}" target="test"/>
 	</target>
 
 	<!-- Targets to build releases -->
@@ -183,8 +187,8 @@
 		<tar compression="gzip" longfile="gnu"
 					destfile="${releasefilename}"
 					basedir="${basedir}"
-					includes="${toolkit.dir}/** samples/** ${doc.string}/** README.md LICENSE"
-					excludes="**/.toolkitList **/.gitignore **/.gitkeep ${toolkit.dir}/.project ${toolkit.dir}/.settings/ ${toolkit.dir}/.classpath ${toolkit.dir}/impl/java/ ${toolkit.dir}/icons/ ${toolkit.dir}/build.xml ${toolkit.dir}/pom.xml"
+					includes="${toolkit.string}/** samples/** ${doc.string}/** README.md LICENSE"
+					excludes="**/.toolkitList **/.gitignore **/.gitkeep ${toolkit.string}/.project ${toolkit.string}/.settings/ ${toolkit.string}/.classpath ${toolkit.string}/impl/java/ ${toolkit.string}/icons/ ${toolkit.string}/build.xml ${toolkit.string}/pom.xml"
 		/>
 		<checksum file="${releasefilename}"/>
 		<checksum algorithm="sha1" file="${releasefilename}"/>

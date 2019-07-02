@@ -51,7 +51,7 @@
 	</target>
 	
 	<target name="checkjar">
-		<echo message="Build test classes with toolkit jsr: ${toolkit.jarfile}"/>
+		<echo message="Build test classes with toolkit jar: ${toolkit.jarfile}"/>
 		<available property="toolkitjar" file="${toolkit.jarfile}"/>
 		<fail unless="toolkitjar" message="There must be a toolkit jar file: ${toolkit.jarfile}"/>
 	</target>
@@ -87,6 +87,7 @@
 				</classpath>
 			</report>
 		</junitreport>
+		<echo message="Find test report in: ${test.run.dir}/html/index.html"/>
 		<fail message="Failures occurred during test: ${failprop}" if="failprop"/>
 		<fail message="Errors occurred during test: ${errorprop}" if="errorprop"/>
 	</target>
