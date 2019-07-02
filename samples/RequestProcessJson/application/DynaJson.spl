@@ -90,7 +90,6 @@ public composite DynJson
 							if("contentType" == ele [ 0 ]) tupleOut.contentType = ele [ 1 ] ;
 							if("method" == ele [ 0 ]) tupleOut.method = ele [ 1 ] ;
 							if("pathInfo" == ele [ 0 ]) tupleOut.pathInfo = ele [ 1 ][1:] ;
-							if("statusMessage" == ele [ 0 ]) tupleOut.statusMessage = ele [ 1 ] ;
 						}
 					}
 

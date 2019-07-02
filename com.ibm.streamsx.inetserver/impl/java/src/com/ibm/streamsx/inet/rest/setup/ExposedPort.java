@@ -37,7 +37,7 @@ public class ExposedPort {
 	public OperatorContext getOpContext() { return context;}
 	public StreamingData getPort() {return port;}
 
-	void addURL(String key, String path) {
+	public void addURL(String key, String path) {
 		contextPaths.put(key, portsContext + path);
 	}
 

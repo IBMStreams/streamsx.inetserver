@@ -29,9 +29,14 @@ public class TupleView extends ServletOperator {
 	@Parameter(optional=true, cardinality=-1, description="Names of attributes to partition the window by. If the cardinality of this parameter is > 1,"
 			+ "then every value represents one attribute name. If the cadinality equals to 1, the value may contain one attribute name or a comma separated list of attribute names.")
 	public void setPartitionKey(String[] attributeNames) {}
-	
+
 	@Parameter(optional = true, description = "List of headers to insert into the http reply. Formatted as header:value")
 	public void setHeaders(String[] headers) {}
+
+	@Override
+	protected String getSetupClass() {
+		return com.ibm.streamsx.inet.rest.setup.TupleViewSetup.class.getName();
+	}
 
 	@Override
 	public void initialize(OperatorContext context) throws Exception {
@@ -87,5 +92,8 @@ public class TupleView extends ServletOperator {
 			"\\n" + 
 			"**Limitations**:\\n" + 
 			"* Error handling is limited, incorrect URLs can crash the application, e.g. providing the wrong number of partition values.\\n" + 
-			"* By default no security access is provided to the data, HTTPS must be explicitly configured.\\n";
+			"* By default no security access is provided to the data, HTTPS must be explicitly configured.\\n"
+			+ "# HTTPS Support and Sharing the Jetty Server\\n "
+			+ "see also [namespace:com.ibm.streamsx.inet]";
+
 }

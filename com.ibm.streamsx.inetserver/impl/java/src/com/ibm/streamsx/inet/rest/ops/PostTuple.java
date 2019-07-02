@@ -52,9 +52,10 @@ public class PostTuple extends ServletOperator {
 			"* Error handling is limited, incorrect URLs can crash the application.\\n" + 
 			"* Not all SPL data types are supported. String, signed integer and float types are supported for POST parameters. Output port may contain other types but will be set\\n" + 
 			"to their default values.\\n" + 
-			"* By default no security access is provided to the data, HTTPS must be explicitly configured.";
-	
-	
+			"* By default no security access is provided to the data, HTTPS must be explicitly configured.\\n"
+			+ "# HTTPS Support and Sharing the Jetty Server\\n"
+			+ "see also [namespace:com.ibm.streamsx.inet]";
+
 	public static final String MAX_CONTEXT_SIZE_DESC =
 			"Change the maximum HTTP POST content size (K bytes) allowed by this operator." +
 			"Jetty limits the amount of data that can posted from a browser " +
@@ -62,7 +63,7 @@ public class PostTuple extends ServletOperator {
 			"denial of service attacks by malicious clients sending huge amounts of data. " +
 			"The default maximum size Jetty permits is 200K bytes, thus the default value for this parameter is 200. " +
 			"For example, to increase to 500,000 bytes set maxContentSize to 500.";
-	
+
 	public static final String MAX_CONTENT_SIZE_PARAM = "maxContentSize";
 	
 	/*
@@ -76,5 +77,10 @@ public class PostTuple extends ServletOperator {
 	@Override
 	public void initialize(OperatorContext context) throws Exception {
 		super.initialize(context);
+	}
+
+	@Override
+	protected String getSetupClass() {
+		return com.ibm.streamsx.inet.rest.setup.PostTupleSetup.class.getName();
 	}
 }
