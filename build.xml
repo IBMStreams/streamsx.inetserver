@@ -131,36 +131,35 @@
 
 	<!-- Test targets -->
 	<target name="test" depends="test-junit"
-		description="Main target: Execute all toolkit test. Includes junit tests.">
-		<echo message="Start full test"/>
-		<exec executable="./runTest.sh" dir="${test.dir}/frameworktests" failonerror="true">
-			<arg value="--noprompt"/>
-			<arg value="--no-browser"/>
-		</exec>
-	</target>
-
-	<target name="test-quick" depends="test-junit"
 		description="Main target: Execute the toolkit quick test. Includes junit tests.">
 		<echo message="Start quick test"/>
-		<exec executable="./runTest.sh" dir="${test.dir}/frameworktests" failonerror="true">
-			<arg value="--noprompt"/>
-			<arg value="--no-browser"/>
-			<arg value="--category"/>
-			<arg value="quick"/>
+		<exec executable="make" dir="${test.dir}/frameworktests" failonerror="true">
+			<arg value="test"/>
 		</exec>
 	</target>
 
-	<target name="test-clean"
-		description="Clean up all generated test artifacts">
-		<ant dir="${junit.test.dir}" target="clean-all"/>
-		<delete dir="${test.dir}/frameworktests/workdir"/>
-		<delete dir="${test.dir}/frameworktests/scripts"/>
+	<target name="test-full" depends="test-junit"
+		description="Main target: Execute all toolkit tests. Includes junit tests.">
+		<echo message="Start full test"/>
+		<exec executable="make" dir="${test.dir}/frameworktests" failonerror="true">
+			<arg value="test-full"/>
+		</exec>
 	</target>
 
 	<target name="test-junit" depends="toolkit"
 		description="Execute the junit tests">
 		<echo message="Execute the junit tests"/>
 		<ant dir="${junit.test.dir}" target="test"/>
+	</target>
+
+	<target name="test-clean"
+		description="Clean up all generated test artifacts">
+		<ant dir="${junit.test.dir}" target="clean-all"/>
+		<exec executable="make" dir="${test.dir}/frameworktests" failonerror="true">
+			<arg value="clean-all"/>
+		</exec>
+		<delete dir="${test.dir}/frameworktests/workdir"/>
+		<delete dir="${test.dir}/frameworktests/scripts"/>
 	</target>
 
 	<!-- Targets to build releases -->
