@@ -47,6 +47,7 @@ public class InjectJSONTest {
 		op.addOutput("tuple<int32 a, rstring jsonString>");
 		
 		assertTrue(graph.compileChecks());
+		//throw new Exception("EEEEEE");
 	}
 	
 	@Test

@@ -103,6 +103,7 @@ public class InjectFormTest {
 		URL info = new URL(postTuple.toExternalForm().replace("/inject", "/info"));
 		HttpURLConnection connInfo = (HttpURLConnection) info.openConnection(); 
 		assertEquals(HttpURLConnection.HTTP_OK, connInfo.getResponseCode());
+		//assertEquals("AAAAA", "VVVVV");
 		connInfo.disconnect();
 
 		testableGraph.shutdown().get();

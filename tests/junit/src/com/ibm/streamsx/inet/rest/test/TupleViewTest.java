@@ -40,6 +40,7 @@ public class TupleViewTest {
      */
     @Test
     public void testJSONStringAttribute() throws Exception {
+        System.out.println("testJSONStringAttribute()");
         OperatorGraph graph = OperatorGraphFactory.newGraph();
 
         OperatorInvocation<TupleView> op = graph.addOperator("TestJSONStringAttribute", TupleView.class);
@@ -78,6 +79,7 @@ public class TupleViewTest {
         assertEquals(1, tuples.size());
         
         JSONObject jtuple = (JSONObject) tuples.get(0);
+        System.out.println("Result tuple: " + jtuple.toString());
         assertEquals(32l, jtuple.get("a")); // integral values always returned as long
         
         Object js = jtuple.get("jsonString");
@@ -96,6 +98,7 @@ public class TupleViewTest {
      */
     @Test
     public void testJSONStringTuple() throws Exception {
+        System.out.println("testJSONStringTuple()");
         OperatorGraph graph = OperatorGraphFactory.newGraph();
 
         OperatorInvocation<TupleView> op = graph.addOperator("TestJSONStringTuple", TupleView.class);
@@ -138,23 +141,24 @@ public class TupleViewTest {
         assertEquals(2, tuples.size());
         
         JSONObject jtuple = (JSONObject) tuples.get(0);
+        System.out.println("Result tuple: " + jtuple.toString());
         assertEquals(93l, jtuple.get("b"));
         assertEquals("Bonjour!", jtuple.get("c"));
         
         jtuple = (JSONObject) tuples.get(1);
+        System.out.println("Result tuple: " + jtuple.toString());
         assertEquals(93l, jtuple.get("b"));
         assertEquals("Hola!", jtuple.get("c"));
         assertEquals(423l, jtuple.get("d"));
 
-
         testableGraph.shutdown().get();
-    }    
+    }
     
     /**
      * Get the server port from the operator's metric.
      */
     public static int getJettyPort(JavaTestableGraph tg,  OperatorInvocation<? extends ServletOperator> op) {
-        return (int) tg.getOperatorInstance(op).getServerPort().getValue();       
+        return (int) tg.getOperatorInstance(op).getServerPort().getValue();
     }
     
     /**
@@ -162,7 +166,9 @@ public class TupleViewTest {
      */
     public static String getJettyURLBase(JavaTestableGraph tg,  OperatorInvocation<? extends ServletOperator> op) throws UnknownHostException {
         int port = getJettyPort(tg, op);
-        return "http://" + InetAddress.getLocalHost().getHostName() + ":" + port;    
+        String res = "http://" + InetAddress.getLocalHost().getHostName() + ":" + port;
+        System.out.println("Using base url: " + res);
+        return res;
     }
     
     /**
@@ -170,7 +176,8 @@ public class TupleViewTest {
      */
     public static JSONArray getJSONTuples(URL url) throws IOException {
         
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection(); 
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        System.out.println("Response: " + conn.getResponseMessage());
         assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
         assertTrue(conn.getContentType().startsWith("application/json"));
         JSONArtifact jsonResponse = JSON.parse(new BufferedInputStream(conn.getInputStream(), 4096));
