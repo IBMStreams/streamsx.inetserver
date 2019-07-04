@@ -18,12 +18,14 @@ import com.ibm.streams.operator.compile.OperatorContextChecker;
 import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.model.InputPortSet;
 import com.ibm.streams.operator.model.InputPortSet.WindowMode;
+import com.ibm.streams.operator.model.InputPorts;
 import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streamsx.inet.messages.Messages;
 
 @PrimitiveOperator(name="HTTPXMLView", description=XMLView.DESC)
-@InputPortSet(cardinality=1,windowingMode=WindowMode.NonWindowed,
-			description="Input port whose first XML attribute will be available using a HTTP GET request with a URL using port index 0.")
+@InputPorts({
+	@InputPortSet(cardinality=1,windowingMode=WindowMode.NonWindowed, description="Input port whose first XML attribute will be available using a HTTP GET request with a URL using port index 0.")
+})
 @Icons(location32="icons/HTTPXMLView_32.gif", location16="icons/HTTPXMLView_16.gif")
 public class XMLView extends ServletOperator {
 	
@@ -82,7 +84,8 @@ public class XMLView extends ServletOperator {
 			"* *context path*`/`*base operator name* - When the `context` parameter is set.\\n" +
 			"* *full operator name* - When the `context` parameter is **not** set.\\n" +
 			"\\n" + 
-			"The input port schema must contain an XML attribute whose value will be made available through the `/tuple` URL.\\n" + 
+			"The input port schema must contain an XML attribute whose value will be made available through the `/tuple` URL. " +
+			"If there was no input tuple received or there was a default value received, response code 204 (SC_NO_CONTENT) is returned.\\n" + 
 			"\\n" + 
 			"**Limitations**:\\n" + 
 			"* By default no security access is provided to the data, HTTPS must be explicitly configured.\\n"

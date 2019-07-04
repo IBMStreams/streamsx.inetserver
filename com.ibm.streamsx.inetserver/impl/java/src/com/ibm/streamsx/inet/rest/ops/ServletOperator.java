@@ -67,7 +67,8 @@ public abstract class ServletOperator extends AbstractOperator {
 	 * context, as that is an object that is not specific to each
 	 * operator's class loader.
 	 */
-	@Parameter(optional=true, description="Port number for the embedded Jetty HTTP server, default: \\\"" + ServletEngine.DEFAULT_PORT + "\\\".")
+	@Parameter(optional=true, description="Port number for the embedded Jetty HTTP server, default: \\\"" + ServletEngine.DEFAULT_PORT + "\\\". "
+			+ "If the port is set to 0, the jetty server uses a free tcp port, and the metric `serverPort` delivers the actual value.")
 	public void setPort(int port) {}
 	@Parameter(optional=true, description=CONTEXT_DESC)
 	public void setContext(String context) {}
