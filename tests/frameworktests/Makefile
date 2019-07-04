@@ -2,7 +2,7 @@
 
 SCRIPSPATH = $(abspath scripts)
 INPUTDIR = tests
-WORKDIR ?= workdir
+WORKDIR = workdir
 
 define HELPTEXT =
 The targets:
@@ -15,7 +15,7 @@ The targets:
 	help: print this help
 	
 You can add further command line options to the test targets by adding a command line like:
-make test CMD_ARGS=...
+make test TEST_CMD_ARGS=...
 endef
 build: scripts
 
@@ -25,10 +25,10 @@ scripts: testframeInstaller_*.sh
 	./$< $(SCRIPSPATH)
 
 test: scripts
-	./scripts/bin/runTTF --directory $(INPUTDIR) --workdir $(WORKDIR) --category quick $(CMD_ARGS)
+	./scripts/bin/runTTF --directory $(INPUTDIR) --workdir $(WORKDIR) --category quick $(TEST_CMD_ARGS)
 
 test-full: scripts
-	./scripts/bin/runTTF --directory $(INPUTDIR) --workdir $(WORKDIR) $(CMD_ARGS)
+	./scripts/bin/runTTF --directory $(INPUTDIR) --workdir $(WORKDIR) $(TEST_CMD_ARGS)
 
 clean:
 	rm -rf $(WORKDIR)
