@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="com.ibm.streamsx.inetserver.tests.junit" basedir="." default="test">
+<project name="com.ibm.streamsx.inetserver.tests.junit" basedir="." default="test"
+	xmlns:if="ant:if">
 
 	<property environment="env" />
 	<property name="streams.install"   value="${env.STREAMS_INSTALL}" />
 
-	<property name="src.dir"         location="src" />
-	<property name="bin.dir"         location="bin" />
-	<property name="lib.dir"         location="lib" />      <!-- downloaded libs -->
+	<property name="src.dir"           location="src" />
+	<property name="bin.dir"           location="bin" />
+	<property name="lib.dir"           location="lib" />      <!-- downloaded libs -->
 
-	<property name="test.run.dir"    location="unittestrun" />
-	<property name="jarfile"         value="com.ibm.streamsx.inetserver.jar" />
-	<property name="toolkit.dir"     location="../../com.ibm.streamsx.inetserver" />
-	<property name="toolkit.jarfile" value="${toolkit.dir}/impl/lib/${jarfile}" />
+	<property name="test.run.dir"      location="unittestrun" />
+	<property name="haltontestfailure" value="true"/>         <!-- stop script if a test fails -->
+	<property name="jarfile"           value="com.ibm.streamsx.inetserver.jar" />
+	<property name="toolkit.dir"       location="../../com.ibm.streamsx.inetserver" />
+	<property name="toolkit.jarfile"   value="${toolkit.dir}/impl/lib/${jarfile}" />
 	
 	<path id="cp.streams">
 		<pathelement location="${streams.install}/lib/com.ibm.streams.operator.samples.jar" />
@@ -59,6 +61,7 @@
 	<target name="test" depends="build"
 		description="Execute the integrated unit tests">
 		<mkdir dir="${test.run.dir}" />
+		<delete file="${test.run.dir}/ERROR"/>
 		<junit printsummary="yes" haltonfailure="no" fork="yes" includeantruntime="true"
 			errorproperty="errorprop" failureproperty="failprop">
 			<classpath>
@@ -88,8 +91,28 @@
 			</report>
 		</junitreport>
 		<echo message="Find test report in: ${test.run.dir}/html/index.html"/>
-		<fail message="Failures occurred during test: ${failprop}" if="failprop"/>
-		<fail message="Errors occurred during test: ${errorprop}" if="errorprop"/>
+		<echo message="FAILURE: Failures occurred during test: ${failprop}" if:set="failprop"/>
+		<echo message="ERROR: Errors occurred during test: ${errorprop}" if:set="errorprop"/>
+		<antcall target="test-wrap-up"/>
+	</target>
+
+	<!-- touch file : ERRORif test fails ans stop script condidionally -->
+	<target name="test-wrap-up">
+		<condition property="testerror">
+			<or>
+				<istrue value="${failprop}"/>
+				<istrue value="${errorprop}"/>
+			</or>
+		</condition>
+		<touch file="${test.run.dir}/ERROR" if:true="${testerror}"/>
+		<fail message="Stop script due to test Failure or Error">
+			<condition>
+				<and>
+					<istrue value="${haltontestfailure}"/>
+					<istrue value="${testerror}"/>
+				</and>
+			</condition>
+		</fail>
 	</target>
 
 	<target name="clean"
