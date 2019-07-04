@@ -1,3 +1,6 @@
 /unittestrun/
 /lib/
 
+/studio-build/
+/.toolkitList
+/.apt_generated/
