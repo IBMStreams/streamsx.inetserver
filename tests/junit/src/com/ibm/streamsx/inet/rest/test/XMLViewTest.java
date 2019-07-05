@@ -101,7 +101,7 @@ public class XMLViewTest {
      * @throws IOException 
      */
     public static XML getXMLTuples(URL url) throws IOException {
-        
+        System.out.println(url.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         System.out.println("Response: " + conn.getResponseMessage());
         assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());

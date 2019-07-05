@@ -12,7 +12,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.URL;
 import java.util.Random;
 
@@ -74,13 +73,12 @@ public class InjectJSONTest {
 
 		// Declare a HTTPJSONInjection operator
 		OperatorInvocation<PostJSON> op = graph.addOperator(PostJSON.class);
-		op.setIntParameter("port", 8081);
+		op.setIntParameter("port", 0);
 		
 		OutputPortDeclaration injectedTuples = op.addOutput("tuple<rstring jsonString>");
 		
 		// Create the testable version of the graph
-		JavaTestableGraph testableGraph = new JavaOperatorTester()
-				.executable(graph);
+		JavaTestableGraph testableGraph = new JavaOperatorTester().executable(graph);
 		
 		MostRecent<Tuple> mrt = new MostRecent<Tuple>();
 		testableGraph.registerStreamHandler(injectedTuples, mrt);
@@ -90,11 +88,10 @@ public class InjectJSONTest {
 		
 		assertNull(mrt.getMostRecentTuple());
 		
-		URL postTuple = new URL("http://" + InetAddress.getLocalHost().getHostName() + ":8081/" + op.getName() + "/ports/output/0/inject");
+		URL postTuple = new URL(TupleViewTest.getJettyURLBase(testableGraph, op) + "/" + op.getName() + "/ports/output/0/inject");
 		
 		// Make an JSON POST request with an empty JSON object
 		postJSONAndTest(postTuple, new JSONObject(), mrt);
-		
 
 		JSONObject json = new JSONObject();
 		json.put("a", 37l); // JSON library always reads ints back as long values
@@ -103,21 +100,20 @@ public class InjectJSONTest {
 
 		testableGraph.shutdown().get();
 	}
-	
+
 	@Test
 	public void testInjectTwoPorts() throws Exception {
 		OperatorGraph graph = OperatorGraphFactory.newGraph();
 
 		// Declare a HTTPJSONInjection operator
 		OperatorInvocation<PostJSON> op = graph.addOperator(PostJSON.class);
-		op.setIntParameter("port", 8082);
+		op.setIntParameter("port", 0);
 		
 		OutputPortDeclaration injectedTuples0 = op.addOutput("tuple<rstring jsonString>");
 		OutputPortDeclaration injectedTuples1 = op.addOutput("tuple<rstring a>");
 		
 		// Create the testable version of the graph
-		JavaTestableGraph testableGraph = new JavaOperatorTester()
-				.executable(graph);
+		JavaTestableGraph testableGraph = new JavaOperatorTester().executable(graph);
 		
 		MostRecent<Tuple> mrt0 = new MostRecent<Tuple>();
 		testableGraph.registerStreamHandler(injectedTuples0, mrt0);
@@ -128,24 +124,25 @@ public class InjectJSONTest {
 		// Execute the initialization of operators within graph.
 		testableGraph.initialize().get().allPortsReady().get();
 		
-		URL postTuple0 = new URL("http://" + InetAddress.getLocalHost().getHostName() + ":8082/" + op.getName() + "/ports/output/0/inject");
+		//Get bas url
+		String baseUrl = TupleViewTest.getJettyURLBase(testableGraph, op);
+		URL postTuple0 = new URL(baseUrl + "/" + op.getName() + "/ports/output/0/inject");
 		JSONObject json0 = new JSONObject();
 		json0.put("a", 37l); // JSON library always reads ints back as long values
 		json0.put("b", "Hello!");
 		postJSONAndTest(postTuple0, json0, mrt0);
 		assertNull(mrt1.getMostRecentTuple());
 		
-		URL postTuple1 = new URL("http://" + InetAddress.getLocalHost().getHostName() + ":8082/" + op.getName() + "/ports/output/1/inject");
+		URL postTuple1 = new URL(baseUrl + "/" + op.getName() + "/ports/output/1/inject");
 		JSONObject json1 = new JSONObject();
 		json1.put("a", 99l); // JSON library always reads ints back as long values
 		json1.put("b", "Goodbye!");
 		postJSONAndTest(postTuple1, json1, mrt1);
 		assertNull(mrt0.getMostRecentTuple());
 
-
 		testableGraph.shutdown().get();
 	}
-	
+
 	@Test
 	public void testBigInjectFails() throws Exception {	
 		// Make an JSON POST request with an 800KB+ JSON object
@@ -162,8 +159,7 @@ public class InjectJSONTest {
 		OutputPortDeclaration injectedTuples = op.addOutput("tuple<rstring jsonString>");
 		
 		// Create the testable version of the graph
-		JavaTestableGraph testableGraph = new JavaOperatorTester()
-				.executable(graph);
+		JavaTestableGraph testableGraph = new JavaOperatorTester().executable(graph);
 		
 		MostRecent<Tuple> mrt = new MostRecent<Tuple>();
 		testableGraph.registerStreamHandler(injectedTuples, mrt);

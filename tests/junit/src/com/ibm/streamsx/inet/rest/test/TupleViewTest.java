@@ -49,15 +49,13 @@ public class TupleViewTest {
         op.setStringParameter("context", "TupleViewTest");
         op.setStringParameter("contextResourceBase", "/tmp"); // not actually serving any static content
 
-        InputPortDeclaration tuplesToView = op
-                .addInput("tuple<int32 a, rstring jsonString>");
+        InputPortDeclaration tuplesToView = op.addInput("tuple<int32 a, rstring jsonString>");
         
         // Just need to see the last tuple in the HTTP request.
         tuplesToView.sliding().evictCount(1).triggerCount(1);
 
         // Create the testable version of the graph
-        JavaTestableGraph testableGraph = new JavaOperatorTester()
-                .executable(graph);
+        JavaTestableGraph testableGraph = new JavaOperatorTester().executable(graph);
 
         // Create the injector to inject test tuples.
         StreamingOutput<OutputTuple> injector = testableGraph.getInputTester(tuplesToView);
@@ -175,7 +173,7 @@ public class TupleViewTest {
      * Get the JSON array of tuples from a URL assumed to be HTTPTupleView (TupleView.class).
      */
     public static JSONArray getJSONTuples(URL url) throws IOException {
-        
+        System.out.println(url.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         System.out.println("Response: " + conn.getResponseMessage());
         assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());

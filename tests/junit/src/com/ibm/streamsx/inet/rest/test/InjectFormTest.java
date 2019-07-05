@@ -50,6 +50,7 @@ public class InjectFormTest {
 		
 		// Make an empty POST request which submits a default tuple.
 		URL postTuple = new URL(TupleViewTest.getJettyURLBase(testableGraph, op) + "/" + op.getName() + "/ports/output/0/inject");
+		System.out.println(postTuple.toString());
 		HttpURLConnection conn = (HttpURLConnection) postTuple.openConnection();
 		conn.setDoOutput(true);
 		System.out.println(conn.getResponseMessage());
@@ -64,6 +65,7 @@ public class InjectFormTest {
 		String quote = "It's a beautiful thing, the destruction of words.";
 		String data = "b=" + URLEncoder.encode(quote, "UTF-8");
 		byte[] dataBytes = data.getBytes("UTF-8");
+		System.out.println(postTuple.toString());
 		conn = (HttpURLConnection) postTuple.openConnection(); 
 		conn.setDoOutput(true);
 		conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -75,6 +77,7 @@ public class InjectFormTest {
 		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
+		System.out.println(mrt.getMostRecentTuple().toString());
 		assertEquals(0, mrt.getMostRecentTuple().getInt(0));
 		assertEquals(quote, mrt.getMostRecentTuple().getString(1));
 		mrt.clear();
@@ -82,6 +85,7 @@ public class InjectFormTest {
 		// And now both attributes
 		data = "a=73&b=" + URLEncoder.encode(quote, "UTF-8");
 		dataBytes = data.getBytes("UTF-8");
+		System.out.println(postTuple.toString());
 		conn = (HttpURLConnection) postTuple.openConnection(); 
 		conn.setDoOutput(true);
 		conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -93,12 +97,14 @@ public class InjectFormTest {
 		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
+		System.out.println(mrt.getMostRecentTuple().toString());
 		assertEquals(73, mrt.getMostRecentTuple().getInt(0));
 		assertEquals(quote, mrt.getMostRecentTuple().getString(1));
 		mrt.clear();
 		
 		// Verify a form exists
 		URL form = new URL(postTuple.toExternalForm().replace("/inject", "/form"));
+		System.out.println(form.toString());
 		HttpURLConnection connForm = (HttpURLConnection) form.openConnection();
 		System.out.println(connForm.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_OK, connForm.getResponseCode());
@@ -106,6 +112,7 @@ public class InjectFormTest {
 
 		// Verify a info servlet exists
 		URL info = new URL(postTuple.toExternalForm().replace("/inject", "/info"));
+		System.out.println(info.toString());
 		HttpURLConnection connInfo = (HttpURLConnection) info.openConnection();
 		System.out.println(connInfo.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_OK, connInfo.getResponseCode());
