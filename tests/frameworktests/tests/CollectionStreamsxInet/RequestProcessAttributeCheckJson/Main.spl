@@ -1,0 +1,18 @@
+use com.ibm.streamsx.inet.rest::HTTPRequestProcess ;
+
+public composite Main {
+	graph
+		//<0>stream<rstring string> InStream as O = Beacon() {}
+		//<0>stream<rstring jsonString> OutStream = HTTPRequestProcess(InStream) {}
+
+		//<1>stream<rstring jsonString> InStream as O = Beacon() {}
+		//<1>stream<rstring string> OutStream = HTTPRequestProcess(InStream) {}
+
+		//<2>stream<rstring jsonString> InStream as O = Beacon() {}
+		//<2>stream<rstring jsonString> OutStream = HTTPRequestProcess(InStream) { param responseJsonAttributeName: "myJsonString"; }
+
+		//<3>stream<rstring jsonString> InStream as O = Beacon() {}
+		//<3>stream<rstring jsonString> OutStream = HTTPRequestProcess(InStream) { param jsonAttributeName: "myJsonString"; }
+	config
+		restartable: false;
+}
