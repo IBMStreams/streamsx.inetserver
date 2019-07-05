@@ -27,7 +27,7 @@ import com.ibm.streamsx.inet.rest.ops.PostTuple;
 public class InjectFormTest {
 	
 	@Test
-	public void testInjectSinglePort() throws Exception {	
+	public void testInjectSinglePort() throws Exception {
 		OperatorGraph graph = OperatorGraphFactory.newGraph();
 
 		// Declare a beacon operator
@@ -50,10 +50,12 @@ public class InjectFormTest {
 		
 		// Make an empty POST request which submits a default tuple.
 		URL postTuple = new URL(TupleViewTest.getJettyURLBase(testableGraph, op) + "/" + op.getName() + "/ports/output/0/inject");
-		HttpURLConnection conn = (HttpURLConnection) postTuple.openConnection(); 
+		HttpURLConnection conn = (HttpURLConnection) postTuple.openConnection();
 		conn.setDoOutput(true);
+		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
+		System.out.println(mrt.getMostRecentTuple().toString());
 		assertEquals(0, mrt.getMostRecentTuple().getInt(0));
 		assertEquals("", mrt.getMostRecentTuple().getString(1));
 		mrt.clear();
@@ -64,12 +66,13 @@ public class InjectFormTest {
 		byte[] dataBytes = data.getBytes("UTF-8");
 		conn = (HttpURLConnection) postTuple.openConnection(); 
 		conn.setDoOutput(true);
-	    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-	    conn.setRequestProperty("Content-Length", String.valueOf(dataBytes.length));
-	    OutputStream out = conn.getOutputStream();
-	    out.write(dataBytes);
-	    out.flush();
-	    out.close();	 
+		conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+		conn.setRequestProperty("Content-Length", String.valueOf(dataBytes.length));
+		OutputStream out = conn.getOutputStream();
+		out.write(dataBytes);
+		out.flush();
+		out.close();
+		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
 		assertEquals(0, mrt.getMostRecentTuple().getInt(0));
@@ -81,12 +84,13 @@ public class InjectFormTest {
 		dataBytes = data.getBytes("UTF-8");
 		conn = (HttpURLConnection) postTuple.openConnection(); 
 		conn.setDoOutput(true);
-	    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-	    conn.setRequestProperty("Content-Length", String.valueOf(dataBytes.length));
-	    out = conn.getOutputStream();
-	    out.write(dataBytes);
-	    out.flush();
-	    out.close();	 
+		conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+		conn.setRequestProperty("Content-Length", String.valueOf(dataBytes.length));
+		out = conn.getOutputStream();
+		out.write(dataBytes);
+		out.flush();
+		out.close();
+		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
 		assertEquals(73, mrt.getMostRecentTuple().getInt(0));
@@ -95,13 +99,15 @@ public class InjectFormTest {
 		
 		// Verify a form exists
 		URL form = new URL(postTuple.toExternalForm().replace("/inject", "/form"));
-		HttpURLConnection connForm = (HttpURLConnection) form.openConnection(); 
+		HttpURLConnection connForm = (HttpURLConnection) form.openConnection();
+		System.out.println(connForm.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_OK, connForm.getResponseCode());
 		connForm.disconnect();
 
 		// Verify a info servlet exists
 		URL info = new URL(postTuple.toExternalForm().replace("/inject", "/info"));
-		HttpURLConnection connInfo = (HttpURLConnection) info.openConnection(); 
+		HttpURLConnection connInfo = (HttpURLConnection) info.openConnection();
+		System.out.println(connInfo.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_OK, connInfo.getResponseCode());
 		//assertEquals("AAAAA", "VVVVV");
 		connInfo.disconnect();

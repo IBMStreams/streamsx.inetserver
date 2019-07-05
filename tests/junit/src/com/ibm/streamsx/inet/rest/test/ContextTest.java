@@ -62,11 +62,13 @@ public class ContextTest {
 		URL url1 = new URL("http://" + InetAddress.getLocalHost().getHostName() + ":8080/" + context + "/" + cf1.getName());
 		URL url2 = new URL("http://" + InetAddress.getLocalHost().getHostName() + ":8080/" + context + "/" + cf2.getName());
 		
-		HttpURLConnection conn1 = (HttpURLConnection) url1.openConnection(); 
+		HttpURLConnection conn1 = (HttpURLConnection) url1.openConnection();
+		System.out.println(conn1.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_OK, conn1.getResponseCode());
 		conn1.disconnect();
 
-		HttpURLConnection conn2 = (HttpURLConnection) url2.openConnection(); 
+		HttpURLConnection conn2 = (HttpURLConnection) url2.openConnection();
+		System.out.println(conn2.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NOT_FOUND, conn2.getResponseCode());
 		conn2.disconnect();
 	}

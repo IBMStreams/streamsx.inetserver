@@ -69,7 +69,7 @@ public class InjectJSONTest {
 	}
 	
 	@Test
-	public void testInjectSinglePort() throws Exception {	
+	public void testInjectSinglePort() throws Exception {
 		OperatorGraph graph = OperatorGraphFactory.newGraph();
 
 		// Declare a HTTPJSONInjection operator
@@ -105,7 +105,7 @@ public class InjectJSONTest {
 	}
 	
 	@Test
-	public void testInjectTwoPorts() throws Exception {	
+	public void testInjectTwoPorts() throws Exception {
 		OperatorGraph graph = OperatorGraphFactory.newGraph();
 
 		// Declare a HTTPJSONInjection operator
@@ -177,7 +177,6 @@ public class InjectJSONTest {
 		
 		try {
 
-
 			Random r = new Random();
 			char[] chars = new char[nk * 1000];
 			for (int i = 0; i < chars.length; i++) {
@@ -193,21 +192,23 @@ public class InjectJSONTest {
 		}
 	}
 
-	
 	private static void postJSONAndTest(URL postTuple, JSONObject json, MostRecent<Tuple> mrt) throws IOException {
+		System.out.println(postTuple.toString());
 		byte[] dataBytes = json.serialize().getBytes("UTF-8");
-		HttpURLConnection conn = (HttpURLConnection) postTuple.openConnection(); 
+		HttpURLConnection conn = (HttpURLConnection) postTuple.openConnection();
 		conn.setDoOutput(true);
-	    conn.setRequestProperty("Content-Type", "application/json");
-	    conn.setRequestProperty("Content-Length", String.valueOf(dataBytes.length));
-	    OutputStream out = conn.getOutputStream();
-	    out.write(dataBytes);
-	    out.flush();
-	    out.close();	 
+		conn.setRequestProperty("Content-Type", "application/json");
+		conn.setRequestProperty("Content-Length", String.valueOf(dataBytes.length));
+		OutputStream out = conn.getOutputStream();
+		out.write(dataBytes);
+		out.flush();
+		out.close();
+		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
 		
 		JSONObject tuple = JSONObject.parse(mrt.getMostRecentTuple().getString(0));
+		System.out.println(tuple.toString());
 		assertEquals(json, tuple);
 		
 		mrt.clear();
