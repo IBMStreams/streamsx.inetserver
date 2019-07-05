@@ -13,11 +13,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Random;
 
 import org.junit.Test;
 
-import com.ibm.json.java.JSONObject;
 import com.ibm.streams.flow.declare.OperatorGraph;
 import com.ibm.streams.flow.declare.OperatorGraphFactory;
 import com.ibm.streams.flow.declare.OperatorInvocation;
@@ -26,33 +27,35 @@ import com.ibm.streams.flow.handlers.MostRecent;
 import com.ibm.streams.flow.javaprimitives.JavaOperatorTester;
 import com.ibm.streams.flow.javaprimitives.JavaTestableGraph;
 import com.ibm.streams.operator.Tuple;
-import com.ibm.streamsx.inet.rest.ops.PostJSON;
+import com.ibm.streams.operator.types.Blob;
+import com.ibm.streamsx.inet.rest.ops.PostBLOB;
 
-public class InjectJSONTest {
+public class InjectBLOBTest {
 	
 	@Test
-	public void testGoodOnlyJSONSchemaFirstPort() throws Exception {
+	public void testGoodOnlyXMLSchemaFirstPort() throws Exception {
 		OperatorGraph graph = OperatorGraphFactory.newGraph();
-		OperatorInvocation<PostJSON> op = graph.addOperator(PostJSON.class);
-		op.addOutput("tuple<rstring jsonString>");
+		OperatorInvocation<PostBLOB> op = graph.addOperator(PostBLOB.class);
+		op.addOutput("tuple<blob data>");
 		
 		assertTrue(graph.compileChecks());
 	}
 	
 	@Test
-	public void testGoodJSONSchemaFirstPort() throws Exception {
+	public void testGoodXMLSchemaFirstPort() throws Exception {
 		OperatorGraph graph = OperatorGraphFactory.newGraph();
-		OperatorInvocation<PostJSON> op = graph.addOperator(PostJSON.class);
-		op.addOutput("tuple<int32 a, rstring jsonString>");
+		OperatorInvocation<PostBLOB> op = graph.addOperator(PostBLOB.class);
+		op.addOutput("tuple<blob data, rstring jsonString>");
 		
 		assertTrue(graph.compileChecks());
 	}
 	
 	@Test
-	public void testGoodStringSchemaFirstPort() throws Exception {
+	public void testGoodXMLSchemaTwoPort() throws Exception {
 		OperatorGraph graph = OperatorGraphFactory.newGraph();
-		OperatorInvocation<PostJSON> op = graph.addOperator(PostJSON.class);
-		op.addOutput("tuple<rstring a, int32 b>");
+		OperatorInvocation<PostBLOB> op = graph.addOperator(PostBLOB.class);
+		op.addOutput("tuple<blob data, rstring jsonString>");
+		op.addOutput("tuple<blob data>");
 		
 		assertTrue(graph.compileChecks());
 	}
@@ -60,21 +63,31 @@ public class InjectJSONTest {
 	@Test
 	public void testBadSchemaFirstPort() throws Exception {
 		OperatorGraph graph = OperatorGraphFactory.newGraph();
-		OperatorInvocation<PostJSON> op = graph.addOperator(PostJSON.class);
+		OperatorInvocation<PostBLOB> op = graph.addOperator(PostBLOB.class);
 		op.addOutput("tuple<int32 a>");
 		
 		assertFalse(graph.compileChecks());
 	}
 	
 	@Test
+	public void testBadSchemaSecondPort() throws Exception {
+		OperatorGraph graph = OperatorGraphFactory.newGraph();
+		OperatorInvocation<PostBLOB> op = graph.addOperator(PostBLOB.class);
+		op.addOutput("tuple<blob data, rstring jsonString>");
+		op.addOutput("tuple<int32 a>");
+		
+		assertFalse(graph.compileChecks());
+	}
+
+	@Test
 	public void testInjectSinglePort() throws Exception {
 		OperatorGraph graph = OperatorGraphFactory.newGraph();
 
 		// Declare a HTTPJSONInjection operator
-		OperatorInvocation<PostJSON> op = graph.addOperator(PostJSON.class);
+		OperatorInvocation<PostBLOB> op = graph.addOperator(PostBLOB.class);
 		op.setIntParameter("port", 0);
 		
-		OutputPortDeclaration injectedTuples = op.addOutput("tuple<rstring jsonString>");
+		OutputPortDeclaration injectedTuples = op.addOutput("tuple<blob data>");
 		
 		// Create the testable version of the graph
 		JavaTestableGraph testableGraph = new JavaOperatorTester().executable(graph);
@@ -89,13 +102,39 @@ public class InjectJSONTest {
 		
 		URL postTuple = new URL(TupleViewTest.getJettyURLBase(testableGraph, op) + "/" + op.getName() + "/ports/output/0/inject");
 		
-		// Make an JSON POST request with an empty JSON object
-		postJSONAndTest(postTuple, new JSONObject(), mrt);
+		// Make an XML POST request with an empty and an non empty XML string
+		postBLOBAndTest(postTuple, new byte[] {}, mrt, false);
 
-		JSONObject json = new JSONObject();
-		json.put("a", 37l); // JSON library always reads ints back as long values
-		json.put("b", "Hello!");
-		postJSONAndTest(postTuple, json, mrt);
+		postBLOBAndTest(postTuple, "<x a=\"b\">55</x>".getBytes(), mrt, false);
+
+		testableGraph.shutdown().get();
+	}
+
+	@Test
+	public void testInjectSingleNullPort() throws Exception {
+		OperatorGraph graph = OperatorGraphFactory.newGraph();
+
+		// Declare a HTTPJSONInjection operator
+		OperatorInvocation<PostBLOB> op = graph.addOperator(PostBLOB.class);
+		op.setIntParameter("port", 0);
+		
+		OutputPortDeclaration injectedTuples = op.addOutput("tuple<blob data, map<rstring,rstring> headers>");
+		
+		// Create the testable version of the graph
+		JavaTestableGraph testableGraph = new JavaOperatorTester().executable(graph);
+		
+		MostRecent<Tuple> mrt = new MostRecent<Tuple>();
+		testableGraph.registerStreamHandler(injectedTuples, mrt);
+
+		// Execute the initialization of operators within graph.
+		testableGraph.initialize().get().allPortsReady().get();
+		
+		assertNull(mrt.getMostRecentTuple());
+		
+		URL postTuple = new URL(TupleViewTest.getJettyURLBase(testableGraph, op) + "/" + op.getName() + "/ports/output/0/inject");
+		
+		// Make an XML POST request with an empty and an non empty XML string
+		postBLOBAndTest(postTuple, new byte[] {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, mrt, true);
 
 		testableGraph.shutdown().get();
 	}
@@ -105,12 +144,12 @@ public class InjectJSONTest {
 		OperatorGraph graph = OperatorGraphFactory.newGraph();
 
 		// Declare a HTTPJSONInjection operator
-		OperatorInvocation<PostJSON> op = graph.addOperator(PostJSON.class);
+		OperatorInvocation<PostBLOB> op = graph.addOperator(PostBLOB.class);
 		op.setIntParameter("port", 0);
 		
-		OutputPortDeclaration injectedTuples0 = op.addOutput("tuple<rstring jsonString>");
-		OutputPortDeclaration injectedTuples1 = op.addOutput("tuple<rstring a>");
-		
+		OutputPortDeclaration injectedTuples0 = op.addOutput("tuple<blob data, rstring jsonString>");
+		OutputPortDeclaration injectedTuples1 = op.addOutput("tuple<blob data>");
+
 		// Create the testable version of the graph
 		JavaTestableGraph testableGraph = new JavaOperatorTester().executable(graph);
 		
@@ -126,17 +165,11 @@ public class InjectJSONTest {
 		//Get bas url
 		String baseUrl = TupleViewTest.getJettyURLBase(testableGraph, op);
 		URL postTuple0 = new URL(baseUrl + "/" + op.getName() + "/ports/output/0/inject");
-		JSONObject json0 = new JSONObject();
-		json0.put("a", 37l); // JSON library always reads ints back as long values
-		json0.put("b", "Hello!");
-		postJSONAndTest(postTuple0, json0, mrt0);
+		postBLOBAndTest(postTuple0, "<x a=\"Hello\">32</x>".getBytes(), mrt0, false);
 		assertNull(mrt1.getMostRecentTuple());
 		
 		URL postTuple1 = new URL(baseUrl + "/" + op.getName() + "/ports/output/1/inject");
-		JSONObject json1 = new JSONObject();
-		json1.put("a", 99l); // JSON library always reads ints back as long values
-		json1.put("b", "Goodbye!");
-		postJSONAndTest(postTuple1, json1, mrt1);
+		postBLOBAndTest(postTuple1, "<x attrib=\"99\">Goodbye</x>".getBytes(), mrt1, false);
 		assertNull(mrt0.getMostRecentTuple());
 
 		testableGraph.shutdown().get();
@@ -144,7 +177,7 @@ public class InjectJSONTest {
 
 	@Test
 	public void testBigInjectFails() throws Exception {	
-		// Make an JSON POST request with an 800KB+ JSON object
+		// Make an XML POST request with an 800KB+ JSON object
 		_testBigInject(800);
 	}
 	
@@ -152,10 +185,10 @@ public class InjectJSONTest {
 		OperatorGraph graph = OperatorGraphFactory.newGraph();
 
 		// Declare a HTTPJSONInjection operator
-		OperatorInvocation<PostJSON> op = graph.addOperator(PostJSON.class);
+		OperatorInvocation<PostBLOB> op = graph.addOperator(PostBLOB.class);
 		op.setIntParameter("port", 0);
 		
-		OutputPortDeclaration injectedTuples = op.addOutput("tuple<rstring jsonString>");
+		OutputPortDeclaration injectedTuples = op.addOutput("tuple<blob data>");
 		
 		// Create the testable version of the graph
 		JavaTestableGraph testableGraph = new JavaOperatorTester().executable(graph);
@@ -177,35 +210,38 @@ public class InjectJSONTest {
 			for (int i = 0; i < chars.length; i++) {
 				chars[i] = (char) ('a' + (char) r.nextInt(26));
 			}
-			String s = new String(chars);
-			JSONObject j = new JSONObject();
-			j.put("bigString", s);
-			postJSONAndTest(postTuple, j, mrt);
+			String s = "<x>" + new String(chars) + "</x>";
+			postBLOBAndTest(postTuple, s.getBytes(), mrt, false);
 		} finally {
 
 			testableGraph.shutdown().get();
 		}
 	}
 
-	private static void postJSONAndTest(URL postTuple, JSONObject json, MostRecent<Tuple> mrt) throws IOException {
+	private static void postBLOBAndTest(URL postTuple, byte[] data, MostRecent<Tuple> mrt, boolean checkHeaderAttrib) throws IOException {
 		System.out.println(postTuple.toString());
-		byte[] dataBytes = json.serialize().getBytes("UTF-8");
 		HttpURLConnection conn = (HttpURLConnection) postTuple.openConnection();
 		conn.setDoOutput(true);
-		conn.setRequestProperty("Content-Type", "application/json");
-		conn.setRequestProperty("Content-Length", String.valueOf(dataBytes.length));
+		conn.setRequestProperty("Content-Type", "application/octet-stream");
+		conn.setRequestProperty("Content-Length", String.valueOf(data.length));
 		OutputStream out = conn.getOutputStream();
-		out.write(dataBytes);
+		out.write(data);
 		out.flush();
 		out.close();
 		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
 		
-		JSONObject tuple = JSONObject.parse(mrt.getMostRecentTuple().getString(0));
+		Blob tuple = mrt.getMostRecentTuple().getBlob(0);
 		System.out.println(tuple.toString());
-		assertEquals(json, tuple);
+		assertTrue(Arrays.equals(data, tuple.getData()));
 		
+		if (checkHeaderAttrib) {
+			@SuppressWarnings("unchecked")
+			Map<String, String> headers = (Map<String, String>)mrt.getMostRecentTuple().getMap(1);
+			System.out.println(headers.toString());
+			assertTrue(headers.size() > 0);
+		}
 		mrt.clear();
 	}
 }

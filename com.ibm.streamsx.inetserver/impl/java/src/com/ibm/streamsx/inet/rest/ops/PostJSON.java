@@ -45,7 +45,7 @@ public class PostJSON extends ServletOperator {
 				checker.checkAttributeType(jsonString, MetaType.RSTRING);
 				continue;
 			}
-							
+			
 			Attribute first = port.getStreamSchema().getAttribute(0);
 			checker.checkAttributeType(first, MetaType.RSTRING);
 		}
