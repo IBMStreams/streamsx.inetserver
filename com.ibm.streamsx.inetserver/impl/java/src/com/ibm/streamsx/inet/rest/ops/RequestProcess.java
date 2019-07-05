@@ -74,25 +74,27 @@ import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 @InputPorts({
 		@InputPortSet(description = "Response to be returned to the web requestor.", cardinality = 1, optional = false, controlPort=true, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious)})
 @OutputPorts({
-		@OutputPortSet(description = "Request from web to process.", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Generating) })
+		@OutputPortSet(description = "Request from web to process.", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Free) })
 @Icons(location32="icons/HTTPTupleRequest_32.jpeg", location16="icons/HTTPTupleRequest_16.jpeg")
 
 public class RequestProcess extends ServletOperator {
 	static Logger trace = Logger.getLogger(RequestProcess.class.getName());
 
 	// communication
-	public static final String defaultContentTypeAttributeName = "contentType";
-	public static final String defaultContextPathAttributeName = "contextPath";
-	public static final String defaultHeaderAttributeName = "header";
 	public static final String defaultKeyAttributeName = "key";
-	public static final String defaultRequestAttributeName = "request";
+	public static final String defaultJsonAttributeName = "jsonString";
+	public static final String defaultContentTypeAttributeName = "contentType";
+	public static final String defaultHeaderAttributeName = "header";
+
 	public static final String defaultResponseAttributeName = "response";
+	public static final String defaultResponseStatusAttributeName = "status";
+
+	public static final String defaultRequestAttributeName = "request";
+	public static final String defaultContextPathAttributeName = "contextPath";
 	public static final String defaultUrlAttributeName = "url";
 	public static final String defaultMethodAttributeName = "method";	
 	public static final String defaultPathInfoAttributeName = "pathInfo";
-	public static final String defaultStatusAttributeName = "status";
 	//public static final String defaultContext = "/streams";
-	public static final String defaultJsonStringAttributeName = "jsonString";
 	
 	public static final String defaultResponseContentType = "text/html; charset=utf-8";
 	public static final int defaultStatusCode = HttpServletResponse.SC_OK;
@@ -157,35 +159,38 @@ public class RequestProcess extends ServletOperator {
 	static final String KEY_DESC = " Input and output port's corrolation key. The values is expected to be unchanged between the input and output, default: \\\"" + defaultKeyAttributeName + "\\\". ";
 	// input port
 	private static final String RESPONSEATTRNAME_DESC = "Input port's attribute response (body of the web response), default:  \\\"" + defaultResponseAttributeName + "\\\".  ";
-	private static final String RESPONSEJSONSTRINGATTRNAME_DESC = "Input port's json results (complete response), default:  \\\"" + defaultJsonStringAttributeName + "\\\".  ";
-	private static final String STATUSATTRNAME_DESC = "Input port's attribute web status, default:  \\\"" + defaultStatusAttributeName + "\\\".  ";
+	private static final String RESPONSEJSONATTRNAME_DESC = "Input port's json results (complete response), default:  \\\"" + defaultJsonAttributeName + "\\\".  ";
+	private static final String RESPONSESTATUSATTRNAME_DESC = "Input port's attribute web status, default:  \\\"" + defaultResponseStatusAttributeName + "\\\".  ";
 	private static final String RESPONSECONTENTTYPE_DESC = "Input port's web response content type, default: \\\"" + defaultContentTypeAttributeName + "\\\". "
 			+ "If null or an empty string is delivered, the default content type '" +  defaultResponseContentType + "' is used.  ";
 	private static final String RESPONSEHEADERATTRNAME_DESC = "Input port's web response header objects<name,value>, default: \\\"" + defaultHeaderAttributeName + "\\\".  ";
 	// output port
-	static final String REQUESTATTRNAME_DESC = "Output port's attribute name with the web request (body of the web request), default \\\"" + defaultRequestAttributeName + "\\\".  ";
-	static final String METHODATTRNAME_DESC = "Output ports's attribute name with the request method (PUT, GET, POST), default: \\\"" + defaultMethodAttributeName + "\\\".  ";
-	static final String PATHINFOATTRNAME_DESC = "Output ports's attribute of the content path below the base, default \\\"" + defaultPathInfoAttributeName + "\\\".  ";
-	static final String CONTEXTPATHATTRNAME_DESC = "Output ports's attribute of the context path \\\"" + defaultContextPathAttributeName + "\\\".  ";
-	static final String URLATTRNAME_DESC = "Output ports's attribute of the url \\\"" + defaultUrlAttributeName + "\\\".  ";
-	static final String CONTENTTYPEATTRNAME_DESC = "Output port's attribute with content-type will be provided in, default: \\\"" + defaultContentTypeAttributeName + "\\\".  ";
-	static final String HEADERATTRNAME_DESC = "Output port's web request headers, in the form of a objects<name, value>, default: \\\"" + defaultHeaderAttributeName + "\\\".  ";
+	private static final String JSONATTRNAME_DESC = "Output port's json request (complete request), default:  \\\"" + defaultJsonAttributeName + "\\\".  ";
+	private static final String REQUESTATTRNAME_DESC = "Output port's attribute name with the web request (body of the web request), default \\\"" + defaultRequestAttributeName + "\\\".  ";
+	private static final String METHODATTRNAME_DESC = "Output ports's attribute name with the request method (PUT, GET, POST), default: \\\"" + defaultMethodAttributeName + "\\\".  ";
+	private static final String PATHINFOATTRNAME_DESC = "Output ports's attribute of the content path below the base, default \\\"" + defaultPathInfoAttributeName + "\\\".  ";
+	private static final String CONTEXTPATHATTRNAME_DESC = "Output ports's attribute of the context path \\\"" + defaultContextPathAttributeName + "\\\".  ";
+	private static final String URLATTRNAME_DESC = "Output ports's attribute of the url \\\"" + defaultUrlAttributeName + "\\\".  ";
+	private static final String CONTENTTYPEATTRNAME_DESC = "Output port's attribute with content-type will be provided in, default: \\\"" + defaultContentTypeAttributeName + "\\\".  ";
+	private static final String HEADERATTRNAME_DESC = "Output port's web request headers, in the form of a objects<name, value>, default: \\\"" + defaultHeaderAttributeName + "\\\".  ";
 
 	/**
 	 * Operator state
 	 */
 	private double webTimeout = DEFAULT_WEB_TIMEOUT;
 
+	// input pot & output port
+	private String keyAttributeName = defaultKeyAttributeName;
+	
 	// input port
+	private String responseJsonAttributeName = defaultJsonAttributeName;
 	private String responseAttributeName = defaultResponseAttributeName;
-	private String jsonStringAttributeName = defaultJsonStringAttributeName;
-	private String responseJsonStringAttributeName = defaultJsonStringAttributeName;
-	private String statusAttributeName = defaultStatusAttributeName;
+	private String responseStatusAttributeName = defaultResponseStatusAttributeName;
 	private String responseHeaderAttributeName = defaultHeaderAttributeName;
 	private String responseContentTypeAttributeName = defaultContentTypeAttributeName;
 
 	//output port
-	private String keyAttributeName = defaultKeyAttributeName;
+	private String jsonAttributeName = defaultJsonAttributeName;
 	private String requestAttributeName = defaultRequestAttributeName;
 	private String methodAttributeName = defaultMethodAttributeName; // get/put/del/
 	private String pathInfoAttributeName = defaultPathInfoAttributeName;
@@ -257,8 +262,8 @@ public class RequestProcess extends ServletOperator {
 		super.initialize(context);
 
 		//detect json input/output format
-		jsonFormatOutPort = (getOutput(0).getStreamSchema().getAttributeCount() == 1) && (jsonStringAttributeName.equals(getOutput(0).getStreamSchema().getAttributeNames().toArray()[0]));
-		jsonFormatInPort = (getInput(0).getStreamSchema().getAttributeCount() == 1) && (responseJsonStringAttributeName.equals(getInput(0).getStreamSchema().getAttributeNames().toArray()[0]));
+		jsonFormatOutPort = (getOutput(0).getStreamSchema().getAttributeCount() == 1) && (jsonAttributeName.equals(getOutput(0).getStreamSchema().getAttributeNames().toArray()[0]));
+		jsonFormatInPort = (getInput(0).getStreamSchema().getAttributeCount() == 1) && (responseJsonAttributeName.equals(getInput(0).getStreamSchema().getAttributeNames().toArray()[0]));
 		
 		//trace schema
 		for (int idx = 0; getOutput(0).getStreamSchema().getAttributeCount() != idx; idx++) {
@@ -271,19 +276,19 @@ public class RequestProcess extends ServletOperator {
 		}
 		
 		//warn json but not single
-		if ((getOutput(0).getStreamSchema().getAttributeCount() != 1) && (getOutput(0).getStreamSchema().getAttribute(jsonStringAttributeName) != null)) {
-			trace.warn("found that '"+ jsonStringAttributeName+"' is not the only output port attribute, NOT using attribute.");
-			System.out.println("WARNING: found that '"+ jsonStringAttributeName+"' is not the only output port attribute, NOT using attribute.");
+		if ((getOutput(0).getStreamSchema().getAttributeCount() != 1) && (getOutput(0).getStreamSchema().getAttribute(jsonAttributeName) != null)) {
+			trace.warn("found that '"+ jsonAttributeName+"' is not the only output port attribute, NOT using attribute.");
+			System.out.println("WARNING: found that '"+ jsonAttributeName+"' is not the only output port attribute, NOT using attribute.");
 		}
-		if ((getInput(0).getStreamSchema().getAttributeCount() != 1) && (getInput(0).getStreamSchema().getAttribute(responseJsonStringAttributeName) != null)) {
-			trace.warn("found that '"+ responseJsonStringAttributeName+"' is not the only input port attribute, NOT using attribute.");
-			System.out.println("WARNING: found that '"+ responseJsonStringAttributeName+"' is not the only input port attribute, NOT using attribute.");
+		if ((getInput(0).getStreamSchema().getAttributeCount() != 1) && (getInput(0).getStreamSchema().getAttribute(responseJsonAttributeName) != null)) {
+			trace.warn("found that '"+ responseJsonAttributeName+"' is not the only input port attribute, NOT using attribute.");
+			System.out.println("WARNING: found that '"+ responseJsonAttributeName+"' is not the only input port attribute, NOT using attribute.");
 		}
 
 		//Output attributes
 		if (jsonFormatOutPort) {
-			trace.info("Operator " + context.getName() + " single column output. Json output attribute: " + jsonStringAttributeName);
-			System.out.println(RequestProcess.class.getName() + " Operator " + context.getName() + " single column output. json output attribute: " + jsonStringAttributeName);
+			trace.info("Operator " + context.getName() + " single column output. Json output attribute: " + jsonAttributeName);
+			System.out.println(RequestProcess.class.getName() + " Operator " + context.getName() + " single column output. json output attribute: " + jsonAttributeName);
 		} else {
 			// key, out port
 			if (getOutput(0).getStreamSchema().getAttribute(keyAttributeName) == null)
@@ -365,8 +370,8 @@ public class RequestProcess extends ServletOperator {
 		
 		//input attributes
 		if (jsonFormatInPort) {
-			trace.trace("Operator " + context.getName() + " single column input. Json input attribute name: " + responseJsonStringAttributeName);
-			System.out.println(RequestProcess.class.getName() + " Operator " + context.getName() + " single column input. Json input attribute name: " + responseJsonStringAttributeName);
+			trace.trace("Operator " + context.getName() + " single column input. Json input attribute name: " + responseJsonAttributeName);
+			System.out.println(RequestProcess.class.getName() + " Operator " + context.getName() + " single column input. Json input attribute name: " + responseJsonAttributeName);
 		} else {
 			// key, in port, mandatory
 			if (getInput(0).getStreamSchema().getAttribute(keyAttributeName) == null)
@@ -387,12 +392,12 @@ public class RequestProcess extends ServletOperator {
 			}
 
 			// status, in port, optional
-			if (getInput(0).getStreamSchema().getAttribute(statusAttributeName) == null) {
-				statusAttributeName = null;
+			if (getInput(0).getStreamSchema().getAttribute(responseStatusAttributeName) == null) {
+				responseStatusAttributeName = null;
 			} else {
-				MetaType attributeType = getInput(0).getStreamSchema().getAttribute(statusAttributeName).getType().getMetaType();
+				MetaType attributeType = getInput(0).getStreamSchema().getAttribute(responseStatusAttributeName).getType().getMetaType();
 				if (attributeType != MetaType.INT32)
-					throw new IllegalArgumentException("Only types \"" + MetaType.INT32 + "\" allowed for param \"" + statusAttributeName + "\"");
+					throw new IllegalArgumentException("Only types \"" + MetaType.INT32 + "\" allowed for param \"" + responseStatusAttributeName + "\"");
 			}
 
 			// response headers, in port, optional
@@ -462,6 +467,10 @@ public class RequestProcess extends ServletOperator {
 		this.keyAttributeName = keyAttributeName;
 	}
 
+	@Parameter(optional = true, description = JSONATTRNAME_DESC)
+	public void setJsonAttributeName(String jsonAttributeName) {
+		this.jsonAttributeName = jsonAttributeName;
+	}
 	@Parameter(optional = true, description = METHODATTRNAME_DESC)
 	public void setMethodAttributeName(String methodAttributeName) {
 		this.methodAttributeName = methodAttributeName;
@@ -497,19 +506,17 @@ public class RequestProcess extends ServletOperator {
 	}
 
 	// INPUT - flow into operator that is returned to the web requestor.
+	@Parameter(optional = true, description = RESPONSEJSONATTRNAME_DESC)
+	public void setResponseJsonAttributeName(String responseJsonAttributeName) {
+		this.responseJsonAttributeName = responseJsonAttributeName;
+	}
 	@Parameter(optional = true, description = RESPONSEATTRNAME_DESC)
 	public void setResponseAttributeName(String responseAttributeName) {
 		this.responseAttributeName = responseAttributeName;
 	}
-	
-	@Parameter(optional = true, description = RESPONSEJSONSTRINGATTRNAME_DESC)
-	public void setResponseJsonAttributeName(String jsonAttributeName) {
-		this.responseJsonStringAttributeName = jsonAttributeName;
-	}
-
-	@Parameter(optional = true, description = STATUSATTRNAME_DESC)
-	public void setStatusAttributeName(String statusAttributeName) {
-		this.statusAttributeName = statusAttributeName;
+	@Parameter(optional = true, description = RESPONSESTATUSATTRNAME_DESC)
+	public void setStatusAttributeName(String responseStatusAttributeName) {
+		this.responseStatusAttributeName = responseStatusAttributeName;
 	}
 
 	@Parameter(optional = true, description = RESPONSEHEADERATTRNAME_DESC)
@@ -540,7 +547,7 @@ public class RequestProcess extends ServletOperator {
 
 		if (jsonFormatInPort) {
 			trace.trace("processResponse - DUMP JSON:" + tuple.toString());
-			String jsonString = tuple.getString(responseJsonStringAttributeName);
+			String jsonString = tuple.getString(responseJsonAttributeName);
 
 			JSONObject json = null;
 			try {
@@ -569,8 +576,8 @@ public class RequestProcess extends ServletOperator {
 				if (json.containsKey(defaultResponseAttributeName)) {
 					response = (String) json.get(defaultResponseAttributeName);
 				}
-				if (json.containsKey((String) defaultStatusAttributeName)) {
-					Long val = (Long) json.get(defaultStatusAttributeName);
+				if (json.containsKey((String) defaultResponseStatusAttributeName)) {
+					Long val = (Long) json.get(defaultResponseStatusAttributeName);
 					statusCode = val;
 				}
 				if (json.containsKey((String) defaultHeaderAttributeName)) {
@@ -595,8 +602,8 @@ public class RequestProcess extends ServletOperator {
 			trackingKey = tuple.getLong(keyAttributeName);
 			if (responseAttributeName != null)
 				response = tuple.getString(responseAttributeName);
-			if (statusAttributeName != null)
-				statusCode = tuple.getInt(statusAttributeName);
+			if (responseStatusAttributeName != null)
+				statusCode = tuple.getInt(responseStatusAttributeName);
 			if (responseHeaderAttributeName != null) {
 				@SuppressWarnings("unchecked")
 				Map<RString, RString> mapHeader = (Map<RString, RString>) tuple.getMap(responseHeaderAttributeName);
@@ -713,7 +720,7 @@ public class RequestProcess extends ServletOperator {
 			}
 
 			String jsonRequestString = jsonObj.toString();
-			outTuple.setString(jsonStringAttributeName, jsonRequestString);
+			outTuple.setString(jsonAttributeName, jsonRequestString);
 			trace.info("initiateWebRequest - single attribute, contents : " + jsonRequestString);
 		} else {
 			outTuple.setLong(keyAttributeName, exchangeWebMessage.getTrackingKey());
