@@ -5,7 +5,7 @@
  * + Sharing the Eclipse Jetty Instance
  * Multiple operators share a single jetty server instance if:
  * * they are fused in a single processing element (config placement: partitionColocation),
- * * and they use the same `port` parameter
+ * * and they use the same `port` parameter value
  * This allows operators to expose streams through the same webserver
  * without having to be connected in the SPL graph.
  * 

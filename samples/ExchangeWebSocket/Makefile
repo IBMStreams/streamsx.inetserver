@@ -23,7 +23,7 @@ endif
 
 SPLC_FLAGS = -a
 SPL_CMD_ARGS ?=
-SPL_MAIN_COMPOSITE = com.ibm.streamsx.inet.sample.wsserver::Main
+SPL_MAIN_COMPOSITE = com.ibm.streamsx.inet.sample.wsserver::ExchangeWebSocketSample
 
 all: clean distributed
 

@@ -13,30 +13,21 @@ use com.ibm.streamsx.inet.wsserver::WebSocketSend ;
  * 5. select 'Start Receiving'
  * 6. Notes the 'RECEIVED:" and 'TRANSMIT:' fields changing. 
  * 
- * @param webContextPort  port number for the jetty webserver serving the index.html page
- * @param wsSourcePort    port number for the jetty webserver serving the WebSocketInject operator
- * @param wsSinkPort      port numner for the jetty webserver serving the WebSocketSend operator
+ * @param jettyPort    port number for the jetty webserver
  */
-public composite Main {
+public composite ExchangeWebSocketSample {
 	param
-		expression<int32> $webContextPort : (int32)getSubmissionTimeValue("webContextPort", "8080");
-		expression<int32> $wsSourcePort :   (int32)getSubmissionTimeValue("wsSourcePort", "8080");
-		expression<int32> $wsSinkPort :     (int32)getSubmissionTimeValue("wsSinkPort", "8082");
+		expression<int32> $jettyPort :   (int32)getSubmissionTimeValue("jettyPort", "8080");
 		
 	graph
-		()as WebContext_1 = WebContext(){
-			param
-				port : $webContextPort;
-				context : "html";
-				contextResourceBase : "opt/html";
-		}
-
 		stream<rstring data, rstring connectionId> ReceivedWsTuples = WebSocketInject() {
 			param
-				port : $wsSourcePort;
+				port : $jettyPort;
 				ackCount : 10;
 				messageAttributeName: "data";
 				senderIdAttributeName: "connectionId";
+				context : "websocketsample";
+				contextResourceBase : "opt/html";
 		}
 
 		stream<rstring data> AugmentedWs as O = Functor(ReceivedWsTuples as I){
@@ -57,7 +48,9 @@ public composite Main {
 
 		()as WsSender = WebSocketSend(AugmentedWs){
 			param
-				port : $wsSinkPort;
+				port : $jettyPort;
+				context : "websocketsample";
+				contextResourceBase : "opt/html";
 		}
 
 	config
