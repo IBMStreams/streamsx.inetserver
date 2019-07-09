@@ -11,6 +11,7 @@ import org.eclipse.jetty.websocket.api.Session;
 
 import com.ibm.json.java.JSONArray;
 import com.ibm.json.java.JSONObject;
+import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
@@ -60,7 +61,7 @@ public class WebSocketSend extends ServletOperator {
 
 	static final String INPUT_PORT_DESCR =
 			"Input port: Tuples received on this port generate a message to be transmitted over to "
-			+ "all connected websocket clients. The content of the transmitted message id determined with parameter "
+			+ "all connected websocket clients. The content of the transmitted message is determined with parameter "
 			+ "`textMessage` or `binaryMessageAttributeName`. If both parameters are absend, the input tuple is converted "
 			+ " into a JSON formatted messages and transmitted to all currently connected clients";
 
@@ -151,8 +152,15 @@ public class WebSocketSend extends ServletOperator {
 		super.initialize(context);
 		
 		if (binaryMessageAttributeName != null) {
-			if (getInput(0).getStreamSchema().getAttribute(binaryMessageAttributeName).getType().getMetaType() != MetaType.BLOB)
-				throw new IllegalArgumentException(Messages.getString("PARAM_ATTRIBUTE_TYPE_CHECK_1", MetaType.BLOB, binaryMessageAttributeName));
+			Attribute binaryMessageAttribute = getInput(0).getStreamSchema().getAttribute(binaryMessageAttributeName);
+			if ( binaryMessageAttribute == null) {
+				throw new IllegalArgumentException("Could not detect required attribute \"" + binaryMessageAttributeName + "\" on input port 0. "
+						+ "Or specify a valid value for \"binaryMessageAttributeName\"");
+			} else {
+				if (getInput(0).getStreamSchema().getAttribute(binaryMessageAttributeName).getType().getMetaType() != MetaType.BLOB) {
+					throw new IllegalArgumentException(Messages.getString("PARAM_ATTRIBUTE_TYPE_CHECK_1", MetaType.BLOB, binaryMessageAttributeName));
+				}
+			}
 		}
 	}
 	
