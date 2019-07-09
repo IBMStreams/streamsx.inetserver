@@ -1,0 +1,17 @@
+use com.ibm.streamsx.inet.wsserver::WebSocketInject;
+
+public composite Main {
+	graph
+		//<0>stream<int32 message> WebsocketStream = WebSocketInject() {}
+		
+		//<1>stream<rstring messageAttribute> WebsocketStream = WebSocketInject() { param messageAttributeName: "myMessageAttribute"; }
+		
+		//<2>stream<int64 messageAttribute> WebsocketStream = WebSocketInject() { param messageAttributeName: "messageAttribute"; }
+
+		//<3>stream<rstring messageAttribute> WebsocketStream = WebSocketInject() { param messageAttributeName: "messageAttribute"; senderIdAttributeName: "mySenderIdAttribute"; }
+		
+		//<4>stream<rstring messageAttribute, int64 senderIdAttribute> WebsocketStream = WebSocketInject() { param messageAttributeName: "messageAttribute"; senderIdAttributeName: "senderIdAttribute"; }
+
+	config
+		restartable: false;
+}
