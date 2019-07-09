@@ -23,7 +23,7 @@ STEPS=(
 
 errorCodes=(
 	'*Could not detect required attribute "key" on input port 0. Or specify a valid value for "keyAttributeName"*'
-	"*Could not detect required attribute 'key'"' on output port 0. Or specify a valid value for "keyAttributeName"*'
+	'*Could not detect required attribute "key" on output port 0. Or specify a valid value for "keyAttributeName"*'
 	'*Could not detect required attribute "key" on input port 0. Or specify a valid value for "keyAttributeName"*'
-	"*Could not detect required attribute 'key'"' on output port 0. Or specify a valid value for "keyAttributeName"*'
+	'*Could not detect required attribute "key" on output port 0. Or specify a valid value for "keyAttributeName"*'
 )

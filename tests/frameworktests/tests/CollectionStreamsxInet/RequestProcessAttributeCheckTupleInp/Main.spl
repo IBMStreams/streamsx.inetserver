@@ -1,0 +1,25 @@
+use com.ibm.streamsx.inet.rest::HTTPRequestProcess ;
+
+public composite Main {
+	graph
+		//<0>stream<rstring string, rstring string2> InStream as O = Beacon() {}
+		//<1>stream<rstring string, rstring key> InStream as O = Beacon() {}
+		//<2>stream<rstring string, int64 key> InStream as O = Beacon() {}
+		//<3>stream<rstring string, int64 key, int32 contentType> InStream as O = Beacon() {}
+		//<4>stream<rstring string, int64 key, rstring contentType> InStream as O = Beacon() {}
+		//<5>stream<rstring string, int64 key, int32 response> InStream as O = Beacon() {}
+		//<6>stream<rstring string, int64 key, rstring response> InStream as O = Beacon() {}
+		//<7>stream<rstring string, int64 key, rstring status> InStream as O = Beacon() {}
+		//<8>stream<rstring string, int64 key, int32 status> InStream as O = Beacon() {}
+		//<9>stream<rstring string, int64 key, rstring header> InStream as O = Beacon() {}
+		//<10>stream<rstring string, int64 key, map<rstring,rstring> header> InStream as O = Beacon() {}
+
+		//<0 1 3 5 7 9 >stream<rstring jsonString> OutStream = HTTPRequestProcess(InStream) {}
+		//<2>stream<rstring jsonString> OutStream = HTTPRequestProcess(InStream) {param keyAttributeName: "myKey"; }
+		//<4>stream<rstring jsonString> OutStream = HTTPRequestProcess(InStream) {param responseContentTypeAttributeName: "myContentType"; }
+		//<6>stream<rstring jsonString> OutStream = HTTPRequestProcess(InStream) {param responseAttributeName: "myResponse"; }
+		//<8>stream<rstring jsonString> OutStream = HTTPRequestProcess(InStream) {param responseStatusAttributeName: "myStatus"; }
+		//<10>stream<rstring jsonString> OutStream = HTTPRequestProcess(InStream) {param responseHeaderAttributeName: "myHeader"; }
+	config
+		restartable: false;
+}
