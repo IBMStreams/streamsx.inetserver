@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import com.ibm.json.java.JSONObject;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OutputTuple;
+import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Tuple;
@@ -116,7 +117,9 @@ public class RequestProcess extends ServletOperator {
 			+ "For the `analyze` path any HTTP method can be used and any sub-path. For example with a context of "
 			+ "`api` and operator name of `Bus` then `api/Bus/ports/analyze/0/get_location` is valid."
 			+ "\\n\\n"
-			+ "Input and output ports have two possible formats: tuple and json. With tuple format, each web input fields is mapped to an attribute. "
+			+ "Input and output ports have two possible formats: tuple and json. The modes of input- and output port are independant."
+			+ "A port works in json mode if it has one attribute with name jsonString. "
+			+ "With tuple format, each web input fields is mapped to an attribute. "
 			+ "Json format has one attribute ('jsonString'), each web field is mapped to a json object field. "
 			+ "\\n\\n"
 			+ "The jsonString object will be populated with all the fields. The default attribute names can be "
@@ -158,21 +161,22 @@ public class RequestProcess extends ServletOperator {
 	// common to output/input
 	static final String KEY_DESC = " Input and output port's corrolation key. The values is expected to be unchanged between the input and output, default: \\\"" + defaultKeyAttributeName + "\\\". ";
 	// input port
-	private static final String RESPONSEATTRNAME_DESC = "Input port's attribute response (body of the web response), default:  \\\"" + defaultResponseAttributeName + "\\\".  ";
-	private static final String RESPONSEJSONATTRNAME_DESC = "Input port's json results (complete response), default:  \\\"" + defaultJsonAttributeName + "\\\".  ";
-	private static final String RESPONSESTATUSATTRNAME_DESC = "Input port's attribute web status, default:  \\\"" + defaultResponseStatusAttributeName + "\\\".  ";
-	private static final String RESPONSECONTENTTYPE_DESC = "Input port's web response content type, default: \\\"" + defaultContentTypeAttributeName + "\\\". "
+	private static final String RESPONSEATTRNAME_DESC = "Input port's attribute name for the response body of the web response. The type of the attribute must be `rstring` or `ustring`. Default:  \\\"" + defaultResponseAttributeName + "\\\".  ";
+	private static final String RESPONSEJSONATTRNAME_DESC = "Input port's attribute name for json results (complete response). The type of the attribute must be `rstring` or `ustring`. Default:  \\\"" + defaultJsonAttributeName + "\\\".  ";
+	private static final String RESPONSESTATUSATTRNAME_DESC = "Input port's attribute attribute name for web status. The type of the attribute must be `int32`. Default:  \\\"" + defaultResponseStatusAttributeName + "\\\". "
+			+ "In no web status is deliveres, the value: " + defaultStatusCode + " is used.";
+	private static final String RESPONSECONTENTTYPE_DESC = "Input port's attribute name for web response content type. The type of the attribute must be `rstring` or `ustring`. Default: \\\"" + defaultContentTypeAttributeName + "\\\". "
 			+ "If null or an empty string is delivered, the default content type '" +  defaultResponseContentType + "' is used.  ";
-	private static final String RESPONSEHEADERATTRNAME_DESC = "Input port's web response header objects<name,value>, default: \\\"" + defaultHeaderAttributeName + "\\\".  ";
+	private static final String RESPONSEHEADERATTRNAME_DESC = "Input port's attribute name for web response headers. The type of this attribute must be `map<rstring, rstring>`. Default: \\\"" + defaultHeaderAttributeName + "\\\".  ";
 	// output port
-	private static final String JSONATTRNAME_DESC = "Output port's json request (complete request), default:  \\\"" + defaultJsonAttributeName + "\\\".  ";
-	private static final String REQUESTATTRNAME_DESC = "Output port's attribute name with the web request (body of the web request), default \\\"" + defaultRequestAttributeName + "\\\".  ";
-	private static final String METHODATTRNAME_DESC = "Output ports's attribute name with the request method (PUT, GET, POST), default: \\\"" + defaultMethodAttributeName + "\\\".  ";
-	private static final String PATHINFOATTRNAME_DESC = "Output ports's attribute of the content path below the base, default \\\"" + defaultPathInfoAttributeName + "\\\".  ";
-	private static final String CONTEXTPATHATTRNAME_DESC = "Output ports's attribute of the context path \\\"" + defaultContextPathAttributeName + "\\\".  ";
-	private static final String URLATTRNAME_DESC = "Output ports's attribute of the url \\\"" + defaultUrlAttributeName + "\\\".  ";
-	private static final String CONTENTTYPEATTRNAME_DESC = "Output port's attribute with content-type will be provided in, default: \\\"" + defaultContentTypeAttributeName + "\\\".  ";
-	private static final String HEADERATTRNAME_DESC = "Output port's web request headers, in the form of a objects<name, value>, default: \\\"" + defaultHeaderAttributeName + "\\\".  ";
+	private static final String JSONATTRNAME_DESC = "Output port's attrinute name for json request (complete request). The type of the attribute must be `rstring` or `ustring`. Default:  \\\"" + defaultJsonAttributeName + "\\\".  ";
+	private static final String REQUESTATTRNAME_DESC = "Output port's attribute name with the web request (body of the web request). The type of the attribute must be `rstring` or `ustring`. Default \\\"" + defaultRequestAttributeName + "\\\".  ";
+	private static final String METHODATTRNAME_DESC = "Output ports's attribute name with the request method (PUT, GET, POST). The type of the attribute must be `rstring` or `ustring`. Default: \\\"" + defaultMethodAttributeName + "\\\".  ";
+	private static final String PATHINFOATTRNAME_DESC = "Output ports's attribute name of the content path below the base. The type of the attribute must be `rstring` or `ustring`. Default \\\"" + defaultPathInfoAttributeName + "\\\".  ";
+	private static final String CONTEXTPATHATTRNAME_DESC = "Output ports's attribute name of the context path. The type of the attribute must be `rstring` or `ustring`. Default: \\\"" + defaultContextPathAttributeName + "\\\".  ";
+	private static final String URLATTRNAME_DESC = "Output ports's attribute name of the url. The type of the attribute must be `rstring` or `ustring`. Default \\\"" + defaultUrlAttributeName + "\\\".  ";
+	private static final String CONTENTTYPEATTRNAME_DESC = "Output port's attribute name with content-type will be provided in. The type of the attribute must be `rstring` or `ustring`. Default: \\\"" + defaultContentTypeAttributeName + "\\\".  ";
+	private static final String HEADERATTRNAME_DESC = "Output port's attribute name with web request headers, in the form of a `map<rstring, rstring>`, default: \\\"" + defaultHeaderAttributeName + "\\\".  ";
 
 	/**
 	 * Operator state
@@ -184,20 +188,20 @@ public class RequestProcess extends ServletOperator {
 	
 	// input port
 	private String responseJsonAttributeName = defaultJsonAttributeName;
-	private String responseAttributeName = defaultResponseAttributeName;
-	private String responseStatusAttributeName = defaultResponseStatusAttributeName;
-	private String responseHeaderAttributeName = defaultHeaderAttributeName;
-	private String responseContentTypeAttributeName = defaultContentTypeAttributeName;
+	private String responseAttributeName = null;
+	private String responseStatusAttributeName = null;
+	private String responseHeaderAttributeName = null;
+	private String responseContentTypeAttributeName = null;
 
 	//output port
 	private String jsonAttributeName = defaultJsonAttributeName;
-	private String requestAttributeName = defaultRequestAttributeName;
-	private String methodAttributeName = defaultMethodAttributeName; // get/put/del/
-	private String pathInfoAttributeName = defaultPathInfoAttributeName;
-	private String contextPathAttributeName = defaultContextPathAttributeName;
-	private String urlAttributeName = defaultUrlAttributeName;
-	private String headerAttributeName = defaultHeaderAttributeName;
-	private String contentTypeAttributeName = defaultContentTypeAttributeName;
+	private String requestAttributeName = null;
+	private String methodAttributeName = null; // get/put/del/
+	private String pathInfoAttributeName = null;
+	private String contextPathAttributeName = null;
+	private String urlAttributeName = null;
+	private String headerAttributeName = null;
+	private String contentTypeAttributeName = null;
 	
 	//internal state
 	private boolean jsonFormatInPort = false ;   // only one column on input port jsonString
@@ -292,80 +296,25 @@ public class RequestProcess extends ServletOperator {
 		} else {
 			// key, out port
 			if (getOutput(0).getStreamSchema().getAttribute(keyAttributeName) == null)
-				throw new IllegalArgumentException("Could not detect required attribute '" + keyAttributeName + "' on output port 0. "
+				throw new IllegalArgumentException("Could not detect required attribute \"" + keyAttributeName + "\" on output port 0. "
 						+ "Or specify a valid value for \"keyAttributeName\"");
 			MetaType keyParamType = getOutput(0).getStreamSchema().getAttribute(keyAttributeName).getType().getMetaType();
 			if (keyParamType != MetaType.INT64)
-				throw new IllegalArgumentException("Only types \"" + MetaType.INT64 + "\" allowed for param \"" + keyAttributeName + "\"");
-			
+				throw new IllegalArgumentException("Only types \"" + MetaType.INT64 + "\" allowed for attribute \"" + keyAttributeName + "\"");
 			// request, out port
-			if (getOutput(0).getStreamSchema().getAttribute(requestAttributeName) == null) {
-				keyAttributeName = null;
-			} else {
-				MetaType attributeType = getOutput(0).getStreamSchema().getAttribute(requestAttributeName).getType().getMetaType();
-				if (attributeType != MetaType.USTRING && attributeType != MetaType.RSTRING)
-					throw new IllegalArgumentException("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-							+ "\" allowed for param \"" + requestAttributeName + "\"");
-			}
-			
+			checkOptionalStringAttribute(requestAttributeName,     defaultRequestAttributeName,     getOutput(0).getStreamSchema(), "output", "requestAttributeName");
 			// header, out port
-			if (getOutput(0).getStreamSchema().getAttribute(headerAttributeName) == null) {
-				headerAttributeName = null;
-			} else {
-				MetaType attributeType = getOutput(0).getStreamSchema().getAttribute(headerAttributeName).getType().getMetaType();
-				if (attributeType != MetaType.MAP)
-					throw new IllegalArgumentException("Only type of \"" + MetaType.MAP + "\" allowed for param \"" + headerAttributeName + "\"");
-			}
-			
+			checkOptionalAttribute      (headerAttributeName,      defaultHeaderAttributeName,      getOutput(0).getStreamSchema(), MetaType.MAP, "output", "headerAttributeName");
 			// method, out port
-			if (getOutput(0).getStreamSchema().getAttribute(methodAttributeName) == null) {
-				methodAttributeName = null;
-			} else {
-				MetaType attributeType = getOutput(0).getStreamSchema().getAttribute(methodAttributeName).getType().getMetaType();
-				if (attributeType != MetaType.USTRING && attributeType != MetaType.RSTRING)
-					throw new IllegalArgumentException("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-							+ "\" allowed for param \"" + methodAttributeName + "\"");
-			}
-
+			checkOptionalStringAttribute(methodAttributeName,      defaultMethodAttributeName,      getOutput(0).getStreamSchema(), "output", "methodAttributeName");
 			// pathInfo, out port
-			if (getOutput(0).getStreamSchema().getAttribute(pathInfoAttributeName) == null) {
-				pathInfoAttributeName = null;
-			} else {
-				MetaType attributeType = getOutput(0).getStreamSchema().getAttribute(pathInfoAttributeName).getType().getMetaType();
-				if (attributeType != MetaType.USTRING && attributeType != MetaType.RSTRING)
-					throw new IllegalArgumentException("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-							+ "\" allowed for param \"" + pathInfoAttributeName + "\"");
-			}
-			
+			checkOptionalStringAttribute(pathInfoAttributeName,    defaultPathInfoAttributeName,    getOutput(0).getStreamSchema(), "output", "pathInfoAttributeName");
 			// context path, out port
-			if (getOutput(0).getStreamSchema().getAttribute(contextPathAttributeName) == null) {
-				contextPathAttributeName = null;
-			} else {
-				MetaType attributeType = getOutput(0).getStreamSchema().getAttribute(contextPathAttributeName).getType().getMetaType();
-				if (attributeType != MetaType.USTRING && attributeType != MetaType.RSTRING)
-					throw new IllegalArgumentException("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-							+ "\" allowed for param \"" + contextPathAttributeName + "\"");
-			}
-
+			checkOptionalStringAttribute(contextPathAttributeName, defaultContextPathAttributeName, getOutput(0).getStreamSchema(), "output", "contextPathAttributeName");
 			// pathInfo, out port
-			if (getOutput(0).getStreamSchema().getAttribute(urlAttributeName) == null) {
-				urlAttributeName = null;
-			} else {
-				MetaType attributeType = getOutput(0).getStreamSchema().getAttribute(urlAttributeName).getType().getMetaType();
-				if (attributeType != MetaType.USTRING && attributeType != MetaType.RSTRING)
-					throw new IllegalArgumentException("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-							+ "\" allowed for param \"" + urlAttributeName + "\"");
-			}
-
+			checkOptionalStringAttribute(urlAttributeName,         defaultUrlAttributeName,         getOutput(0).getStreamSchema(), "output", "urlAttributeName");
 			// contentType, out port
-			if (getOutput(0).getStreamSchema().getAttribute(contentTypeAttributeName) == null) {
-				contentTypeAttributeName = null;
-			} else {
-				MetaType attributeType = getOutput(0).getStreamSchema().getAttribute(contentTypeAttributeName).getType().getMetaType();
-				if (attributeType != MetaType.USTRING && attributeType != MetaType.RSTRING)
-					throw new IllegalArgumentException("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-							+ "\" allowed for param \"" + contentTypeAttributeName + "\"");
-			}
+			checkOptionalStringAttribute(contentTypeAttributeName, defaultContentTypeAttributeName, getOutput(0).getStreamSchema(), "output", "contentTypeAttributeName");
 		}
 		
 		//input attributes
@@ -379,51 +328,61 @@ public class RequestProcess extends ServletOperator {
 					+ "Or specify a valid value for \"keyAttributeName\"");
 			MetaType keyResponseParamType = getInput(0).getStreamSchema().getAttribute(keyAttributeName).getType().getMetaType();
 			if (keyResponseParamType != MetaType.INT64)
-				throw new IllegalArgumentException("Only types \"" + MetaType.INT64 + "\" allowed for param \"" + keyAttributeName + "\"");
-		
+				throw new IllegalArgumentException("Only types \"" + MetaType.INT64 + "\" allowed for attribute \"" + keyAttributeName + "\"");
 			// response, in port, optional
-			if (getInput(0).getStreamSchema().getAttribute(responseAttributeName) == null) {
-				responseAttributeName = null;
-			} else {
-				MetaType attributeType = getInput(0).getStreamSchema().getAttribute(responseAttributeName).getType().getMetaType();
-				if (attributeType != MetaType.USTRING && attributeType != MetaType.RSTRING)
-					throw new IllegalArgumentException("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-							+ "\" allowed for param \"" + responseAttributeName + "\"");
-			}
-
+			checkOptionalStringAttribute(responseAttributeName,            defaultResponseAttributeName,       getInput(0).getStreamSchema(), "input", "responseAttributeName");
 			// status, in port, optional
-			if (getInput(0).getStreamSchema().getAttribute(responseStatusAttributeName) == null) {
-				responseStatusAttributeName = null;
-			} else {
-				MetaType attributeType = getInput(0).getStreamSchema().getAttribute(responseStatusAttributeName).getType().getMetaType();
-				if (attributeType != MetaType.INT32)
-					throw new IllegalArgumentException("Only types \"" + MetaType.INT32 + "\" allowed for param \"" + responseStatusAttributeName + "\"");
-			}
-
+			checkOptionalAttribute      (responseStatusAttributeName,      defaultResponseStatusAttributeName, getInput(0).getStreamSchema(), MetaType.INT32, "input", "responseStatusAttributeName");
 			// response headers, in port, optional
-			if (getInput(0).getStreamSchema().getAttribute(responseHeaderAttributeName) == null) {
-				responseHeaderAttributeName = null;
-			} else {
-				MetaType attributeType = getInput(0).getStreamSchema().getAttribute(responseHeaderAttributeName).getType().getMetaType();
-				if (attributeType != MetaType.MAP)
-					throw new IllegalArgumentException("Only type of \"" + MetaType.MAP + "\" allowed for param \"" +responseHeaderAttributeName + "\"");
-			}
-
+			checkOptionalAttribute      (responseHeaderAttributeName,      defaultHeaderAttributeName,         getInput(0).getStreamSchema(), MetaType.MAP, "input", "responseHeaderAttributeName");
 			// response content type, in port, optional
-			if (getInput(0).getStreamSchema().getAttribute(responseContentTypeAttributeName) == null) {
-				responseContentTypeAttributeName = null;
-			} else {
-				MetaType attributeType = getInput(0).getStreamSchema().getAttribute(responseContentTypeAttributeName).getType().getMetaType();
-				if (attributeType != MetaType.USTRING && attributeType != MetaType.RSTRING)
-					throw new IllegalArgumentException("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-							+ "\" allowed for param \"" + responseContentTypeAttributeName + "\"");
-			}
-
+			checkOptionalStringAttribute(responseContentTypeAttributeName, defaultContentTypeAttributeName,    getInput(0).getStreamSchema(), "input", "responseContentTypeAttributeName");
 		}
 
 		trace.trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
 	}
 	
+	/**
+	 * Check the existence and type of an optional stream attribute
+	 */
+	private static void checkOptionalAttribute(String attributeName, String defaultName, StreamSchema schema, MetaType attributeType, String inout, String paramName) {
+		System.out.println("checkOptionalAttribute: " + attributeName + " " + defaultName + " " + attributeType.name());
+		if (attributeName == null)
+			if (schema.getAttribute(defaultName) != null)
+				attributeName = defaultName;
+		if (attributeName != null) {
+			if (schema.getAttribute(attributeName) == null) {
+				throw new IllegalArgumentException("Could not detect required attribute \"" + attributeName + "\" on " + inout + " port 0. "
+						+ "Or specify a valid value for \"" + paramName + "\"");
+			} else {
+				MetaType mAttributeType = schema.getAttribute(attributeName).getType().getMetaType();
+				System.out.println(mAttributeType.name());
+				if (mAttributeType != attributeType)
+					throw new IllegalArgumentException("Only type of \"" + attributeType + "\" allowed for attribute \"" + attributeName + "\"");
+			}
+		}
+	}
+
+	/**
+	 * Check the existence and type of an optional stream string attribute
+	 */
+	private static void checkOptionalStringAttribute(String attributeName, String defaultName, StreamSchema schema, String inout, String paramName) {
+		if (attributeName == null)
+			if (schema.getAttribute(defaultName) != null)
+				attributeName = defaultName;
+		if (attributeName != null) {
+			if (schema.getAttribute(attributeName) == null) {
+				throw new IllegalArgumentException("Could not detect required attribute \"" + attributeName + "\" on " + inout + " port 0. "
+						+ "Or specify a valid value for \"" + paramName + "\"");
+			} else {
+				MetaType mAttributeType = schema.getAttribute(attributeName).getType().getMetaType();
+				if (mAttributeType != MetaType.USTRING && mAttributeType != MetaType.RSTRING)
+					throw new IllegalArgumentException("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
+							+ "\" allowed for attribute \"" + attributeName + "\"");
+			}
+		}
+	}
+
 	/**
 	 * Setup the metrics
 	 */
@@ -515,7 +474,7 @@ public class RequestProcess extends ServletOperator {
 		this.responseAttributeName = responseAttributeName;
 	}
 	@Parameter(optional = true, description = RESPONSESTATUSATTRNAME_DESC)
-	public void setStatusAttributeName(String responseStatusAttributeName) {
+	public void setResponseStatusAttributeName(String responseStatusAttributeName) {
 		this.responseStatusAttributeName = responseStatusAttributeName;
 	}
 
