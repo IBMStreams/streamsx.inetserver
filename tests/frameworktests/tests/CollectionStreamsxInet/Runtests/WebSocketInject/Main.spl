@@ -1,0 +1,31 @@
+use com.ibm.streamsx.inet.wsserver::WebSocketInject;
+use com.ibm.streamsx.testframe::FileSink1;
+
+public composite Main() {
+	param
+		expression<int32> $jettyPort :     (int32)getSubmissionTimeValue("jettyPort", "8080");
+		expression<int32> $tuplesExpected: (int32)getSubmissionTimeValue("tuplesExpected", "2");
+
+	graph
+		stream<rstring data, rstring connectionId> ReceivedWsTuples = WebSocketInject() {
+			param
+				port : $jettyPort;
+				ackCount : 10;
+				messageAttributeName: "data";
+				senderIdAttributeName: "connectionId";
+		}
+		
+		stream<I> ReceivedAugmentedTuples as O = Custom(ReceivedWsTuples as I) {
+			logic
+				state : mutable int32 count = 0;
+				onTuple I: {
+					count++;
+					submit(I, O);
+					if ((count % $tuplesExpected) == 0 ) {
+						submit(Sys.WindowMarker, O);
+					}
+				}
+		}
+		
+		() as Sink = FileSink1(ReceivedAugmentedTuples) { }
+}
