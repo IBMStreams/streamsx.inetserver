@@ -35,7 +35,7 @@ public class InjectEventSocket extends EventSocket {
 
 		super.onWebSocketText(message); //trace
 
-		WebMessageInfo webMessageInfo = new WebMessageInfo(message, null, 0, 0, getRemoteId(), getSession());
+		WebMessageInfo webMessageInfo = new WebMessageInfo(message, null, 0, 0, getRemoteId(getSession()));
 		tupleCreator.accept(webMessageInfo);
 
 		incrementAndAck();
@@ -45,7 +45,7 @@ public class InjectEventSocket extends EventSocket {
 	public void onWebSocketBinary(byte[] payload, int offset, int len) {
 		super.onWebSocketBinary(payload, offset, len); //trace
 		
-		WebMessageInfo webMessageInfo = new WebMessageInfo(null, payload, offset, len, getRemoteId(), getSession());
+		WebMessageInfo webMessageInfo = new WebMessageInfo(null, payload, offset, len, getRemoteId(getSession()));
 		tupleCreator.accept(webMessageInfo);
 		
 		incrementAndAck();

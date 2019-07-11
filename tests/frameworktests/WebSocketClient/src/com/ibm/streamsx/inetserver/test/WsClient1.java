@@ -1,7 +1,6 @@
 package com.ibm.streamsx.inetserver.test;
 
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 
 import org.eclipse.jetty.websocket.api.Session;
@@ -35,13 +34,14 @@ public class WsClient1 {
 			Thread.sleep(1000);
 			System.out.println("Send2");
 			session1.getRemote().sendPartialString("Hello2_123456789abcdefghijkl", true);
+			session2.getRemote().sendString("Hello2_second_123456789abcdefghijkl");
 			Thread.sleep(1000);
 			System.out.println("Send3");
+			session2.close();
 			session1.getRemote().sendPartialString("Hello3_123456789abcdefghijkl", false);
 			Thread.sleep(1000);
 			System.out.println("Send4");
 			session1.getRemote().sendPartialString("Hello4_123456789abcdefghijkl", true);
-			session2.getRemote().sendString("Hello2_second_123456789abcdefghijkl");
 			
 			//String data = "You There?";
 			//ByteBuffer payload = ByteBuffer.wrap(data.getBytes());
@@ -49,9 +49,8 @@ public class WsClient1 {
 			System.out.println("sleep 5 sec.");
 			Thread.sleep(5000);
 			System.out.println("close session");
-			// Close session
+			// Close session1
 			session1.close();
-			session2.close();
 			//fut.cancel(true);
 		} catch (Exception e) {
 			System.out.println("Exception");

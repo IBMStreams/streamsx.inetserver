@@ -69,7 +69,9 @@ public class WebSocketInject extends ServletOperator {
 
 	static final String SENDER_ID_ATTRIBUTE_NAME_DESCR = 
 			"Output port attribute that will we loaded with the message sender's identifier, this "
-			+ "identifier is consistent during the lifetime of the sender's session. The type of this attribute must be `rstring` or `ustring`.";
+			+ "identifier is consistent during the lifetime of the sender's session. "
+			+ "Due to limitations of the undelying jetty implementation, this value is always the id of most recently connected"
+			+ "client. The type of this attribute must be `rstring` or `ustring`.";
 
 	static final String ACK_COUNT_DESCR = 
 			"The operator sends out an ack message to all currently connected clients.  " +
@@ -222,14 +224,12 @@ public class WebSocketInject extends ServletOperator {
 		final int offset;
 		final int len;
 		final public String id;
-		final public Session session;
-		public WebMessageInfo(String message, byte[] payload, int offset, int len, String id, Session session) {
+		public WebMessageInfo(String message, byte[] payload, int offset, int len, String id) {
 			this.message = message;
 			this.payload = payload;
 			this.offset = offset;
 			this.len = len;
 			this.id = id;
-			this.session = session;
 		}
 	}
 
@@ -254,7 +254,7 @@ public class WebSocketInject extends ServletOperator {
 			}
 		}
 
-		if (senderIdAttributeName != null) { 
+		if (senderIdAttributeName != null) {
 			outTuple.setString(senderIdAttributeName, webMessageInfo.id);
 		}
 

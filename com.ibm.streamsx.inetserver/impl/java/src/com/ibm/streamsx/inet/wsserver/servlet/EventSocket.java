@@ -17,7 +17,9 @@
 package com.ibm.streamsx.inet.wsserver.servlet;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
@@ -50,8 +52,6 @@ public class EventSocket extends WebSocketAdapter {
 	private final Map<Long, Session> sessionsConnected;
 	private final Metric nClientsConnected;
 	private final boolean enableConnectionControlMessages;
-	
-	private Long sessionKey;
 
 	public EventSocket(OperatorContext operatorContext, EventSocketConduit webSocketConduit) {
 		super();
@@ -59,56 +59,83 @@ public class EventSocket extends WebSocketAdapter {
 		this.sessionsConnected = webSocketConduit.sessionsConnected;
 		this.nClientsConnected = webSocketConduit.nClientsConnected;
 		this.enableConnectionControlMessages = webSocketConduit.enableConnectionControlMessages;
-		sessionKey = null;
+		if (trace.isEnabledFor(TraceLevel.INFO)) trace.info(operatorContext.getLogicalName() + ": EventSocket(...)");
 	}
 
 	@Override
 	public void onWebSocketConnect(Session sess) {
-		super.onWebSocketConnect(sess); //set session and remote
-		if (trace.isEnabledFor(TraceLevel.INFO)) trace.info(operatorContext.getLogicalName() + ": onWebSocketConnect - remote: " + getRemoteId());
-		sessionKey = sessionKeyGenerator.incrementAndGet();
-		Session previousSession = sessionsConnected.put(sessionKey, getSession());
+		super.onWebSocketConnect(sess); //set session and remote -> problem with WebSocketAdapter concept if more than on connection
+		boolean isSessionEqual = sess == getSession();
+		boolean isRemoteEqual = sess.getRemote() == getRemote();
+		if (trace.isEnabledFor(TraceLevel.INFO))
+			trace.info(operatorContext.getLogicalName() + ": onWebSocketConnect - session remote: " + getRemoteId(sess) + 
+					" remote: " + getRemote().getInetSocketAddress().getHostString() + ":" + getRemote().getInetSocketAddress().getPort() +
+					" sessionEqual: " + isSessionEqual + " remoteEqual: " + isRemoteEqual);
+		
+		Long sessionKey = sessionKeyGenerator.incrementAndGet();
+		Session previousSession = sessionsConnected.put(sessionKey, sess);
 		if (previousSession != null) {
-			trace.error(operatorContext.getLogicalName() + ": onWebSocketConnect - duplicate session key: " + sessionKey.toString() + " remote:" + getRemoteId());
+			trace.error(operatorContext.getLogicalName() + ": onWebSocketConnect - duplicate session key: " + sessionKey.toString() + " remote:" + getRemoteId(sess));
 		}
-		nClientsConnected.setValue(sessionsConnected.size());
-		if (enableConnectionControlMessages) statusToAll( "OPEN",  "R:" + getRemoteId() + " L:" + sess.getLocalAddress());
+		nClientsConnected.increment();
+		if (enableConnectionControlMessages) statusToAll( "OPEN",  "R:" + getRemoteId(sess) + " L:" + sess.getLocalAddress());
 	}
 
 	@Override
-	public void onWebSocketClose(int statusCode, String reason) {
-		if (trace.isEnabledFor(TraceLevel.INFO)) trace.info(operatorContext.getLogicalName() + ": onWebSocketClose - remote: " + getRemoteId() + " statusCode: " + statusCode);
-		Session previousSession = sessionsConnected.remove(sessionKey);
-		if (previousSession == null) {
-			trace.error(operatorContext.getLogicalName() + ": onWebSocketClose - can not remove session key: " + sessionKey.toString() + " remote: " + getRemoteId());
+	public synchronized void onWebSocketClose(int statusCode, String reason) {
+		if (trace.isEnabledFor(TraceLevel.INFO))
+			trace.info(operatorContext.getLogicalName() + ": onWebSocketClose - " + " statusCode: " + statusCode + 
+					" reason: " + reason);
+		
+		Set<Long> keyset = sessionsConnected.keySet();
+		HashSet<Long> keyToDelete = new HashSet<Long>();
+		for (Long k : keyset) {
+			Session sess = sessionsConnected.get(k);
+			if (sess.isOpen()) {
+				if (trace.isEnabledFor(TraceLevel.DEBUG))
+					trace.debug("Session is open: " + getRemoteId(sess));
+			} else {
+				if (trace.isEnabledFor(TraceLevel.INFO))
+					trace.info("Session is closed: " + getRemoteId(sess));
+				keyToDelete.add(k);
+			}
 		}
-		nClientsConnected.setValue(sessionsConnected.size());
-		if (enableConnectionControlMessages) statusToAll( "CLOSE",  "R:" + getRemoteId() + " L:" + getSession().getLocalAddress());
+		for (Long k : keyToDelete) {
+			Session previousSession = sessionsConnected.remove(k);
+			if (previousSession != null) {
+				if (enableConnectionControlMessages)
+					statusToAll( "CLOSE",  "R:" + getRemoteId(previousSession) + " L:" + previousSession.getLocalAddress());
+			} else {
+				trace.error(operatorContext.getLogicalName() + ": onWebSocketClose - can not remove session key: " + k.toString());
+			}
+		}
+		
+		nClientsConnected.incrementValue(-1);
 		super.onWebSocketClose(statusCode,reason); //set session and remote to null
 	}
 
 	@Override
 	public void onWebSocketError(Throwable cause) {
 		super.onWebSocketError(cause); //? do nothing
-		trace.error(operatorContext.getLogicalName() + ": onWebSocketError - remote: " + getRemoteId() + " " + cause.getMessage(), cause);
+		trace.error(operatorContext.getLogicalName() + ": onWebSocketError - " + cause.getMessage(), cause);
 	}
 
 	@Override
 	public void onWebSocketText(String message) {
 		super.onWebSocketText(message); //? do nothing
-		if (trace.isEnabledFor(TraceLevel.INFO)) trace.info(operatorContext.getLogicalName() + ": onWebSocketText - remote: " + getRemoteId());
+		if (trace.isEnabledFor(TraceLevel.INFO)) trace.info(operatorContext.getLogicalName() + ": onWebSocketText - length: " + message.length());
 	}
 	
 	@Override
 	public void onWebSocketBinary(byte[] payload, int offset, int len) {
 		super.onWebSocketBinary(payload, offset, len); //? do nothing
-		if (trace.isEnabledFor(TraceLevel.INFO)) trace.info(operatorContext.getLogicalName() + ": onWebSocketBinary - remote: " + getRemoteId());
+		if (trace.isEnabledFor(TraceLevel.INFO)) trace.info(operatorContext.getLogicalName() + ": onWebSocketBinary - length: " + (len - offset));
 	}
 
-	public String getRemoteId() {
+	public String getRemoteId(Session sess) {
 		String res = "null";
-		if (getRemote() != null) {
-			res = getRemote().getInetSocketAddress().getHostString() + ":" + getRemote().getInetSocketAddress().getPort() + " " + getRemote().getBatchMode().name();
+		if (sess != null) {
+			res = sess.getRemote().getInetSocketAddress().getHostString() + ":" + sess.getRemote().getInetSocketAddress().getPort() + " " + sess.getRemote().getBatchMode().name();
 		}
 		return res;
 	}
@@ -146,10 +173,10 @@ public class EventSocket extends WebSocketAdapter {
 					Collection<Session> sessions = sessionsConnected.values();
 					for( Session session : sessions ) {
 						if (session.isOpen()) {
-							if (trace.isEnabledFor(TraceLevel.TRACE)) trace.log(TraceLevel.TRACE, operatorContext.getLogicalName() +  ": sendToAll(): " + getRemoteId());
+							if (trace.isEnabledFor(TraceLevel.TRACE)) trace.log(TraceLevel.TRACE, operatorContext.getLogicalName() +  ": sendToAll(): " + getRemoteId(session));
 							session.getRemote().sendString(message);
 						} else {
-							trace.error(operatorContext.getLogicalName() +  ": sendToAll(): " + getRemoteId() + " session aready closed");
+							trace.error(operatorContext.getLogicalName() +  ": sendToAll(): " + getRemoteId(session) + " session aready closed");
 						}
 					}
 				}
