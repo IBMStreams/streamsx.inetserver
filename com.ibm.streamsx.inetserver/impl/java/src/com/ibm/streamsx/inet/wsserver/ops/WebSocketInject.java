@@ -206,7 +206,7 @@ public class WebSocketInject extends ServletOperator {
 				throw new IllegalArgumentException("Could not detect required attribute '" + senderIdAttributeName + "' on output port 0. ");
 			} else {
 				MetaType attrType = senderIdAttribute.getType().getMetaType();
-				if ((attrType != MetaType.RSTRING) && (attrType == MetaType.USTRING))
+				if ((attrType != MetaType.RSTRING) || (attrType == MetaType.USTRING))
 					throw new IllegalArgumentException("Port Attribute " + senderIdAttributeName + " must be of type rstring or ustring");
 			}
 		}
