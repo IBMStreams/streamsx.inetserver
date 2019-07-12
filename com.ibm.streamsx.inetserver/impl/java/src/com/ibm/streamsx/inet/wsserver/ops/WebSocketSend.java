@@ -89,7 +89,7 @@ public class WebSocketSend extends ServletOperator {
 	private Metric nMessagesSent;
 	private Metric nClientsConnected;
 	
-	private final Map<Long, Session> sessionsConnected = Collections.synchronizedMap(new HashMap<Long, Session>());
+	private final Map<String, Session> sessionsConnected = Collections.synchronizedMap(new HashMap<String, Session>());
 	private AtomicLong messagesSent = new AtomicLong();
 
 	/*
@@ -196,13 +196,12 @@ public class WebSocketSend extends ServletOperator {
 						}
 						messagesSent.getAndIncrement();
 					} catch (Exception e) {
-						trace.error("Can not send ws message to " + session.getRemoteAddress().getHostString() 
-								+ ":" + session.getRemoteAddress().getPort() + " error: " + e.getClass().getName()
-								+ " " + e.getMessage(), e);
+						trace.error("Can not send ws message to " + EventSocket.getRemoteId(session) 
+							+ " error: " + e.getClass().getName() + " " + e.getMessage(), e);
 					}
 				} else {
-					if (trace.isInfoEnabled()) trace.info("Session already closed " + session.getRemoteAddress().getHostString()
-							+ ":" + session.getRemoteAddress().getPort());
+					if (trace.isInfoEnabled())
+						trace.info("Session already closed " + EventSocket.getRemoteId(session));
 				}
 			}
 		}

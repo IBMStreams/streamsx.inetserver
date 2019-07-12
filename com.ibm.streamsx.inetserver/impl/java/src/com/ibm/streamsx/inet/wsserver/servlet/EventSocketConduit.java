@@ -15,18 +15,19 @@ import com.ibm.streamsx.inet.wsserver.ops.WebSocketInject.WebMessageInfo;
  * [2] - the clients connected metric
  * [3] - the messages received metric
  * [4] - the acknowledgement count (0 means no ack)
+ * [5] - enableConnectionControlMessages;
  */
 public class EventSocketConduit {
 
 	final public Consumer<WebMessageInfo> tupleCreator;
-	final public Map<Long, Session> sessionsConnected;
+	final public Map<String, Session> sessionsConnected;
 	final public Metric nClientsConnected;
 	final public Metric nMessagesReceived;
 	final public int ackCount;
 	final public boolean enableConnectionControlMessages;
 
 	public EventSocketConduit(
-			Consumer<WebMessageInfo> tupleCreator, Map<Long, Session> sessionsConnected, 
+			Consumer<WebMessageInfo> tupleCreator, Map<String, Session> sessionsConnected, 
 			Metric nClientsConnected, Metric nMessagesReceived, int ackCount, boolean enableConnectionControlMessages) {
 		this.tupleCreator = tupleCreator;
 		this.sessionsConnected = sessionsConnected;
