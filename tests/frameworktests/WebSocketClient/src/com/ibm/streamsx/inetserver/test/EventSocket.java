@@ -1,7 +1,5 @@
 package com.ibm.streamsx.inetserver.test;
 
-import java.io.IOException;
-
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 
@@ -9,40 +7,40 @@ public class EventSocket extends WebSocketAdapter {
 	@Override
 	public void onWebSocketConnect(Session sess) {
 		super.onWebSocketConnect(sess);
-		System.out.println("Socket Connected: " + sess);
+		System.out.println("Socket Connected: " + connId());
 	}
 	
 	@Override
 	public void onWebSocketText(String message) {
 		super.onWebSocketText(message);
-		System.out.println("Received TEXT message: " + message);
-		if (isConnected()) {
-			if (message.startsWith("Hello")) {
-				try {
-					getRemote().sendString("Answer");
-				} catch (IOException e) {
-					System.out.println("IOException");
-					e.printStackTrace();
-				}
-			}
-		}
+		System.out.println("Received TEXT " + connId() + " message: " + message);
 	}
 	
 	@Override
 	public void onWebSocketBinary(byte[] payload, int offset, int len) {
 		super.onWebSocketBinary(payload, offset, len);
-		System.out.println("onWebSocketBinary");
+		System.out.println("Received BINARY " + connId() + " len: " + (len - offset));
 	}
 	
 	@Override
 	public void onWebSocketClose(int statusCode, String reason) {
 		super.onWebSocketClose(statusCode,reason);
-		System.out.println("Socket Closed: [" + statusCode + "] " + reason);
+		System.out.println("Socket Closed: " + connId() + " [" + statusCode + "] " + reason);
 	}
 	
 	@Override
 	public void onWebSocketError(Throwable cause) {
 		super.onWebSocketError(cause);
+		System.out.println("Socket ERROR: " + connId());
 		cause.printStackTrace(System.err);
+	}
+	
+	private String connId() {
+		Session session = getSession();
+		String result = "null";
+		if (session != null) {
+			result = session.getLocalAddress().getAddress().getHostAddress() + ":" + session.getLocalAddress().getPort() + " " + session.getRemote().getBatchMode();
+		}
+		return result;
 	}
 }

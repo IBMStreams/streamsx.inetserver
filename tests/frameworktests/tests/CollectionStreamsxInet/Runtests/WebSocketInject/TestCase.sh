@@ -1,20 +1,33 @@
+#--variantCount=2
+#--exclusive=true
+
 PREPS=(
-	'copyOnly'
+	'myExplain'
+	'copyAndMorphSpl'
 	'splCompile'
 	'compileWsClient'
 )
 STEPS=(
 	'submitJob -P jettyPort=8080 -P tuplesExpected=4'
 	'checkJobNo'
-	'myWait'
+	'waitForJobHealth'
 	'runWsClient'
 	'TT_waitForFileName=data/WindowMarker'
-	'waitForFinAndHealth'
+	'waitForFinAndCheckHealth'
 	'cancelJobAndLog'
 	'myEval'
+	'checkLogsNoError2'
 )
 
 FINS='cancelJobAndLog'
+
+myExplain() {
+	case "$TTRO_variantCase" in
+	0) echo "variant $TTRO_variantCase - Output stream with message (rstring) and enderIdAttributeName";;
+	1) echo "variant $TTRO_variantCase - Output stream with message (rstring) only and without control messages";;
+	*) printErrorAndExit "invalid variant $TTRO_variantCase";;
+	esac
+}
 
 compileWsClient() {
 	(
@@ -28,19 +41,6 @@ runWsClient() {
 		cd "$TTRO_inputDir/../WebSocketClient"
 		ant WsClient1 -DWebSocketClient.uri=ws://localhost:8080/ReceivedWsTuples/ports/output/0/wsinject
 	)
-}
-
-myWait() {
-	while ! jobHealthy; do
-		printInfo "Wait for jobno=$TTTT_jobno to become healthy State=$TTTT_state Healthy=$TTTT_healthy"
-		sleep "$TT_waitForFileInterval"
-		now=$(date -u +%s)
-		difftime=$((now-start))
-		if [[ $difftime -gt $TTPR_waitForJobHealth ]]; then
-			setFailure "Takes to long ( $difftime ) for the job to become healty"
-			return 0
-		fi
-	done
 }
 
 myEval() {

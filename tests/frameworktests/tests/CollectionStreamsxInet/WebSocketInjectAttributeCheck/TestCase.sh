@@ -5,8 +5,8 @@ function myExplain {
 	0) echo "variant $TTRO_variantCase - Output port has single attribute with type string";;
 	1) echo "variant $TTRO_variantCase - Output port has no named attribute myMessageAttribute";;
 	2) echo "variant $TTRO_variantCase - Output port has named attribute messageAttribute with wrong type";;
-	1) echo "variant $TTRO_variantCase - Output port has no named attribute mySenderIdAttribute";;
-	2) echo "variant $TTRO_variantCase - Output port has named attribute senderIdAttribute with wrong type";;
+	3) echo "variant $TTRO_variantCase - Output port has no named attribute mySenderIdAttribute";;
+	4) echo "variant $TTRO_variantCase - Output port has named attribute senderIdAttribute with wrong type";;
 	*) printErrorAndExit "invalid variant $TTRO_variantCase";;
 	esac
 }
@@ -26,6 +26,6 @@ errorCodes=(
 	'*Port Attribute message must be of type rstring, ustring or blob*'
 	"*Could not detect required attribute 'myMessageAttribute' on output port 0*"
 	"*Port Attribute messageAttribute must be of type rstring, ustring or blob*"
-	"*Could not detect required attribute 'myMessageAttribute' on output port 0*"
-	"*Port Attribute messageAttribute must be of type rstring, ustring or blob*"
+	"*Could not detect required attribute 'mySenderIdAttribute' on output port 0*"
+	"*Port Attribute senderIdAttribute must be of type rstring or ustring*"
 )

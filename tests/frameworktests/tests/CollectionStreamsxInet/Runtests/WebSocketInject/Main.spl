@@ -7,12 +7,14 @@ public composite Main() {
 		expression<int32> $tuplesExpected: (int32)getSubmissionTimeValue("tuplesExpected", "2");
 
 	graph
-		stream<rstring data, rstring connectionId> ReceivedWsTuples = WebSocketInject() {
+		//<0>stream<rstring data, rstring connectionId> ReceivedWsTuples = WebSocketInject() {
+		//<1>stream<rstring data> ReceivedWsTuples = WebSocketInject() {
 			param
 				port : $jettyPort;
 				ackCount : 10;
-				messageAttributeName: "data";
-				senderIdAttributeName: "connectionId";
+		//<0>		messageAttributeName: "data";
+		//<0>		senderIdAttributeName: "connectionId";
+		//<1>		enableConnectionControlMessages: false;
 		}
 		
 		stream<I> ReceivedAugmentedTuples as O = Custom(ReceivedWsTuples as I) {
