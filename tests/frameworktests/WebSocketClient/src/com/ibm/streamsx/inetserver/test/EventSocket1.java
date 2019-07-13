@@ -3,7 +3,7 @@ package com.ibm.streamsx.inetserver.test;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 
-public class EventSocket extends WebSocketAdapter {
+public class EventSocket1 extends WebSocketAdapter {
 	@Override
 	public void onWebSocketConnect(Session sess) {
 		super.onWebSocketConnect(sess);

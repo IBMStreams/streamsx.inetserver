@@ -8,21 +8,25 @@ public composite Main() {
 
 	graph
 		//<0>stream<rstring data, rstring connectionId> ReceivedWsTuples = WebSocketInject() {
-		//<1>stream<rstring data> ReceivedWsTuples = WebSocketInject() {
+		//<1 2>stream<rstring data> ReceivedWsTuples = WebSocketInject() {
+		//<3>stream<blob data, rstring connectionId> ReceivedWsTuples = WebSocketInject() {
 			param
 				port : $jettyPort;
-				ackCount : 10;
-		//<0>		messageAttributeName: "data";
-		//<0>		senderIdAttributeName: "connectionId";
-		//<1>		enableConnectionControlMessages: false;
+		//<!2>		ackCount : 10;
+		//<0 3>		messageAttributeName: "data";
+		//<0 3>		senderIdAttributeName: "connectionId";
+		//<1 2>		enableConnectionControlMessages: false;
 		}
 		
-		stream<I> ReceivedAugmentedTuples as O = Custom(ReceivedWsTuples as I) {
+		//<!3>stream<I> ReceivedAugmentedTuples as O = Custom(ReceivedWsTuples as I) {
+		//<3>stream<rstring data, rstring connectionId> ReceivedAugmentedTuples as O = Custom(ReceivedWsTuples as I) {
 			logic
 				state : mutable int32 count = 0;
 				onTuple I: {
 					count++;
-					submit(I, O);
+					//<!3>submit(I, O);
+					//<3>O ot = {data = convertFromBlob(I.data), connectionId = I.connectionId};
+					//<3>submit(ot, O);
 					if ((count % $tuplesExpected) == 0 ) {
 						submit(Sys.WindowMarker, O);
 					}

@@ -93,7 +93,7 @@ public class EventSocket {
 
 	@OnWebSocketError
 	public void onWebSocketError(Session session, Throwable cause) {
-		trace.error(operatorContext.getLogicalName() + ": onWebSocketError - remote: " + getRemoteId(session) + " mause: " + cause.getMessage(), cause);
+		trace.error(operatorContext.getLogicalName() + ": onWebSocketError - remote: " + getRemoteId(session) + " cause: " + cause.getMessage(), cause);
 	}
 
 	protected void onWebSocketText(Session session, String message) {
