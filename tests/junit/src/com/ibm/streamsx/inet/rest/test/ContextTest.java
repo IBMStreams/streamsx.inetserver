@@ -12,7 +12,6 @@ import java.net.URL;
 
 import org.junit.Test;
 
-import com.ibm.streams.flow.declare.InputPortDeclaration;
 import com.ibm.streams.flow.declare.OperatorGraph;
 import com.ibm.streams.flow.declare.OperatorGraphFactory;
 import com.ibm.streams.flow.declare.OperatorInvocation;

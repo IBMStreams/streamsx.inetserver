@@ -26,6 +26,7 @@ import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type.MetaType;
+import com.ibm.streams.operator.log4j.TraceLevel;
 import com.ibm.streams.operator.metrics.Metric;
 import com.ibm.streams.operator.metrics.Metric.Kind;
 import com.ibm.streams.operator.model.CustomMetric;
@@ -302,19 +303,19 @@ public class RequestProcess extends ServletOperator {
 			if (keyParamType != MetaType.INT64)
 				throw new IllegalArgumentException("Only types \"" + MetaType.INT64 + "\" allowed for attribute \"" + keyAttributeName + "\"");
 			// request, out port
-			checkOptionalStringAttribute(requestAttributeName,     defaultRequestAttributeName,     getOutput(0).getStreamSchema(), "output", "requestAttributeName");
+			requestAttributeName     = checkOptionalStringAttribute(requestAttributeName,     defaultRequestAttributeName,     getOutput(0).getStreamSchema(), "output", "requestAttributeName");
 			// header, out port
-			checkOptionalAttribute      (headerAttributeName,      defaultHeaderAttributeName,      getOutput(0).getStreamSchema(), MetaType.MAP, "output", "headerAttributeName");
+			headerAttributeName      = checkOptionalAttribute      (headerAttributeName,      defaultHeaderAttributeName,      getOutput(0).getStreamSchema(), MetaType.MAP, "output", "headerAttributeName");
 			// method, out port
-			checkOptionalStringAttribute(methodAttributeName,      defaultMethodAttributeName,      getOutput(0).getStreamSchema(), "output", "methodAttributeName");
+			methodAttributeName      = checkOptionalStringAttribute(methodAttributeName,      defaultMethodAttributeName,      getOutput(0).getStreamSchema(), "output", "methodAttributeName");
 			// pathInfo, out port
-			checkOptionalStringAttribute(pathInfoAttributeName,    defaultPathInfoAttributeName,    getOutput(0).getStreamSchema(), "output", "pathInfoAttributeName");
+			pathInfoAttributeName    = checkOptionalStringAttribute(pathInfoAttributeName,    defaultPathInfoAttributeName,    getOutput(0).getStreamSchema(), "output", "pathInfoAttributeName");
 			// context path, out port
-			checkOptionalStringAttribute(contextPathAttributeName, defaultContextPathAttributeName, getOutput(0).getStreamSchema(), "output", "contextPathAttributeName");
+			contextPathAttributeName = checkOptionalStringAttribute(contextPathAttributeName, defaultContextPathAttributeName, getOutput(0).getStreamSchema(), "output", "contextPathAttributeName");
 			// pathInfo, out port
-			checkOptionalStringAttribute(urlAttributeName,         defaultUrlAttributeName,         getOutput(0).getStreamSchema(), "output", "urlAttributeName");
+			urlAttributeName         = checkOptionalStringAttribute(urlAttributeName,         defaultUrlAttributeName,         getOutput(0).getStreamSchema(), "output", "urlAttributeName");
 			// contentType, out port
-			checkOptionalStringAttribute(contentTypeAttributeName, defaultContentTypeAttributeName, getOutput(0).getStreamSchema(), "output", "contentTypeAttributeName");
+			contentTypeAttributeName = checkOptionalStringAttribute(contentTypeAttributeName, defaultContentTypeAttributeName, getOutput(0).getStreamSchema(), "output", "contentTypeAttributeName");
 		}
 		
 		//input attributes
@@ -330,13 +331,13 @@ public class RequestProcess extends ServletOperator {
 			if (keyResponseParamType != MetaType.INT64)
 				throw new IllegalArgumentException("Only types \"" + MetaType.INT64 + "\" allowed for attribute \"" + keyAttributeName + "\"");
 			// response, in port, optional
-			checkOptionalStringAttribute(responseAttributeName,            defaultResponseAttributeName,       getInput(0).getStreamSchema(), "input", "responseAttributeName");
+			responseAttributeName            = checkOptionalStringAttribute(responseAttributeName,            defaultResponseAttributeName,       getInput(0).getStreamSchema(), "input", "responseAttributeName");
 			// status, in port, optional
-			checkOptionalAttribute      (responseStatusAttributeName,      defaultResponseStatusAttributeName, getInput(0).getStreamSchema(), MetaType.INT32, "input", "responseStatusAttributeName");
+			responseStatusAttributeName      = checkOptionalAttribute      (responseStatusAttributeName,      defaultResponseStatusAttributeName, getInput(0).getStreamSchema(), MetaType.INT32, "input", "responseStatusAttributeName");
 			// response headers, in port, optional
-			checkOptionalAttribute      (responseHeaderAttributeName,      defaultHeaderAttributeName,         getInput(0).getStreamSchema(), MetaType.MAP, "input", "responseHeaderAttributeName");
+			responseHeaderAttributeName      = checkOptionalAttribute      (responseHeaderAttributeName,      defaultHeaderAttributeName,         getInput(0).getStreamSchema(), MetaType.MAP, "input", "responseHeaderAttributeName");
 			// response content type, in port, optional
-			checkOptionalStringAttribute(responseContentTypeAttributeName, defaultContentTypeAttributeName,    getInput(0).getStreamSchema(), "input", "responseContentTypeAttributeName");
+			responseContentTypeAttributeName = checkOptionalStringAttribute(responseContentTypeAttributeName, defaultContentTypeAttributeName,    getInput(0).getStreamSchema(), "input", "responseContentTypeAttributeName");
 		}
 
 		trace.trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
@@ -345,8 +346,7 @@ public class RequestProcess extends ServletOperator {
 	/**
 	 * Check the existence and type of an optional stream attribute
 	 */
-	private static void checkOptionalAttribute(String attributeName, String defaultName, StreamSchema schema, MetaType attributeType, String inout, String paramName) {
-		System.out.println("checkOptionalAttribute: " + attributeName + " " + defaultName + " " + attributeType.name());
+	private static String checkOptionalAttribute(String attributeName, String defaultName, StreamSchema schema, MetaType attributeType, String inout, String paramName) {
 		if (attributeName == null)
 			if (schema.getAttribute(defaultName) != null)
 				attributeName = defaultName;
@@ -356,17 +356,18 @@ public class RequestProcess extends ServletOperator {
 						+ "Or specify a valid value for \"" + paramName + "\"");
 			} else {
 				MetaType mAttributeType = schema.getAttribute(attributeName).getType().getMetaType();
-				System.out.println(mAttributeType.name());
 				if (mAttributeType != attributeType)
 					throw new IllegalArgumentException("Only type of \"" + attributeType + "\" allowed for attribute \"" + attributeName + "\"");
 			}
 		}
+		System.out.println("Attribute check " + inout + " port, parameter: " + paramName + " use attribute: "+ attributeName + " type: " + attributeType.name());
+		return attributeName;
 	}
 
 	/**
 	 * Check the existence and type of an optional stream string attribute
 	 */
-	private static void checkOptionalStringAttribute(String attributeName, String defaultName, StreamSchema schema, String inout, String paramName) {
+	private static String checkOptionalStringAttribute(String attributeName, String defaultName, StreamSchema schema, String inout, String paramName) {
 		if (attributeName == null)
 			if (schema.getAttribute(defaultName) != null)
 				attributeName = defaultName;
@@ -381,6 +382,8 @@ public class RequestProcess extends ServletOperator {
 							+ "\" allowed for attribute \"" + attributeName + "\"");
 			}
 		}
+		System.out.println("Attribute check " + inout + " port, parameter: " + paramName + " use attribute: "+ attributeName + " type: string");
+		return attributeName;
 	}
 
 	/**
@@ -496,7 +499,8 @@ public class RequestProcess extends ServletOperator {
 	@Override
 	public final void process(StreamingInput<Tuple> inputStream, Tuple tuple) {
 
-		trace.debug("processResponse ENTER");
+		if (trace.isEnabledFor(TraceLevel.DEBUG))
+			trace.debug("processResponse ENTER");
 
 		long trackingKey = 0;
 		String response = "";
@@ -505,7 +509,8 @@ public class RequestProcess extends ServletOperator {
 		String responseContentType = defaultResponseContentType;
 
 		if (jsonFormatInPort) {
-			trace.trace("processResponse - DUMP JSON:" + tuple.toString());
+			if (trace.isEnabledFor(TraceLevel.TRACE))
+				trace.trace("processResponse - DUMP JSON:" + tuple.toString());
 			String jsonString = tuple.getString(responseJsonAttributeName);
 
 			JSONObject json = null;
@@ -543,7 +548,7 @@ public class RequestProcess extends ServletOperator {
 					@SuppressWarnings("unchecked")
 					Map<String,String> mapHeader = (Map<String, String>) json.get(defaultHeaderAttributeName);
 					mapHeader.forEach((key, value)->{ responseHeaders.put(key,value);});
-					responseHeaders.forEach((key, value)->{ trace.info("processResponse JSON : header key:" + key + " value: " + value);});
+					responseHeaders.forEach((key, value)->{ if (trace.isEnabledFor(TraceLevel.INFO)) trace.info("processResponse JSON : header key:" + key + " value: " + value);});
 				}
 				if (json.containsKey((String) defaultContentTypeAttributeName)) {
 					String rct = (String) json.get(defaultContentTypeAttributeName);
@@ -555,7 +560,8 @@ public class RequestProcess extends ServletOperator {
 				handleProcessError(trackingKey, HttpServletResponse.SC_BAD_REQUEST, "ClassCastException in the JSON structure");
 			}
 		} else {
-			trace.info("processResponse TUPLE");
+			if (trace.isEnabledFor(TraceLevel.INFO))
+				trace.info("processResponse TUPLE");
 
 			// Extract components for response....
 			trackingKey = tuple.getLong(keyAttributeName);
@@ -570,7 +576,7 @@ public class RequestProcess extends ServletOperator {
 					RString key = keys.next();
 					responseHeaders.put(key.getString(), mapHeader.get(key).getString());
 				}
-				responseHeaders.forEach((key, value)->{ trace.trace("processResponse Tuple : header key:" + key + " value: " + value);});
+				responseHeaders.forEach((key, value)->{ if (trace.isEnabledFor(TraceLevel.TRACE)) trace.trace("processResponse Tuple : header key:" + key + " value: " + value);});
 			}
 			if (responseContentTypeAttributeName != null) {
 				String rct = tuple.getString(responseContentTypeAttributeName);
@@ -595,7 +601,8 @@ public class RequestProcess extends ServletOperator {
 			trace.error(e.getClass().getName() + " " + e.getMessage() + " trackingKey: " + trackingKey, e);
 			InjectWithResponse.buildWebErrResponse(activeWebMessage, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getClass().getName() + ": " + e.getMessage());
 		}
-		trace.debug("processResponse EXIT response : trackingKey:" + trackingKey);
+		if (trace.isEnabledFor(TraceLevel.DEBUG))
+			trace.debug("processResponse EXIT response : trackingKey:" + trackingKey);
 	}
 
 	/**
@@ -606,7 +613,8 @@ public class RequestProcess extends ServletOperator {
 	 * @param statusMessage
 	 */
 	private void handleProcessError(long trackingKey, int statusCode, String statusMessage) {
-		trace.debug("handleProcessError trackingKey: " + trackingKey + " statusCode: " + statusCode + " statusMessage: " + statusMessage);
+		if (trace.isEnabledFor(TraceLevel.DEBUG))
+			trace.debug("handleProcessError trackingKey: " + trackingKey + " statusCode: " + statusCode + " statusMessage: " + statusMessage);
 		ReqWebMessage activeWebMessage = activeRequests.remove(trackingKey);
 		nActiveRequests.setValue(activeRequests.size());
 		if (activeWebMessage == null) {
@@ -626,7 +634,8 @@ public class RequestProcess extends ServletOperator {
 	@SuppressWarnings("unchecked")
 	public OutputTuple initiateRequestFromWeb(ReqWebMessage exchangeWebMessage) {
 
-		trace.info("initiateWebRequest ENTER # " + nMessagesReceived.getValue() +" trackingKey: " + exchangeWebMessage.getTrackingKey());
+		if (trace.isEnabledFor(TraceLevel.INFO))
+				trace.info("initiateWebRequest ENTER # " + nMessagesReceived.getValue() +" trackingKey: " + exchangeWebMessage.getTrackingKey());
 		nMessagesReceived.increment();
 		activeRequests.put(exchangeWebMessage.getTrackingKey(), exchangeWebMessage);
 		nActiveRequests.setValue(activeRequests.size());
@@ -655,7 +664,7 @@ public class RequestProcess extends ServletOperator {
 			String name = headerNames.nextElement();
 			headers.put(name, request.getHeader(name));
 		}
-
+		
 		StreamingOutput<OutputTuple> outStream = getOutput(0);
 		OutputTuple outTuple = outStream.newTuple();
 
@@ -680,7 +689,6 @@ public class RequestProcess extends ServletOperator {
 
 			String jsonRequestString = jsonObj.toString();
 			outTuple.setString(jsonAttributeName, jsonRequestString);
-			trace.info("initiateWebRequest - single attribute, contents : " + jsonRequestString);
 		} else {
 			outTuple.setLong(keyAttributeName, exchangeWebMessage.getTrackingKey());
 			if (requestAttributeName != null) {
@@ -721,8 +729,9 @@ public class RequestProcess extends ServletOperator {
 				}
 				outTuple.setMap(headerAttributeName, transfer);
 			}
-			
-			trace.info("initiateWebRequest EXIT ");
+
+			if (trace.isEnabledFor(TraceLevel.INFO))
+				trace.info("initiateWebRequest EXIT ");
 		}
 		return outTuple;
 	}
