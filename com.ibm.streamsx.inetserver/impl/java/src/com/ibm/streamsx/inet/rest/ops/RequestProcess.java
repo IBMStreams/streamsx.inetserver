@@ -22,6 +22,8 @@ import com.ibm.json.java.JSONObject;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamSchema;
+import com.ibm.streams.operator.StreamingData;
+import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Tuple;
@@ -539,20 +541,25 @@ public class RequestProcess extends ServletOperator {
 			try {
 				if (json.containsKey(defaultResponseAttributeName)) {
 					response = (String) json.get(defaultResponseAttributeName);
+					if (response == null)
+						response = "";
 				}
 				if (json.containsKey((String) defaultResponseStatusAttributeName)) {
 					Long val = (Long) json.get(defaultResponseStatusAttributeName);
-					statusCode = val;
+					if ( val != null)
+						statusCode = val;
 				}
 				if (json.containsKey((String) defaultHeaderAttributeName)) {
 					@SuppressWarnings("unchecked")
 					Map<String,String> mapHeader = (Map<String, String>) json.get(defaultHeaderAttributeName);
-					mapHeader.forEach((key, value)->{ responseHeaders.put(key,value);});
-					responseHeaders.forEach((key, value)->{ if (trace.isEnabledFor(TraceLevel.INFO)) trace.info("processResponse JSON : header key:" + key + " value: " + value);});
+					if (mapHeader != null) {
+						mapHeader.forEach((key, value)->{ responseHeaders.put(key,value);});
+						responseHeaders.forEach((key, value)->{ if (trace.isEnabledFor(TraceLevel.INFO)) trace.info("processResponse JSON : header key:" + key + " value: " + value);});
+					}
 				}
 				if (json.containsKey((String) defaultContentTypeAttributeName)) {
 					String rct = (String) json.get(defaultContentTypeAttributeName);
-					if ( ! rct.isEmpty() )
+					if ( rct != null )
 						responseContentType = rct;
 				}
 			} catch (ClassCastException e) {
@@ -603,6 +610,19 @@ public class RequestProcess extends ServletOperator {
 		}
 		if (trace.isEnabledFor(TraceLevel.DEBUG))
 			trace.debug("processResponse EXIT response : trackingKey:" + trackingKey);
+	}
+
+	/**
+	 * Ignore any window marker
+	 */
+	@Override
+	public final void processPunctuation(StreamingInput<Tuple> port, StreamingData.Punctuation mark) throws Exception {
+		if (mark == Punctuation.WINDOW_MARKER) {
+			if (trace.isEnabledFor(TraceLevel.INFO))
+				trace.info("Window punctuation marker received");
+		} else {
+			super.processPunctuation(port, mark);
+		}
 	}
 
 	/**
