@@ -17,6 +17,12 @@ use com.ibm.streamsx.inet.rest::HTTPRequest ;
 * The goal:
 * * Demonstrate the processing of forms.
 * * Reinterate how important it is NOT to mess with the id. 
+* 
+* Procedure:
+* * build the sample - execute 'make'
+* * submit the sample to your streams instance
+* * open the browser and point tu url http://localhost:8080/livepage
+* * fill in the form and submit 
 */
 public composite DynTuple {
 
@@ -92,28 +98,50 @@ public composite DynTuple {
 		 * This builds the HTML that is to returned to the browser. 
 		 * The page will invoke the template normal.hbs or junk.hbspassed, the variables
 		 * that the template file will be using variables that are in the I.formdata (map<rstring, rstring>).
-		 * When the html page gets loaded it invokes the <script> that gets the template file then invokes
-		 * the template file with the variables, javascript + jquery cool like dynamite and dangerous - like 
-		 * nitro-glycerince. 
 		 */
 		stream<HTTPRequest> ResponseStream as O = Custom(FormStream as I) {
 			logic
 				state : {
-					rstring preHtml = '<!DOCTYPE html> <html lang="en"><title>Demonstration</title><head><script>';
-					// example of how it should look. 
-					mutable rstring dataForTemplate_File = 'var templateFile = "/junk.hbs";';
-					mutable rstring dataForTemplate_Context = 'var context = { "name" : "Joe Shome", "occupation" : "developer" , "profession" : "hack"};' ;
-					rstring postHtml = '</script><meta charset="UTF-8">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="/libs/handlebars.min-latest.js"></script>
-</head><body>
-<script>
-$.get(templateFile).done(function(template) {
-var templateScript = Handlebars.compile(template);
-var html = templateScript(context);
-$(document.body).append(html);});
-</script>
-</body>';
+					rstring preHtml = '<!DOCTYPE html> <html lang="en"><title>Demonstration</title>';
+					rstring junkHtml = '
+<body>
+  <meta charset=\'utf-8\'>
+  <div>
+    <h1>Pitiful password dude.</h1>
+    <p>Here we are in the the junk.hbs file</p>
+    <h2>Yo! %name% ! </h2>
+    <p>What is with the password, you can do better than that. </p>
+
+    <table border="2">
+        <tr><th>NAME</th><th>PROFESSION</th></tr>
+        <tr><td>%name%</td><td>%profession%</td></tr>
+    </table>
+        I am a %profession%.
+  </div>
+</body>
+</html>';
+					rstring normalHtml = '
+<body>
+  <meta charset=\'utf-8\'>
+  <div>
+    <h1>Demo Nonsense Text</h1>
+    <p>Here we are in the the normal.hbs file</p>
+    <h2>My name is %name%. </h2>
+    <p>To be, or not to be, that is the question:</p>
+    <p>Whether \'tis nobler in the mind to suffer</p>
+    <p>The slings and arrows of outrageous fortune,</p>
+    <p>Or to take Arms against a Sea of troubles,</p>
+    <p>and opposing them by becoming a %profession%</p>
+    <p>and fighting the good fight.</p>
+
+    <table border="2">
+        <tr><th>NAME</th><th>PROFESSION</th></tr>
+        <tr><td>%name%</td><td>%profession%</td></tr>
+    </table>
+        I am a %profession%.
+  </div>
+</body>
+</html>';
 				}
 				onTuple I : {
 					//transfer the tracking key
@@ -127,17 +155,15 @@ $(document.body).append(html);});
 							} else {
 								if (I.formdata["password"] == "") {
 									otuple.status = 401; //Status code (401) indicating that the request requires HTTP authentication.
-									dataForTemplate_File = 'var templateFile = "/junk.hbs";';
+									rstring html1 = regexReplace(junkHtml, "%name%", I.formdata["name"], true);
+									rstring html2 = regexReplace(html1, "%profession%", I.formdata["profession"], true);
+									otuple.response = preHtml + html2;
 								} else {
 									otuple.status = 200; //Status code (200) indicating the request succeeded normally.
-									dataForTemplate_File = 'var templateFile = "/normal.hbs";';
+									rstring html1 = regexReplace(normalHtml, "%name%", I.formdata["name"], true);
+									rstring html2 = regexReplace(html1, "%profession%", I.formdata["profession"], true);
+									otuple.response = preHtml + html2;
 								}
-								mutable rstring bstr = 'var context = {' ;
-								for(rstring key in keys(I.formdata)) {
-									bstr += '"' + key + '":"' + I.formdata[key] + '",' ;
-								}
-								dataForTemplate_Context = bstr + '};' ;
-								otuple.response = preHtml + dataForTemplate_File + dataForTemplate_Context + postHtml ;
 							}
 						} else {
 							otuple.status = 400; //Status code (400) indicating the request sent by the client was syntactically incorrect.
