@@ -1,6 +1,8 @@
 #--variantCount=4
 #--exclusive=true
 
+setCategory 'quick'
+
 PREPS=(
 	'myExplain'
 	'copyAndMorphSpl'

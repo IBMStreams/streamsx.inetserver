@@ -1,6 +1,8 @@
 #--variantList='tupleColoc tupleExloc jsonColoc jsonExloc'
 #--exclusive=true
 
+setCategory 'quick'
+
 PREPS=(
 	'myExplain'
 	'copyAndMorphSpl'
