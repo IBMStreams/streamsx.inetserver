@@ -108,7 +108,7 @@ public composite DynTuple {
   <meta charset=\'utf-8\'>
   <div>
     <h1>Pitiful password dude.</h1>
-    <p>Here we are in the the junk.hbs file</p>
+    <p>Here we are in the Status code 401 case indicating that the request requires authentication.</p>
     <h2>Yo! %name% ! </h2>
     <p>What is with the password, you can do better than that. </p>
 
@@ -125,7 +125,7 @@ public composite DynTuple {
   <meta charset=\'utf-8\'>
   <div>
     <h1>Demo Nonsense Text</h1>
-    <p>Here we are in the the normal.hbs file</p>
+    <p>Here we are in the Status code 200 case indicating the request succeeded normally.</p>
     <h2>My name is %name%. </h2>
     <p>To be, or not to be, that is the question:</p>
     <p>Whether \'tis nobler in the mind to suffer</p>
