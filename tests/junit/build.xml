@@ -46,6 +46,7 @@
 		description="Build the test classes">
 		<javac srcdir="${src.dir}" destdir="${bin.dir}" debug="true" includeantruntime="yes">
 			<classpath>
+				<path refid="cp.test.lib" />
 				<pathelement location="${toolkit.jarfile}" />
 				<path refid="cp.streams" />
 			</classpath>
