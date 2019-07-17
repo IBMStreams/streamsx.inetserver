@@ -695,7 +695,7 @@ public class RequestProcess extends ServletOperator {
 			jsonObj.put(RequestProcess.defaultRequestAttributeName, requestPayload);
 			jsonObj.put(RequestProcess.defaultMethodAttributeName, request.getMethod());
 			jsonObj.put(RequestProcess.defaultContentTypeAttributeName, request.getContentType());
-			jsonObj.put(RequestProcess.defaultContextPathAttributeName,  request.getContextPath());
+			jsonObj.put(RequestProcess.defaultContextPathAttributeName, request.getContextPath());
 			jsonObj.put(RequestProcess.defaultPathInfoAttributeName, request.getPathInfo());
 			jsonObj.put(RequestProcess.defaultUrlAttributeName, request.getRequestURL().toString());
 			if (JSONObject.isValidObject(headers)) {
@@ -728,6 +728,12 @@ public class RequestProcess extends ServletOperator {
 				if (request.getContentType() != null)
 					pi = request.getContentType();
 				outTuple.setString(contentTypeAttributeName, pi);
+			}
+			if (contextPathAttributeName != null) {
+				String pi = "";
+				if (request.getContextPath() != null)
+					pi = request.getContextPath();
+				outTuple.setString(contextPathAttributeName, pi);
 			}
 			if (urlAttributeName != null) {
 				String pi = "";
