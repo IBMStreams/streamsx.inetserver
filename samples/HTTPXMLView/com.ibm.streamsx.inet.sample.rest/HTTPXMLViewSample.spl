@@ -12,20 +12,20 @@ use com.ibm.streamsx.inet.rest::HTTPXMLView;
 /**
  * Simple example of an using `com.ibm.streamsx.inet.rest.HTTPXMLView` to view xml tuples
  * 
- * Open the browser and enter url [https://localhost:8080]
+ * Open the browser and enter url [http://localhost:8080]
  * 
  * Tuples are periodically injected from the beacon operator
  * 
- * And then are visible as a XML document [https://localhost:8080/InjectView/ports/input/0/attribute]
+ * And then are visible as a XML document [http://localhost:8080/InjectView/ports/input/0/attribute]
  * 
  * This fixed URL shows information for all ports available through URLs
- * in the HTTP server [https://localhost:8080/ports/info]
+ * in the HTTP server [http://localhost:8080/ports/info]
  *
  * To run this example execute:
  * 
  *     make
  *     output/bin/standalone
- *     Point browser to [https://localhost:8080]
+ *     Point browser to [http://localhost:8080]
  * 
  */
 public composite HTTPXMLViewSample {
