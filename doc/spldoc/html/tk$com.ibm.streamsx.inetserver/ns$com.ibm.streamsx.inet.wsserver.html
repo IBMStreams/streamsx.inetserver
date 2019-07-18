@@ -22,7 +22,22 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 3.0.0</a> &gt; com.ibm.streamsx.inet.wsserver</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.0.0</a> &gt; com.ibm.streamsx.inet.wsserver</p>
+
+</div>
+
+<div class="section">
+
+<p class="p">The Interne Server Toolkit provides support HTTP- and Websocket-Server functions. The functionality is based  on an embedded jetty webserver.
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">HTTPS Support and Sharing the Jetty Server
+</h2>
+
+<p class="p">see also <a class="xref" href="ns$com.ibm.streamsx.inet.html">namespace:com.ibm.streamsx.inet</a> 
+</p>
 
 </div>
 
@@ -32,7 +47,7 @@
 <li class="sli"><strong class="ph b"><a class="xref" href="op$com.ibm.streamsx.inet.wsserver$WebSocketInject.html">WebSocketInject</a></strong>:  Operator recieves messages from WebSocket clients and generates a tuple which is sent to streams.
 </li>
 
-<li class="sli"><strong class="ph b"><a class="xref" href="op$com.ibm.streamsx.inet.wsserver$WebSocketSend.html">WebSocketSend</a></strong>: Operator transmits tuples recieved on the input port via WebSocket protocol to connected clients.Upon startup, starts WebSocket Server. As tuple arrives on the input port they're converted intoJSON formatted messages and transmitted to all currently connected clients. Clients can connect and disconnect at anytime.
+<li class="sli"><strong class="ph b"><a class="xref" href="op$com.ibm.streamsx.inet.wsserver$WebSocketSend.html">WebSocketSend</a></strong>: Operator transmits tuples recieved on the input port via WebSocket protocol to connected clients.
 </li>
 
 </ul>

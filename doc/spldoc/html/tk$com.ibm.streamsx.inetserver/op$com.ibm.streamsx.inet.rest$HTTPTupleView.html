@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 3.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.rest.html">com.ibm.streamsx.inet.rest</a> &gt; HTTPTupleView</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.rest.html">com.ibm.streamsx.inet.rest</a> &gt; HTTPTupleView</p>
 
 </div>
 
@@ -92,11 +92,19 @@ Query parameters are ignored if the input port's schema is <tt class="ph tt">tup
 <ul class="ul">
 <li class="li"> Error handling is limited, incorrect URLs can crash the application, e.g. providing the wrong number of partition values.</li>
 
-<li class="li"> By default no security access is provided to the data, HTTPS must be explicitly configured. </li>
+<li class="li"> By default no security access is provided to the data, HTTPS must be explicitly configured.</li>
 
 </ul>
 
 </div>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">HTTPS Support and Sharing the Jetty Server
+</h2>
+
+<p class="p"> see also <a class="xref" href="ns$com.ibm.streamsx.inet.html">namespace:com.ibm.streamsx.inet</a>
+</p>
 
 </div>
 
@@ -234,7 +242,7 @@ This operator supports 11 parameters.
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__certificateAlias"><!-- --></a><tt class="ph tt">certificateAlias</tt></dt>
 
 <dd class="dd">
-<p class="p">Alias of the certificate to use in the key store. When this parameter is set all connections use HTTPS.
+<p class="p">Alias of the certificate to use in the key store. When this parameter is set all connections use HTTPS and parameters keyStore and keyPassword are required.
 </p>
 <dl class="dl">
 
@@ -371,7 +379,7 @@ param
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__keyPassword"><!-- --></a><tt class="ph tt">keyPassword</tt></dt>
 
 <dd class="dd">
-<p class="p">Password to the certificate. If not provided, defaults to the value of <tt class="ph tt">keyStorePassword</tt>.
+<p class="p">Password to the private key.
 </p>
 <dl class="dl">
 
@@ -492,7 +500,7 @@ param
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__port"><!-- --></a><tt class="ph tt">port</tt></dt>
 
 <dd class="dd">
-<p class="p">Port number for the embedded Jetty HTTP server. Defaults to 8080.
+<p class="p">Port number for the embedded Jetty HTTP server, default: "8080". If the port is set to 0, the jetty server uses a free tcp port, and the metric <tt class="ph tt">serverPort</tt> delivers the actual value.
 </p>
 <dl class="dl">
 
@@ -593,7 +601,7 @@ param
 
     <dd class="dd">
 
-<p class="p">Jetty SSL/TLS status: 0=HTTP, 1=HTTPS
+<p class="p">Jetty SSL/TLS status: 0=HTTP, 1=HTTPS.
 </p>
 
      <p class="p"/>
@@ -606,7 +614,7 @@ param
 
     <dd class="dd">
 
-<p class="p">Jetty (HTTP/HTTPS) server port
+<p class="p">Jetty (HTTP/HTTPS) server port if the operator hosts the server, 0 otherwise
 </p>
 
      <p class="p"/>

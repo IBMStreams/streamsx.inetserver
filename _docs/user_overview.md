@@ -11,29 +11,42 @@ sidebar:
 {% include toc %}
 {%include editme %}
 
-# SPLDOC
+# Toolkit Usage Overview
+
+## SPLDOC
 
 * [SPLDoc of the streamsx.inetserver toolkit](https://ibmstreams.github.io/streamsx.inetserver/doc/spldoc/html/tk$com.ibm.streamsx.inetserver/tk$com.ibm.streamsx.inetserver.html)
+
+Reference of former releases:
+* [v3.0](https://ibmstreams.github.io/streamsx.inetserver/v3.0/doc/spldoc/html/index.html)
+
+## Samples
+
 * [SPLDoc for the samples of streamsx.inetserver toolkit](https://ibmstreams.github.io/streamsx.inetserver/samples/doc/spldoc/html/index.html)
 
 
-# Running applications that use the Internet Server Toolkit
+## What is new
+
+[CHANGELOG.md](https://github.com/IBMStreams/streamsx.inetserver/blob/master/CHANGELOG.md)
+
+
+## Running applications that use the Internet Server Toolkit
 
 To create applications that use the Internet Server Toolkit, you must configure either Streams Studio
 or the SPL compiler to be aware of the location of the toolkit.
 
-## Before you begin
+### Before you begin
 
 Install IBM InfoSphere Streams. Configure the product environment variables by entering the following command: 
     source product-installation-root-directory/product-version/bin/streamsprofile.sh
 
-## About this task
+### About this task
 
 After the location of the toolkit is communicated to the compiler, the SPL artifacts that are specified
 in the toolkit can be used by an application. The application can include a use directive to bring the necessary namespaces into scope.
 Alternatively, you can fully qualify the operators that are provided by toolkit with their namespaces as prefixes.
 
-## Procedure
+### Procedure
 
 1. Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
   * Set the **STREAMS_SPLPATH** environment variable to the root directory of a toolkit
@@ -52,6 +65,4 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
 3. Build your application.  You can use the **sc** command or Streams Studio.  
 4. Start the InfoSphere Streams instance. 
 5. Run the application. You can submit the application as a job by using the **streamtool submitjob** command or by using Streams Studio. 
-
-
 

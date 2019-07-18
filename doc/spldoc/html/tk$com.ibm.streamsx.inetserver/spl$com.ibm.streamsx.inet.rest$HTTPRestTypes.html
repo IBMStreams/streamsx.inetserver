@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 3.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.rest.html">com.ibm.streamsx.inet.rest</a> &gt; HTTPRestTypes.spl</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.rest.html">com.ibm.streamsx.inet.rest</a> &gt; HTTPRestTypes.spl</p>
 
 </div>
 
@@ -74,9 +74,7 @@
 
 <li class="li"> pathInfo - requests path beyond the context's base</li>
 
-<li class="li"> status - indicates of the request completion. </li>
-
-<li class="li"> statusMessage - on request, only populated if status is &gt; 300.   </li>
+<li class="li"> status - indicates of the request completion.  </li>
 
 </ul>
 
@@ -86,7 +84,7 @@
 
 <div class="section">
    <p class="p">
-<tt class="ph tt">HTTPRequest = int64 key, rstring request, rstring contentType, map&lt;rstring, rstring&gt; header, rstring response, rstring method, rstring pathInfo, int32 status, rstring statusMessage;</tt>
+<tt class="ph tt">HTTPRequest = int64 key, rstring request, rstring contentType, map&lt;rstring, rstring&gt; header, rstring response, rstring method, rstring pathInfo, int32 status;</tt>
    </p>
 
 </div>

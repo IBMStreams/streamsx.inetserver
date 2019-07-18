@@ -22,13 +22,13 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 3.0.0</a> &gt; com.ibm.streamsx.inet.rest</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.0.0</a> &gt; com.ibm.streamsx.inet.rest</p>
 
 </div>
 
 <div class="section">
 
-<p class="p">A set of operators using HTTP REST apis to interact with streaming data.
+<p class="p">A set of operators using HTTP (REST) apis to interact with streaming data.
 </p>
 
 <p class="p">These operators all embed an instance of Eclipse Jetty to provide an web-server embedded within the operator.
@@ -37,13 +37,13 @@
 <p class="p">Access to streaming data is provided through the <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPTupleView.html">HTTPTupleView</a> and <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPXMLView.html">HTTPXMLView</a> operators. These two operators support <tt class="ph tt">HTTP GET</tt> requests to fetch the latest version of the streaming data in the operator's state.
 </p>
 
-<p class="p">Data can be injected into a stream through  <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPTupleInjection.html">HTTPTupleInjection</a> and <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPXMLInjection.html">HTTPXMLInjection</a> operators. Each operators extracts data from an <tt class="ph tt">HTTP POST</tt> and submits a tuple on an output port.
+<p class="p">Data can be injected into a stream through  <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPTupleInjection.html">HTTPTupleInjection</a>, <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPXMLInjection.html">HTTPXMLInjection</a>, <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPBLOBInjection.html">HTTPBLOBInjection</a> and <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPJSONInjection.html">HTTPJSONInjection</a> operators. Each operators extracts data from an <tt class="ph tt">HTTP POST</tt> and submits a tuple on an output port.
 </p>
 
 <p class="p"><a class="xref" href="op$com.ibm.streamsx.inet.rest$WebContext.html">WebContext</a> provides a mechanism to serve files at a fixed web context, a fixed path relative to the root URL of the web server. Note that all the operators also support a fixed context using the <tt class="ph tt">context</tt> and <tt class="ph tt">contextResourceBase</tt> operator parameters. 
 </p>
 
-<p class="p">Multiple operators share a single web-server by being partition colocated in the same partition (fused in the same proccessing element). This allows operators to expose streams through the same webserver without having to be connected in the SPL graph.
+<p class="p">The <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPRequestProcess.html">HTTPRequestProcess</a> operator enables a developer to process HTTP form's  and REST calls in a Streams application and deliver the appropriate response to  the HTTP client.
 </p>
 
 <p class="p">Overall, these set of operators allow a complete web-application to be self-contained within an SPL application. In addition to the operators the webserver will serve up HTML and Javascript files. Javascript can be used with the JSON data provided by <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPTupleView.html">HTTPTupleView</a> to visual live data using graphical packages such as <a class="xref" href="http://dojotoolkit.org">DOJO</a> and  <a class="xref" href="http://d3js.org">D3</a>.
@@ -79,11 +79,13 @@
 This tables use the Dojo Javascript library from the Steams install, and thus do not require external internet connectivity.
 </div>
 
-  <dl class="dl"><dt class="dt dlterm"><a class="xref" href="ns$com.ibm.streamsx.inet.rest$1.html">HTTPS Support</a>
-</dt>
-<dd class="dd">Overview of HTTP and HTTPS support for <tt class="ph tt">com.ibm.streamsx.inet.rest</tt> operators. 
-</dd>
-</dl>
+</div>
+
+<div class="section"><h2 class="title sectiontitle">HTTPS Support and Sharing the Jetty Server
+</h2>
+
+<p class="p">see also <a class="xref" href="ns$com.ibm.streamsx.inet.html">namespace:com.ibm.streamsx.inet</a> 
+</p>
 
 </div>
 

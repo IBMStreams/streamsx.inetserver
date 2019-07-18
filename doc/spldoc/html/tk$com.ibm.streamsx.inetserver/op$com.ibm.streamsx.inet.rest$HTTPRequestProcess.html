@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 3.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.rest.html">com.ibm.streamsx.inet.rest</a> &gt; HTTPRequestProcess</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.rest.html">com.ibm.streamsx.inet.rest</a> &gt; HTTPRequestProcess</p>
 
 </div>
 
@@ -32,7 +32,7 @@
 
 <div class="section">
 
-<p class="p">Operator accepts a web request and generates corresponding response.  The request is injected into streams on the output port, the input port receives the response.This enables a developer to process HTTP form's and REST calls. The request arrives on the output port, results are presented on the input port.The request is coorolated to the response with an attribute 'key' that arrives with the request parameters' on the output port and must accompany the response on the input port.
+<p class="p">Operator accepts a web request and generates corresponding response.  The request is injected into streams on the output port, the input port receives the response.This enables a developer to process HTTP form's and REST calls. The request arrives on the output port, results are presented on the input port.The request is correlated to the response with an attribute 'key' that arrives with the request parameters' on the output port and must accompany the response on the input port.
 </p>
 
 <div class="p">The URLs defined by this operator are:
@@ -58,26 +58,32 @@
 <p class="p">For the <tt class="ph tt">analyze</tt> path any HTTP method can be used and any sub-path. For example with a context of <tt class="ph tt">api</tt> and operator name of <tt class="ph tt">Bus</tt> then <tt class="ph tt">api/Bus/ports/analyze/0/get_location</tt> is valid.
 </p>
 
-<p class="p">Input and output ports have two possible formats: tuple and json. With tuple format, each web input fields is mapped to an attribute. Json format has one attribute ('jsonString'), each web field is mapped to a json object field. 
+<p class="p">Input and output ports have two possible formats: tuple and json. The modes of input- and output port are independant.A port works in json mode if it has one attribute with name jsonString. With tuple format, each web input fields is mapped to an attribute. Json format has one attribute ('jsonString'), each web field is mapped to a json object field. 
 </p>
 
-<p class="p">The jsonString object will be populated with all the fields. The default attribute names can beoverridden for tuple. 
+<p class="p">The jsonString object will be populated with all the fields. The default attribute names can be overridden for tuple. 
 </p>
 
 <p class="p">The operator handles two flavors of http requests, forms and REST. In the case of forms, webpages can be served up from the contextResourceBase, this can be to static html or template. . Refer to the spl example for a form processed by the operator using a template to format the response.
 </p>
 
-<div class="p"> For the input port (the web response), only the 'key' is mandatory for both json and tuple. The following lists the default values if the field or attribute is not provided. 
+<p class="p"> For the input port (the web response), only the 'key' is mandatory for both json and tuple.
+</p>
+
+<p class="p">For the output port in tuple mode (the web request), only the 'key' attribute is mandatory. All other attributes 'request', 'method', 'header', 'contentType', 'pathInfo', 'contextPath' and 'url' are optional. In json mode all attributes are propagated to the json attribute 
+</p>
+
+<div class="p">The following lists the default values if the field or attribute is not provided.
 <ul class="ul">
-<li class="li"> rstring response : 0 length response.  </li>
+<li class="li"> rstring response : 0 length response.</li>
 
-<li class="li"> int32 statusCode : 200 (OK) </li>
+<li class="li"> int32 statusCode : 200 (OK)</li>
 
-<li class="li"> rstring statusMessage :  not set </li>
+<li class="li"> rstring statusMessage :  not set</li>
 
-<li class="li"> rstring contentType : 'text/html; charset=utf-8'. </li>
+<li class="li"> rstring contentType : 'text/html; charset=utf-8'.</li>
 
-<li class="li"> Map&lt;rstring,rstring&gt; headers : No headers provided </li>
+<li class="li"> Map&lt;rstring,rstring&gt; headers : No headers provided</li>
 
 </ul>
 
@@ -108,6 +114,14 @@
 
 </div>
 
+<div class="section"><h2 class="title sectiontitle">HTTPS Support and Sharing the Jetty Server
+</h2>
+
+<p class="p"> see also <a class="xref" href="ns$com.ibm.streamsx.inet.html">namespace:com.ibm.streamsx.inet</a>
+</p>
+
+</div>
+
 <div class="section"><h2 class="title sectiontitle splhead-1">Summary</h2>
 
 <dl class="dl" compact="compact">
@@ -126,9 +140,9 @@
  
   <dt class="dt dlterm">Parameters</dt>
 
-  <dd class="dd">This operator supports 22 parameters.
+  <dd class="dd">This operator supports 24 parameters.
 <p class="p"> Optional: 
-<a class="xref" href="#spldoc_operator__parameter__certificateAlias">certificateAlias</a>, <a class="xref" href="#spldoc_operator__parameter__contentTypeAttributeName">contentTypeAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__context">context</a>, <a class="xref" href="#spldoc_operator__parameter__contextResourceBase">contextResourceBase</a>, <a class="xref" href="#spldoc_operator__parameter__headerAttributeName">headerAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__keyAttributeName">keyAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__keyPassword">keyPassword</a>, <a class="xref" href="#spldoc_operator__parameter__keyStore">keyStore</a>, <a class="xref" href="#spldoc_operator__parameter__keyStorePassword">keyStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__methodAttributeName">methodAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__pathInfoAttributeName">pathInfoAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__port">port</a>, <a class="xref" href="#spldoc_operator__parameter__requestAttributeName">requestAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseAttributeName">responseAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseContentTypeAttributeName">responseContentTypeAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseHeaderAttributeName">responseHeaderAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseJsonAttributeName">responseJsonAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__statusAttributeName">statusAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__statusMessageAttributeName">statusMessageAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__trustStore">trustStore</a>, <a class="xref" href="#spldoc_operator__parameter__trustStorePassword">trustStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__webTimeout">webTimeout</a>
+<a class="xref" href="#spldoc_operator__parameter__certificateAlias">certificateAlias</a>, <a class="xref" href="#spldoc_operator__parameter__contentTypeAttributeName">contentTypeAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__context">context</a>, <a class="xref" href="#spldoc_operator__parameter__contextPathAttributeName">contextPathAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__contextResourceBase">contextResourceBase</a>, <a class="xref" href="#spldoc_operator__parameter__headerAttributeName">headerAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__jsonAttributeName">jsonAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__keyAttributeName">keyAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__keyPassword">keyPassword</a>, <a class="xref" href="#spldoc_operator__parameter__keyStore">keyStore</a>, <a class="xref" href="#spldoc_operator__parameter__keyStorePassword">keyStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__methodAttributeName">methodAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__pathInfoAttributeName">pathInfoAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__port">port</a>, <a class="xref" href="#spldoc_operator__parameter__requestAttributeName">requestAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseAttributeName">responseAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseContentTypeAttributeName">responseContentTypeAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseHeaderAttributeName">responseHeaderAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseJsonAttributeName">responseJsonAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseStatusAttributeName">responseStatusAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__trustStore">trustStore</a>, <a class="xref" href="#spldoc_operator__parameter__trustStorePassword">trustStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__urlAttributeName">urlAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__webTimeout">webTimeout</a>
 
 </p>
 </dd>
@@ -137,7 +151,7 @@
  
   <dt class="dt dlterm">Metrics</dt>
 
-  <dd class="dd">This operator reports 7 metrics.</dd>
+  <dd class="dd">This operator reports 8 metrics.</dd>
 
  
 </dl>
@@ -233,7 +247,7 @@
    </ul>
 
    <ul class="sl simple">
-     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__output_port_set__windowpunctuationoutputmode">WindowPunctuationOutputMode</a>: Generating
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__output_port_set__windowpunctuationoutputmode">WindowPunctuationOutputMode</a>: Free
      </li>
 
    </ul>
@@ -254,9 +268,9 @@
 
 <div class="section">
 <p class="p splhead-1"><strong class="ph b"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters">Parameters</a></strong></p>
-This operator supports 22 parameters.
+This operator supports 24 parameters.
 <p class="p"> Optional: 
-<a class="xref" href="#spldoc_operator__parameter__certificateAlias">certificateAlias</a>, <a class="xref" href="#spldoc_operator__parameter__contentTypeAttributeName">contentTypeAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__context">context</a>, <a class="xref" href="#spldoc_operator__parameter__contextResourceBase">contextResourceBase</a>, <a class="xref" href="#spldoc_operator__parameter__headerAttributeName">headerAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__keyAttributeName">keyAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__keyPassword">keyPassword</a>, <a class="xref" href="#spldoc_operator__parameter__keyStore">keyStore</a>, <a class="xref" href="#spldoc_operator__parameter__keyStorePassword">keyStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__methodAttributeName">methodAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__pathInfoAttributeName">pathInfoAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__port">port</a>, <a class="xref" href="#spldoc_operator__parameter__requestAttributeName">requestAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseAttributeName">responseAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseContentTypeAttributeName">responseContentTypeAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseHeaderAttributeName">responseHeaderAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseJsonAttributeName">responseJsonAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__statusAttributeName">statusAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__statusMessageAttributeName">statusMessageAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__trustStore">trustStore</a>, <a class="xref" href="#spldoc_operator__parameter__trustStorePassword">trustStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__webTimeout">webTimeout</a>
+<a class="xref" href="#spldoc_operator__parameter__certificateAlias">certificateAlias</a>, <a class="xref" href="#spldoc_operator__parameter__contentTypeAttributeName">contentTypeAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__context">context</a>, <a class="xref" href="#spldoc_operator__parameter__contextPathAttributeName">contextPathAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__contextResourceBase">contextResourceBase</a>, <a class="xref" href="#spldoc_operator__parameter__headerAttributeName">headerAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__jsonAttributeName">jsonAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__keyAttributeName">keyAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__keyPassword">keyPassword</a>, <a class="xref" href="#spldoc_operator__parameter__keyStore">keyStore</a>, <a class="xref" href="#spldoc_operator__parameter__keyStorePassword">keyStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__methodAttributeName">methodAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__pathInfoAttributeName">pathInfoAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__port">port</a>, <a class="xref" href="#spldoc_operator__parameter__requestAttributeName">requestAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseAttributeName">responseAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseContentTypeAttributeName">responseContentTypeAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseHeaderAttributeName">responseHeaderAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseJsonAttributeName">responseJsonAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__responseStatusAttributeName">responseStatusAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__trustStore">trustStore</a>, <a class="xref" href="#spldoc_operator__parameter__trustStorePassword">trustStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__urlAttributeName">urlAttributeName</a>, <a class="xref" href="#spldoc_operator__parameter__webTimeout">webTimeout</a>
 
 </p>
 <dl class="dl">
@@ -264,7 +278,7 @@ This operator supports 22 parameters.
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__certificateAlias"><!-- --></a><tt class="ph tt">certificateAlias</tt></dt>
 
 <dd class="dd">
-<p class="p">Alias of the certificate to use in the key store. When this parameter is set all connections use HTTPS.
+<p class="p">Alias of the certificate to use in the key store. When this parameter is set all connections use HTTPS and parameters keyStore and keyPassword are required.
 </p>
 <dl class="dl">
 
@@ -295,7 +309,7 @@ This operator supports 22 parameters.
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__contentTypeAttributeName"><!-- --></a><tt class="ph tt">contentTypeAttributeName</tt></dt>
 
 <dd class="dd">
-<p class="p">Output port's attribute with content-type will be provided in, default: "contentType".  
+<p class="p">Output port's attribute name with content-type will be provided in. The type of the attribute must be <tt class="ph tt">rstring</tt> or <tt class="ph tt">ustring</tt>. Default: "contentType".  
 </p>
 <dl class="dl">
 
@@ -333,6 +347,37 @@ This operator supports 22 parameters.
 </p>
 
 <p class="p">Only a single context per invocation is supported.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__contextPathAttributeName"><!-- --></a><tt class="ph tt">contextPathAttributeName</tt></dt>
+
+<dd class="dd">
+<p class="p">Output ports's attribute name of the context path. The type of the attribute must be <tt class="ph tt">rstring</tt> or <tt class="ph tt">ustring</tt>. Default: "contextPath".  
 </p>
 <dl class="dl">
 
@@ -404,7 +449,38 @@ param
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__headerAttributeName"><!-- --></a><tt class="ph tt">headerAttributeName</tt></dt>
 
 <dd class="dd">
-<p class="p">Output port's web request headers, in the form of a objects&lt;name, value&gt;, default: "header".  
+<p class="p">Output port's attribute name with web request headers, in the form of a <tt class="ph tt">map&lt;rstring, rstring&gt;</tt>, default: "header".  
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__jsonAttributeName"><!-- --></a><tt class="ph tt">jsonAttributeName</tt></dt>
+
+<dd class="dd">
+<p class="p">Output port's attrinute name for json request (complete request). The type of the attribute must be <tt class="ph tt">rstring</tt> or <tt class="ph tt">ustring</tt>. Default:  "jsonString".  
 </p>
 <dl class="dl">
 
@@ -466,7 +542,7 @@ param
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__keyPassword"><!-- --></a><tt class="ph tt">keyPassword</tt></dt>
 
 <dd class="dd">
-<p class="p">Password to the certificate. If not provided, defaults to the value of <tt class="ph tt">keyStorePassword</tt>.
+<p class="p">Password to the private key.
 </p>
 <dl class="dl">
 
@@ -559,7 +635,7 @@ param
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__methodAttributeName"><!-- --></a><tt class="ph tt">methodAttributeName</tt></dt>
 
 <dd class="dd">
-<p class="p">Output ports's attribute name with the request method (PUT, GET, POST), default: "method".  
+<p class="p">Output ports's attribute name with the request method (PUT, GET, POST). The type of the attribute must be <tt class="ph tt">rstring</tt> or <tt class="ph tt">ustring</tt>. Default: "method".  
 </p>
 <dl class="dl">
 
@@ -590,7 +666,7 @@ param
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__pathInfoAttributeName"><!-- --></a><tt class="ph tt">pathInfoAttributeName</tt></dt>
 
 <dd class="dd">
-<p class="p">Output ports's attribute of the content path below the base, default "pathInfo".  
+<p class="p">Output ports's attribute name of the content path below the base. The type of the attribute must be <tt class="ph tt">rstring</tt> or <tt class="ph tt">ustring</tt>. Default "pathInfo".  
 </p>
 <dl class="dl">
 
@@ -621,7 +697,7 @@ param
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__port"><!-- --></a><tt class="ph tt">port</tt></dt>
 
 <dd class="dd">
-<p class="p">Port number for the embedded Jetty HTTP server. Defaults to 8080.
+<p class="p">Port number for the embedded Jetty HTTP server, default: "8080". If the port is set to 0, the jetty server uses a free tcp port, and the metric <tt class="ph tt">serverPort</tt> delivers the actual value.
 </p>
 <dl class="dl">
 
@@ -652,7 +728,7 @@ param
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__requestAttributeName"><!-- --></a><tt class="ph tt">requestAttributeName</tt></dt>
 
 <dd class="dd">
-<p class="p">Output port's attribute name with the web request (body of the web request), default "request".  
+<p class="p">Output port's attribute name with the web request (body of the web request). The type of the attribute must be <tt class="ph tt">rstring</tt> or <tt class="ph tt">ustring</tt>. Default "request".  
 </p>
 <dl class="dl">
 
@@ -683,7 +759,7 @@ param
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__responseAttributeName"><!-- --></a><tt class="ph tt">responseAttributeName</tt></dt>
 
 <dd class="dd">
-<p class="p">Input port's attribute response (body of the web response), default:  "response".  
+<p class="p">Input port's attribute name for the response body of the web response. The type of the attribute must be <tt class="ph tt">rstring</tt> or <tt class="ph tt">ustring</tt>. Default:  "response".  
 </p>
 <dl class="dl">
 
@@ -714,7 +790,7 @@ param
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__responseContentTypeAttributeName"><!-- --></a><tt class="ph tt">responseContentTypeAttributeName</tt></dt>
 
 <dd class="dd">
-<p class="p">Input port's web response content type, default: "contentType".  
+<p class="p">Input port's attribute name for web response content type. The type of the attribute must be <tt class="ph tt">rstring</tt> or <tt class="ph tt">ustring</tt>. Default: "contentType". If null or an empty string is delivered, the default content type 'text/html; charset=utf-8' is used.  
 </p>
 <dl class="dl">
 
@@ -745,7 +821,7 @@ param
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__responseHeaderAttributeName"><!-- --></a><tt class="ph tt">responseHeaderAttributeName</tt></dt>
 
 <dd class="dd">
-<p class="p">Input port's web response header objects&lt;name,value&gt;, default: "header".  
+<p class="p">Input port's attribute name for web response headers. The type of this attribute must be <tt class="ph tt">map&lt;rstring, rstring&gt;</tt>. Default: "header".  
 </p>
 <dl class="dl">
 
@@ -776,7 +852,7 @@ param
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__responseJsonAttributeName"><!-- --></a><tt class="ph tt">responseJsonAttributeName</tt></dt>
 
 <dd class="dd">
-<p class="p">Input port's json results (complete response), default:  "jsonString".  
+<p class="p">Input port's attribute name for json results (complete response). The type of the attribute must be <tt class="ph tt">rstring</tt> or <tt class="ph tt">ustring</tt>. Default:  "jsonString".  
 </p>
 <dl class="dl">
 
@@ -804,41 +880,10 @@ param
 
 
 
-<dt class="dt dlterm"><a name="spldoc_operator__parameter__statusAttributeName"><!-- --></a><tt class="ph tt">statusAttributeName</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__responseStatusAttributeName"><!-- --></a><tt class="ph tt">responseStatusAttributeName</tt></dt>
 
 <dd class="dd">
-<p class="p">Input port's attribute web status, default:  "status".  
-</p>
-<dl class="dl">
-
- <dt class="dt dlterm">Properties </dt>
-
- <dd class="dd">
-  <ul class="sl simple">
-  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
-  </li>
-
-     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
-     </li>
-
-     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
-     </li>
-
-  </ul>
-
- </dd>
-
-
-</dl>
-
-</dd>
-
-
-
-<dt class="dt dlterm"><a name="spldoc_operator__parameter__statusMessageAttributeName"><!-- --></a><tt class="ph tt">statusMessageAttributeName</tt></dt>
-
-<dd class="dd">
-<p class="p">Input port's web status message response, when the 'status' value is &gt;= 400 (SC_BAD_REQUEST), default:  "statusMessage".  
+<p class="p">Input port's attribute attribute name for web status. The type of the attribute must be <tt class="ph tt">int32</tt>. Default:  "status". In no web status is deliveres, the value: 200 is used.
 </p>
 <dl class="dl">
 
@@ -928,6 +973,37 @@ param
 
 
 
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__urlAttributeName"><!-- --></a><tt class="ph tt">urlAttributeName</tt></dt>
+
+<dd class="dd">
+<p class="p">Output ports's attribute name of the url. The type of the attribute must be <tt class="ph tt">rstring</tt> or <tt class="ph tt">ustring</tt>. Default "url".  
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__webTimeout"><!-- --></a><tt class="ph tt">webTimeout</tt></dt>
 
 <dd class="dd">
@@ -970,7 +1046,7 @@ param
 
     <dd class="dd">
 
-<p class="p">Jetty SSL/TLS status: 0=HTTP, 1=HTTPS
+<p class="p">Jetty SSL/TLS status: 0=HTTP, 1=HTTPS.
 </p>
 
      <p class="p"/>
@@ -1022,7 +1098,7 @@ param
 
     <dd class="dd">
 
-<p class="p">Missing tracking key count..
+<p class="p">Missing tracking key count. In case of json input, this counts the received tuples with a corrupt json structure or the json structure does not contain a valid key object.
 </p>
 
      <p class="p"/>
@@ -1044,11 +1120,24 @@ param
 
   
   
+    <dt class="dt dlterm"><tt class="ph tt">nTrackingKeyNotFound</tt> - <a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__metrics_kind_counter">Counter</a></dt>
+
+    <dd class="dd">
+
+<p class="p">Number of input tuples where the delivered tracking key was not found in the active messages database.
+</p>
+
+     <p class="p"/>
+
+     </dd>
+
+  
+  
     <dt class="dt dlterm"><tt class="ph tt">serverPort</tt> - <a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__metrics_kind_gauge">Gauge</a></dt>
 
     <dd class="dd">
 
-<p class="p">Jetty (HTTP/HTTPS) server port
+<p class="p">Jetty (HTTP/HTTPS) server port if the operator hosts the server, 0 otherwise
 </p>
 
      <p class="p"/>

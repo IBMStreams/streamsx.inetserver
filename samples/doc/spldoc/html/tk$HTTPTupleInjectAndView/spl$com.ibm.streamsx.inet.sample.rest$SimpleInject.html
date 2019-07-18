@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">Toolkits</a> &gt; <a class="xref" href="tk$HTTPTupleInjectAndView.html">HTTPTupleInjectAndView 1.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.sample.rest.html">com.ibm.streamsx.inet.sample.rest</a> &gt; SimpleInject.spl</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$HTTPTupleInjectAndView.html">HTTPTupleInjectAndView 1.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.sample.rest.html">com.ibm.streamsx.inet.sample.rest</a> &gt; SimpleInject.spl</p>
 
 </div>
 
@@ -66,39 +66,42 @@
 <p class="p">Simple example of an using <tt class="ph tt">com.ibm.streamsx.inet.rest.HTTPTupleInjection</tt> to feed tuples into Stream InjectedTuples which are then visible through the windowed <tt class="ph tt">com.ibm.streamsx.ient.rest.HTTPTupleView</tt> operator.
 </p>
 
-<p class="p">Tuples are injected using the form input at: <a class="xref" href="http://127.0.0.1:8080/InjectedTuples/ports/output/0/form">http://127.0.0.1:8080/InjectedTuples/ports/output/0/form</a>
+<p class="p">Open the browser and enter url <a class="xref" href="https://localhost:1443">https://localhost:1443</a>
 </p>
 
-<p class="p">or a POST to <a class="xref" href="http://127.0.0.1:8080/InjectedTuples/ports/output/0/inject">http://127.0.0.1:8080/InjectedTuples/ports/output/0/inject</a>
+<p class="p">Tuples are injected using the form input at: <a class="xref" href="https://127.0.0.1:1443/InjectedTuples/ports/output/0/form">https://127.0.0.1:1443/InjectedTuples/ports/output/0/form</a>
 </p>
 
-<p class="p">And then are visible as a JSON object <a class="xref" href="http://127.0.0.1:8080/InjectView/ports/input/0/tuples">http://127.0.0.1:8080/InjectView/ports/input/0/tuples</a>
+<p class="p">or a POST to <a class="xref" href="https://127.0.0.1:1443/InjectedTuples/ports/output/0/inject">https://127.0.0.1:1443/InjectedTuples/ports/output/0/inject</a>
 </p>
 
-<p class="p">This fixed URL shows information for all ports available through URLs in the HTTP server <a class="xref" href="http://127.0.0.1:8080/ports/info">http://127.0.0.1:8080/ports/info</a>
+<p class="p">And then are visible as a JSON object <a class="xref" href="https://127.0.0.1:1443/InjectView/ports/input/0/tuples">https://127.0.0.1:1443/InjectView/ports/input/0/tuples</a>
+</p>
+
+<p class="p">This fixed URL shows information for all ports available through URLs in the HTTP server <a class="xref" href="https://127.0.0.1:1443/ports/info">https://127.0.0.1:1443/ports/info</a>
 </p>
 
 <div class="p">These URLs show the meta data for the ports using a JSON object:
 <ul class="ul">
-<li class="li"> <a class="xref" href="http://127.0.0.1:8080/InjectedTuples/ports/output/0/info">http://127.0.0.1:8080/InjectedTuples/ports/output/0/info</a> - Output port for the injected tuples.</li>
+<li class="li"> <a class="xref" href="https://127.0.0.1:1443/InjectedTuples/ports/output/0/info">https://127.0.0.1:1443/InjectedTuples/ports/output/0/info</a> - Output port for the injected tuples.</li>
 
-<li class="li"> <a class="xref" href="http://127.0.0.1:8080/InjectView/ports/input/0/info">http://127.0.0.1:8080/InjectView/ports/input/0/info</a> - Input port to <tt class="ph tt">HTTPTupleView</tt>.</li>
+<li class="li"> <a class="xref" href="https://127.0.0.1:1443/InjectView/ports/input/0/info">https://127.0.0.1:1443/InjectView/ports/input/0/info</a> - Input port to <tt class="ph tt">HTTPTupleView</tt>.</li>
 
 </ul>
 
 </div>
 
-<p class="p">To compile this example:
+<p class="p">To run this example execute:
 </p>
 
 <div class="p">
 <pre class="pre codeblock">
-cd com.ibm.ssb.inet
-sc -T -M com.ibm.streamsx.inet.sample.rest::SimpleInject
+make
 output/bin/standalone
+Point browser to [https://localhost:1443] and accept the SEC_ERROR_UNKNOWN_ISSUER error and add an exception.
 </pre>
 
-Point browser to <a class="xref" href="http://127.0.0.1:8080">http://127.0.0.1:8080</a> 
+
 </div>
 
 </div>
@@ -123,38 +126,45 @@ Point browser to <a class="xref" href="http://127.0.0.1:8080">http://127.0.0.1:8
  public composite SimpleInject {
  	
  	graph
- 	stream&lt;ustring a_ustring, rstring b_rstring, int32 c_int32, float32 d_float32&gt; InjectedTuples
- 	    = HTTPTupleInjection() {
- 	  param
- 		  port: 8080;
-       config
- 	    // Ensure the operators are in a single PE to have a single web-server
- 	    placement: partitionColocation("jetty8080");
- 		  
- 	}
+ 		stream&lt;ustring a_ustring, rstring b_rstring, int32 c_int32, float32 d_float32&gt; InjectedTuples = HTTPTupleInjection() {
+ 			param
+ 				port: 1443;
+ 				certificateAlias: "mykey";
+ 				keyStore: "etc/keystore.jks";
+ 				keyPassword: "changeit";
+ 			config
+ 				// Ensure the operators are in a single PE to have a single web-server
+ 				placement: partitionColocation("jetty1443");
+ 		}
  	
- 	() as InjectView = HTTPTupleView(InjectedTuples) {
- 		window InjectedTuples: sliding, count(10), count(1);
- 		param
- 		  port: 8080;
- 		config
- 	    // Ensure the operators are in a single PE to have a single web-server
- 	    placement: partitionColocation("jetty8080");
- 		  
- 	}
- 
- 	() as WCT = WebContext() {
- 		param
- 		  port: 8080;
-                   context: "wct";
-                   contextResourceBase: "opt/wctest";
- 		config
- 	    // Ensure the operators are in a single PE to have a single web-server
- 	    placement: partitionColocation("jetty8080");
- 	}
- 
-        
+ 		() as InjectView = HTTPTupleView(InjectedTuples) {
+ 			window
+ 				InjectedTuples: sliding, count(10), count(1);
+ 			param
+ 				port: 1443;
+ 				certificateAlias: "mykey";
+ 				keyStore: "etc/keystore.jks";
+ 				keyPassword: "changeit";
+ 			config
+ 				// Ensure the operators are in a single PE to have a single web-server
+ 				placement: partitionColocation("jetty1443");
+ 		}
  	
+ 		() as WCT = WebContext() {
+ 			param
+ 				port: 1443;
+ 				certificateAlias: "mykey";
+ 				keyStore: "etc/keystore.jks";
+ 				keyPassword: "changeit";
+ 				context: "wct";
+ 				contextResourceBase: "opt/wctest";
+ 			config
+ 				// Ensure the operators are in a single PE to have a single web-server
+ 				placement: partitionColocation("jetty1443");
+ 		}
+ 
+ 	config
+ 		restartable: false;
  }
 
    </pre>
