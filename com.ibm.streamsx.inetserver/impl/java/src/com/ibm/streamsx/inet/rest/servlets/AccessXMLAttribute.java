@@ -52,34 +52,33 @@ public class AccessXMLAttribute extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		response.setCharacterEncoding("UTF-8");
-		response.setContentType("application/xml");
-		ServletOutputStream out = response.getOutputStream();
-
 		Object[] data = portData.get(port.getPortNumber());
 		
 		if (data == null) {
-			response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+			response.sendError(HttpServletResponse.SC_NO_CONTENT);
 		} else {
 			XML xdata = (XML) data[0];
 			lastModified = (Long) data[1];
 			
 			if (xdata.isDefaultValue()) {
-				response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+				response.sendError(HttpServletResponse.SC_NO_CONTENT);
 			} else {
+				response.setCharacterEncoding("UTF-8");
+				response.setContentType("application/xml");
 				response.setStatus(HttpServletResponse.SC_OK);
 
 				InputStream datai = xdata.getInputStream();
-
+				ServletOutputStream out = response.getOutputStream();
+				
 				int r;
 				while ((r = datai.read()) != -1) {
 					out.write(r);
 				}
 				datai.close();
+
+				out.flush();
+				out.close();
 			}
 		}
-
-		out.flush();
-		out.close();
 	}
 }

@@ -45,10 +45,12 @@ The top-level build.xml contains the main targets:
 
 * **all** - Builds and creates SPLDOC for the toolkit and samples. Developers should ensure this target is successful when creating a pull request.
 * **toolkit** - Build the complete toolkit code
-* **samples-build** - Builds all samples. Developers should ensure this target is successful when creating a pull request.
+* **samples** - Builds all samples. Developers should ensure this target is successful when creating a pull request.
 * **release** - Builds release artifacts, which is a tar bundle containing the toolkits and samples. It includes stamping the SPLDOC and toolkit version numbers with the git commit number (thus requires git to be available).
-* **test** - Start the test
+* **test** - Start the quick test
+* **test-full** - Start all tests
 * **spldoc** - Generate the toolkit documentation
+* **clean** - Clean up toolkit code, samples code, all spldocs and downloaded libs
 
 Execute the comman `ant -p` to display the target information.
 

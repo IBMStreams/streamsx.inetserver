@@ -1,0 +1,60 @@
+namespace com.ibm.streamsx.inet.sample.wsserver ;
+
+use com.ibm.streamsx.inet.wsserver::WebSocketInject ;
+use com.ibm.streamsx.inet.wsserver::WebSocketSend ;
+
+/**
+ * Example of using the Receive() and Send() WebSocket operators. 
+ * 1. Start the application.
+ * 2. Start up firefox on local system.
+ * 3. go to "http://localhost:8080"
+ * 4. select 'Start Transmitting'
+ * 5. select 'Start Receiving'
+ * 6. Notes the 'RECEIVED:" and 'TRANSMIT:' fields changing. 
+ * 
+ * @param jettyPort    port number for the jetty webserver
+ */
+public composite ExchangeWebSocketSample {
+	param
+		expression<int32> $jettyPort :   (int32)getSubmissionTimeValue("jettyPort", "8080");
+		
+	graph
+		stream<rstring data, rstring connectionId> ReceivedWsTuples = WebSocketInject() {
+			param
+				port : $jettyPort;
+				ackCount : 10;
+				messageAttributeName: "data";
+				senderIdAttributeName: "connectionId";
+				context : "websocketsample";
+				contextResourceBase : "opt/html";
+		}
+
+		stream<rstring data> AugmentedWs as O = Functor(ReceivedWsTuples as I){
+			logic
+				state: {
+					mutable list<rstring> colors = ["RED", "GREEN", "BLUE", "ORANGE", "PURPLE", "CORAL", "DEEPPINK", "LIME", "TAN", "SLATEBLUE"];
+					mutable rstring  bstring;
+					mutable rstring color;
+				}
+				onTuple I: {
+					color = colors[(int32)(random() * 10.0)];
+					// this will not work on a strictly HTML5 browser, but it's festive.
+					bstring =  data + " Augment : <FONT COLOR=" + color + " >" + color + "</FONT>";
+					printStringLn(bstring + "# id: " + I.connectionId);
+				}
+				output O : data = bstring;
+		}
+
+		()as WsSender = WebSocketSend(AugmentedWs){
+			param
+				port : $jettyPort;
+				context : "websocketsample";
+				contextResourceBase : "opt/html";
+		}
+
+	config
+		restartable: false;
+		// Ensure the operators are in a single PE to have a single web-server
+		placement: partitionColocation("jettyinstance");
+
+}

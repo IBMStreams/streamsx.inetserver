@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (C) 2010,2012-2014, International Business Machines Corporation -->
+<!-- Copyright (C) 2010,2012-2019, International Business Machines Corporation -->
 <!-- All Rights Reserved                                                   -->
 <toolkitInfoModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.ibm.com/xmlns/prod/streams/spl/toolkitInfo" xmlns:common="http://www.ibm.com/xmlns/prod/streams/spl/common" xsi:schemaLocation="http://www.ibm.com/xmlns/prod/streams/spl/toolkitInfo toolkitInfoModel.xsd">
   <identity>
@@ -14,7 +14,7 @@ This toolkit separates its functionality into a number of namespaces:
 * [namespace:com.ibm.streamsx.inet.wsserver|com.ibm.streamsx.inet.wsserver]: Operators that embed a (jetty) WebSocket server to expose streaming data as WebSocket messages.
 
     </description>
-    <version>3.1.0.__dev__</version>
+    <version>4.0.0</version>
     <requiredProductVersion>4.0.1.0</requiredProductVersion>
   </identity>
   <dependencies/>

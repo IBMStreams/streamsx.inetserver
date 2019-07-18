@@ -1,7 +1,7 @@
 # streamsx.inetserver
 
-The INet Server Toolkit
-The Internet Toolkit provides support for common internet rest protocol and web socket server protocol.
+The Internet Server Toolkit provides support HTTP- and Websocket-Server functions. The functionality is based on an embedded 
+jetty webserver. It may be used for rest protocol and web socket protocol applications.
 This toolkit is a split from streamsx.inet 2.9.6
 [streams.inet v2.9.6](https://github.com/IBMStreams/streamsx.inet/tree/v2.9.6)
 

@@ -7,10 +7,10 @@ This directory provides an automatic test for a number of operators of the inet 
 Change to `frameworktests` directory  
 
 To start the full test execute:  
-`./runTest.sh`
+`make test-full`
 
 To start a quick test, execute:  
-`./runTest.sh --category quick`
+`make test`
 
 This script installs the test framework in directory `scripts` and starts the test execution. The script delivers the following result codes:  
 0     : all tests Success  
@@ -21,11 +21,14 @@ This script installs the test framework in directory `scripts` and starts the te
 other : another fatal error has occurred  
 
 More options are available and explained with command:  
-`./runTest.sh --help`
+`make help`
+and
+`make scripthelp`
+
 
 ## Test Sequence
 
-The `runTest.sh` installs the test framework into directory `scripts` and starts the test framework. The test framework 
+The test targets install the test framework into directory `scripts` and starts the test framework. The test framework 
 checks if there is a running Streams instance.
 
 If the Streams instance is not running, a domain and an instance is created from the scratch and started. You can force the 

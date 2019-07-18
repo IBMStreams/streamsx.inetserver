@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="build" name="WebSocketClient">
+	<property environment="env"/>
+	<property name="debuglevel" value="source,lines,vars"/>
+	<property name="target" value="1.8"/>
+	<property name="source" value="1.8"/>
+
+	<property name="WebSocketClient.uri" value="ws://localhost:8080/ReceivedWsTuples/ports/output/0/wsinject"/>
+	<property name="WebSocketClient.bin" value="text"/>
+	<property name="WebSocketClient.dir" value="."/>
+	
+	<path id="WebSocketClient.classpath">
+		<pathelement location="bin"/>
+		<fileset dir="lib">
+			<include name="**.jar"/>
+		</fileset>
+	</path>
+
+	<target name="init">
+		<mkdir dir="bin"/>
+		<copy includeemptydirs="false" todir="bin">
+			<fileset dir="src">
+				<exclude name="**/*.launch"/>
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="clean" description="Delete all compiler generated artifacts">
+		<delete dir="bin"/>
+	</target>
+
+	<target name="cleanall" depends="clean" description="Clean all artifacts"/>
+
+	<target name="build" depends="build-project" description="build the project"/>
+
+	<target depends="init" name="build-project">
+		<echo message="${ant.project.name}: ${ant.file}"/>
+		<javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+			<src path="src"/>
+			<classpath refid="WebSocketClient.classpath"/>
+		</javac>
+	</target>
+
+	<target name="WsClient1" description="start the client1">
+		<java classname="com.ibm.streamsx.inetserver.test.WsClient1" failonerror="true" fork="yes">
+			<classpath refid="WebSocketClient.classpath"/>
+			<arg value="${WebSocketClient.uri}"/>
+			<arg value="${WebSocketClient.bin}"/>
+		</java>
+	</target>
+
+	<target name="WsClient2" description="start the client2">
+		<java classname="com.ibm.streamsx.inetserver.test.WsClient2" failonerror="true" fork="yes">
+			<classpath refid="WebSocketClient.classpath"/>
+			<arg value="${WebSocketClient.uri}"/>
+			<arg value="${WebSocketClient.dir}"/>
+		</java>
+	</target>
+</project>

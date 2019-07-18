@@ -10,9 +10,9 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ibm.streamsx.inetserver</groupId>
-    <artifactId>streamsx.mail</artifactId>
+    <artifactId>streamsx.inetserver</artifactId>
     <packaging>jar</packaging>
-    <version>3.0.1</version>
+    <version>4.0.0</version>
     <name>com.ibm.streamsx.inetserver</name>
     <properties>
         <!-- Adapt this to a version found on http://central.maven.org/maven2/org/eclipse/jetty/ -->

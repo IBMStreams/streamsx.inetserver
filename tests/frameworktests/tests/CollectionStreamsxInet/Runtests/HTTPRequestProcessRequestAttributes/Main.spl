@@ -1,0 +1,61 @@
+use com.ibm.streamsx.inet.rest::HTTPRequestProcess;
+use com.ibm.streamsx.testframe::FileSink1;
+//<json>use com.ibm.streamsx.json::JSONToTuple ;
+//<json>use com.ibm.streamsx.json::TupleToJSON ;
+
+
+composite Main {
+	param
+		expression<int32> $jettyPort :     (int32)getSubmissionTimeValue("jettyPort", "8080");
+		expression<int32> $tuplesExpected: (int32)getSubmissionTimeValue("tuplesExpected", "2");
+
+	type
+		//<tuple>TestRequestType = tuple<int64 key, rstring method, rstring request, rstring contentType, rstring contextPath, rstring pathInfo, rstring url, map<rstring, rstring> header>;
+		RequestType     = tuple<int64 key, rstring method, rstring request, rstring contentType, rstring contextPath, rstring pathInfo, rstring url, map<rstring, rstring> header>;
+		//<tuple>TestResponseType = tuple<int64 key>;
+		ResponseType = tuple<int64 key>;
+		//<json>TestRequestType = tuple<rstring jsonString>;
+		//<json>TestResponseType = tuple<rstring jsonString>;
+
+	graph
+		stream<TestRequestType> RequestStream = HTTPRequestProcess(ResponseStream1) {
+			param
+				port: $jettyPort;
+			config
+				placement: partitionColocation("somePartitionColocationId");
+		}
+		
+		stream<I> RequestStream1 as O = Custom(RequestStream as I) {
+			logic
+				state : mutable int32 count = 0;
+				onTuple I: {
+					count++;
+					printStringLn("REQUEST: " + (rstring)I);
+					submit(I, O);
+					if ((count % $tuplesExpected) == 0 ) {
+						submit(Sys.WindowMarker, O);
+					}
+				}
+			config
+				placement: partitionColocation("somePartitionColocationId");
+		}
+		
+		//<tuple>stream<RequestType> RequestStream2 = Filter(RequestStream1) { config placement: partitionColocation("somePartitionColocationId"); }
+		//<json>stream<RequestType> RequestStream2 = JSONToTuple(RequestStream1) { config placement: partitionColocation("somePartitionColocationId"); }
+
+		stream<ResponseType> ResponseStream as O = Custom(RequestStream2 as I) {
+			logic
+				onTuple I: {
+					mutable O outTuple = {};
+					outTuple.key = I.key;
+					submit(outTuple, O);
+				}
+			config
+				placement: partitionColocation("somePartitionColocationId");
+		}
+		
+		//<tuple>stream<TestResponseType> ResponseStream1 = Filter(ResponseStream) { config placement: partitionColocation("somePartitionColocationId"); }
+		//<json>stream<TestResponseType> ResponseStream1 = TupleToJSON(ResponseStream) { config placement: partitionColocation("somePartitionColocationId"); }
+		
+		() as Sink = FileSink1(RequestStream2) { }
+}

@@ -1,0 +1,53 @@
+/*
+# Licensed Materials - Property of IBM
+# Copyright IBM Corp. 2018, 2019 
+# US Government Users Restricted Rights - Use, duplication or
+# disclosure restricted by GSA ADP Schedule Contract with
+# IBM Corp.
+*/
+namespace com.ibm.streamsx.inet.sample.rest;
+
+use com.ibm.streamsx.inet.rest::HTTPXMLView;
+
+/**
+ * Simple example of an using `com.ibm.streamsx.inet.rest.HTTPXMLView` to view xml tuples
+ * 
+ * Open the browser and enter url [https://localhost:8080]
+ * 
+ * Tuples are periodically injected from the beacon operator
+ * 
+ * And then are visible as a XML document [https://localhost:8080/InjectView/ports/input/0/attribute]
+ * 
+ * This fixed URL shows information for all ports available through URLs
+ * in the HTTP server [https://localhost:8080/ports/info]
+ *
+ * To run this example execute:
+ * 
+ *     make
+ *     output/bin/standalone
+ *     Point browser to [https://localhost:8080]
+ * 
+ */
+public composite HTTPXMLViewSample {
+	
+	graph
+
+		stream<xml value> InjectedTuples as O = Beacon() {
+			logic
+				state: list<xml> mydata = ['<x a="b">55</x>'x, ''x, '<x a="b">56</x>'x, ''x, '<x a="b">57</x>'x, ''x];
+			param
+				period: 5.0;
+				initDelay: 15.0;
+			output
+				O: value = mydata[IterationCount() % (uint64)size(mydata)];
+		}
+		
+		() as InjectView = HTTPXMLView(InjectedTuples) {
+			param
+				port: 8080;
+		}
+	
+
+	config
+		restartable: false;
+}

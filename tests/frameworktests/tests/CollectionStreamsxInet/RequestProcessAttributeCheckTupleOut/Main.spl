@@ -1,0 +1,26 @@
+use com.ibm.streamsx.inet.rest::HTTPRequestProcess ;
+
+public composite Main {
+	graph
+		stream<rstring jsonString> InStream as O = Beacon() {}
+
+		//<0>stream<rstring string, rstring any> OutStream = HTTPRequestProcess(InStream) {}
+		//<1>stream<rstring string, rstring key> OutStream = HTTPRequestProcess(InStream) {}
+		//<2>stream<rstring string, int64 key> OutStream = HTTPRequestProcess(InStream) {param keyAttributeName: "myKey"; }
+		//<3>stream<rstring string, int64 key, int32 contentType> OutStream = HTTPRequestProcess(InStream) {}
+		//<4>stream<rstring string, int64 key, rstring contentType> OutStream = HTTPRequestProcess(InStream) {param contentTypeAttributeName: "myContentType"; }
+		//<5>stream<rstring string, int64 key, int32 request> OutStream = HTTPRequestProcess(InStream) {}
+		//<6>stream<rstring string, int64 key, rstring request> OutStream = HTTPRequestProcess(InStream) {param requestAttributeName: "myRequest"; }
+		//<7>stream<rstring string, int64 key, rstring header> OutStream = HTTPRequestProcess(InStream) {}
+		//<8>stream<rstring string, int64 key, map<rstring,rstring> header> OutStream = HTTPRequestProcess(InStream) {param headerAttributeName: "myHeader"; }
+		//<9>stream<rstring string, int64 key, int32 method> OutStream = HTTPRequestProcess(InStream) {}
+		//<10>stream<rstring string, int64 key, rstring method> OutStream = HTTPRequestProcess(InStream) {param methodAttributeName: "myMethod"; }
+		//<11>stream<rstring string, int64 key, int32 pathInfo> OutStream = HTTPRequestProcess(InStream) {}
+		//<12>stream<rstring string, int64 key, rstring pathInfo> OutStream = HTTPRequestProcess(InStream) {param pathInfoAttributeName: "myPathInfo"; }
+		//<13>stream<rstring string, int64 key, int32 contextPath> OutStream = HTTPRequestProcess(InStream) {}
+		//<14>stream<rstring string, int64 key, rstring contextPath> OutStream = HTTPRequestProcess(InStream) {param contextPathAttributeName: "myContextPath"; }
+		//<15>stream<rstring string, int64 key, int32 url> OutStream = HTTPRequestProcess(InStream) {}
+		//<16>stream<rstring string, int64 key, rstring url> OutStream = HTTPRequestProcess(InStream) {param urlAttributeName: "myUrl"; }
+	config
+		restartable: false;
+}

@@ -4,11 +4,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 import org.apache.log4j.Logger;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.metrics.Metric;
 import com.ibm.streamsx.inet.wsserver.ops.WebSocketInject.WebMessageInfo;
 
+@WebSocket
 public class InjectEventSocket extends EventSocket {
 
 	public static final String N_MESSAGES_RECEIVED_DESCR =
@@ -30,22 +34,21 @@ public class InjectEventSocket extends EventSocket {
 		messagesReceived = new AtomicLong();
 	}
 
-	@Override
-	public void onWebSocketText(String message) {
+	@OnWebSocketMessage
+	public void onWebSocketText(Session session, String message) {
+		super.onWebSocketText(session, message); //trace
 
-		super.onWebSocketText(message); //trace
-
-		WebMessageInfo webMessageInfo = new WebMessageInfo(message, null, 0, 0, getRemoteId(), getSession());
+		WebMessageInfo webMessageInfo = new WebMessageInfo(message, null, 0, 0, getRemoteId(session));
 		tupleCreator.accept(webMessageInfo);
 
 		incrementAndAck();
 	}
 	
-	@Override
-	public void onWebSocketBinary(byte[] payload, int offset, int len) {
-		super.onWebSocketBinary(payload, offset, len); //trace
+	@OnWebSocketMessage
+	public void onWebSocketBinary(Session session, byte[] payload, int offset, int len) {
+		super.onWebSocketBinary(session, payload, offset, len); //trace
 		
-		WebMessageInfo webMessageInfo = new WebMessageInfo(null, payload, offset, len, getRemoteId(), getSession());
+		WebMessageInfo webMessageInfo = new WebMessageInfo(null, payload, offset, len, getRemoteId(session));
 		tupleCreator.accept(webMessageInfo);
 		
 		incrementAndAck();

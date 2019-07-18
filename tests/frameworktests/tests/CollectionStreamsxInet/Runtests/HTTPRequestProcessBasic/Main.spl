@@ -1,0 +1,39 @@
+use com.ibm.streamsx.inet.rest::HTTPRequestProcess;
+use com.ibm.streamsx.testframe::FileSink1;
+
+composite Main {
+	param
+		expression<int32> $jettyPort :     (int32)getSubmissionTimeValue("jettyPort", "8080");
+		expression<int32> $tuplesExpected: (int32)getSubmissionTimeValue("tuplesExpected", "2");
+
+	type
+		//<tuple*>MyStreamType = tuple<int64 key>;
+		//<json*>MyStreamType = tuple<rstring jsonString>;
+
+	graph
+		stream<MyStreamType> RequestStream = HTTPRequestProcess(RequestStream1) {
+			param
+				port: $jettyPort;
+			config
+				//<*Coloc>placement: partitionColocation("somePartitionColocationId");
+				//<*Exloc>placement: partitionExlocation("myPartitionExlocationId");
+		}
+		
+		stream<MyStreamType> RequestStream1 as O = Custom(RequestStream as I) {
+			logic
+				state : mutable int32 count = 0;
+				onTuple I: {
+					count++;
+					printStringLn("REQUEST: " + (rstring)I);
+					submit(I, O);
+					if ((count % $tuplesExpected) == 0 ) {
+						submit(Sys.WindowMarker, O);
+					}
+				}
+			config
+				//<*Coloc>placement: partitionColocation("somePartitionColocationId");
+				//<*Exloc>placement: partitionExlocation("myPartitionExlocationId");
+		}
+		
+		() as Sink = FileSink1(RequestStream1) { }
+}

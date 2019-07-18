@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="com.ibm.streamsx.inetserver.tests.junit" basedir="." default="test"
+	xmlns:if="ant:if">
+
+	<property environment="env" />
+	<property name="streams.install"   value="${env.STREAMS_INSTALL}" />
+
+	<property name="src.dir"           location="src" />
+	<property name="bin.dir"           location="bin" />
+	<property name="lib.dir"           location="lib" />      <!-- downloaded libs -->
+
+	<property name="test.run.dir"      location="unittestrun" />
+	<property name="haltontestfailure" value="true"/>         <!-- stop script if a test fails -->
+	<property name="jarfile"           value="com.ibm.streamsx.inetserver.jar" />
+	<property name="toolkit.dir"       location="../../com.ibm.streamsx.inetserver" />
+	<property name="toolkit.jarfile"   value="${toolkit.dir}/impl/lib/${jarfile}" />
+	
+	<path id="cp.streams">
+		<pathelement location="${streams.install}/lib/com.ibm.streams.operator.samples.jar" />
+	</path>
+
+	<target name="init">
+		<mkdir dir="${bin.dir}"/>
+		<mkdir dir="${lib.dir}"/>
+	</target>
+
+	<target name="maven-deps" depends="init" if="env.M2_HOME"
+		description="Download required test libraries using maven">
+		<fail unless="env.M2_HOME" message="Environment variable M2_HOME not set. Please set this to point to the path of maven home directory"/>
+		<property name="maven.bin" value="${env.M2_HOME}/bin/mvn"/>
+		<available property="pomset" file="${basedir}/pom.xml"/>
+		<fail unless="pomset" message="There must be a pom.xml file in com.ibm.streamsx.mail in order to use maven to download necessary dependencies."/> 
+		<exec executable="${maven.bin}"  failonerror="true">
+			<arg value="dependency:copy-dependencies"/>
+			<arg value="-DoutputDirectory=${lib.dir}"/>
+		</exec>
+		<path id="cp.test.lib">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar"/>
+			</fileset>
+		</path>
+	</target>
+	
+	<target name="build" depends="maven-deps, checkjar"
+		description="Build the test classes">
+		<javac srcdir="${src.dir}" destdir="${bin.dir}" debug="true" includeantruntime="yes">
+			<classpath>
+				<path refid="cp.test.lib" />
+				<pathelement location="${toolkit.jarfile}" />
+				<path refid="cp.streams" />
+			</classpath>
+		</javac>
+	</target>
+	
+	<target name="checkjar">
+		<echo message="Build test classes with toolkit jar: ${toolkit.jarfile}"/>
+		<available property="toolkitjar" file="${toolkit.jarfile}"/>
+		<fail unless="toolkitjar" message="There must be a toolkit jar file: ${toolkit.jarfile}"/>
+	</target>
+
+	<target name="test" depends="build"
+		description="Execute the integrated unit tests">
+		<mkdir dir="${test.run.dir}" />
+		<delete file="${test.run.dir}/ERROR"/>
+		<junit printsummary="yes" haltonfailure="no" fork="yes" includeantruntime="true"
+			errorproperty="errorprop" failureproperty="failprop">
+			<classpath>
+				<pathelement location="${bin.dir}" />
+				<pathelement location="${toolkit.jarfile}" />
+				<path refid="cp.test.lib" />
+				<path refid="cp.streams" />
+			</classpath>
+
+			<formatter type="xml" />
+			<formatter type="plain" />
+
+			<batchtest todir="${test.run.dir}">
+				<fileset dir="${src.dir}">
+					<include name="**/*Test.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<junitreport todir="${test.run.dir}">
+			<fileset dir="${test.run.dir}">
+				<include name="TEST-*.xml"/>
+			</fileset>
+			<report format="frames" todir="${test.run.dir}/html">
+				<classpath>
+					<path refid="cp.test.lib" />
+				</classpath>
+			</report>
+		</junitreport>
+		<echo message="Find test report in: ${test.run.dir}/html/index.html"/>
+		<echo message="FAILURE: Failures occurred during test: ${failprop}" if:set="failprop"/>
+		<echo message="ERROR: Errors occurred during test: ${errorprop}" if:set="errorprop"/>
+		<antcall target="test-wrap-up"/>
+	</target>
+
+	<!-- touch file : ERRORif test fails ans stop script condidionally -->
+	<target name="test-wrap-up">
+		<condition property="testerror">
+			<or>
+				<istrue value="${failprop}"/>
+				<istrue value="${errorprop}"/>
+			</or>
+		</condition>
+		<touch file="${test.run.dir}/ERROR" if:true="${testerror}"/>
+		<fail message="Stop script due to test Failure or Error">
+			<condition>
+				<and>
+					<istrue value="${haltontestfailure}"/>
+					<istrue value="${testerror}"/>
+				</and>
+			</condition>
+		</fail>
+	</target>
+
+	<target name="clean"
+		description="Clean up generated artifacts">
+		<delete dir="${bin.dir}"/>
+	</target>
+
+	<target name="test-clean" description="Clean generated test artifacts">
+		<delete dir="${test.run.dir}" />
+	</target>
+
+	<target name="clean-all" depends="clean, test-clean"
+		description="Clean up generated artifacts, test artifacts and downloaded libs">
+		<delete dir="${lib.dir}"/>
+	</target>
+
+</project>
+

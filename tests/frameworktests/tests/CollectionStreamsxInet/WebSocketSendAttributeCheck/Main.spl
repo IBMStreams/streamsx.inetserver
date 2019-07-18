@@ -1,0 +1,12 @@
+use com.ibm.streamsx.inet.wsserver::WebSocketSend;
+
+public composite Main {
+	graph
+		//<0>stream<blob binaryMessageAttribute> InStream as O = Beacon() {}
+		//<0>() as Sink = WebSocketSend(InStream) { param binaryMessageAttributeName: "myBinaryMessageAttribute"; }
+
+		//<1>stream<rstring binaryMessageAttribute> InStream as O = Beacon() {}
+		//<1>() as Sink = WebSocketSend(InStream) { param binaryMessageAttributeName: "binaryMessageAttribute"; }
+	config
+		restartable: false;
+}

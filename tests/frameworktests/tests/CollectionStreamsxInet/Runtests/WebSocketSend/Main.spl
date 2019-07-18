@@ -1,0 +1,36 @@
+use com.ibm.streamsx.inet.wsserver::WebSocketSend;
+use com.ibm.streamsx.testframe::FileSink1;
+
+public composite Main() {
+	param
+		expression<int32> $jettyPort :     (int32)getSubmissionTimeValue("jettyPort", "8080");
+
+	graph
+		//<!3>stream<rstring message, uint64 count> InputStream as O = Beacon() {
+		//<3>stream<rstring message, uint64 count, blob data> InputStream as O = Beacon() {
+			logic state :
+				list<rstring> mylist = [
+					"Random 0 abcdefghijklmnopqrstuvwxyz 0123456789",
+					"Random 1 abcdefghijklmnopqrstuvwxyz 0123456789",
+					"Random 2 abcdefghijklmnopqrstuvwxyz 0123456789",
+					"Random 3 abcdefghijklmnopqrstuvwxyz 0123456789"
+				];
+			param
+				period: 0.01;
+			output O:
+				//<!3>message  = mylist[IterationCount() % 4ul],
+				//<3>data = convertToBlob(mylist[IterationCount() % 4ul]),
+				count = IterationCount();
+		}
+		
+		() as WsSink = WebSocketSend(InputStream) {
+			param
+				port : $jettyPort;
+				//<1>textMessage : message;
+				//<2>enableConnectionControlMessages: false;
+				//<3>binaryMessageAttributeName: "data";
+		}
+		
+	config
+		restartable: false;
+}

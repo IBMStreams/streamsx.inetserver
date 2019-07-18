@@ -27,8 +27,6 @@ artifacts were left around and caused issues with the ant build.
 	<property name="gensrc.dir2"    location="impl/java/src-gen2"/>     <!-- streams studio bin dir / used only on clean target -->
 	<property name="out.dir"        location="output"/>                 <!-- streams studio bin dir / used only on clean target -->
 
-	<property name="test.run.dir"   location="unittestrun" />
-	<property name="test.build.dir" location="${test.run.dir}/bin" />
 	<property name="downloads.dir"  location="opt/downloaded" /> <!-- used for cleanup only -->
 	<property name="jarfile"        value="com.ibm.streamsx.inetserver.jar" />
 	
@@ -87,8 +85,8 @@ artifacts were left around and caused issues with the ant build.
 		<delete dir="${gensrc.dir}"/>
 	</target>
 
-	<target name="clean" depends="toolkit-clean, test-clean"
-		description="Clean up generated toolkit artifacts and downloaded libraries and test artifacts">
+	<target name="clean" depends="toolkit-clean"
+		description="Clean up generated toolkit artifacts and downloaded libraries">
 		<delete dir="${lib.dir}"/>
 		<delete dir="${downloads.dir}" />
 		<delete dir="doc"/> <!-- delete old doc files -->
@@ -127,8 +125,7 @@ artifacts were left around and caused issues with the ant build.
 	<target name="compile" depends="maven-deps"
 		description="Compile the java source components">
 		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="true" includeantruntime="no"
-			source="1.8" target="1.8"
-			excludes="com/ibm/streamsx/inet/*/test/**">
+			source="1.8" target="1.8">
 			<classpath>
 				<path refid="cp.compile" />
 			</classpath>
@@ -152,45 +149,5 @@ artifacts were left around and caused issues with the ant build.
 		<!-- <delete dir="${build.dir}" /> do not delete classes to enable incremental build -->
 	</target>
 
-	<!-- assumes Junit 4.3 (or later) is in $HOME/.ant/lib -->
-	<target name="test" depends="jar"
-		description="Execute the integrated unit tests">
-		<mkdir dir="${test.run.dir}" />
-		<mkdir dir="${test.build.dir}" />
-
-		<javac srcdir="${src.dir}" destdir="${test.build.dir}" debug="true" includeantruntime="yes" includes="com/ibm/streamsx/inet/*/test/**">
-			<classpath>
-				<pathelement location="${impl.lib.dir}/${jarfile}" />
-				<path refid="cp.streams" />
-			</classpath>
-		</javac>
-
-		<junit printsummary="yes" haltonfailure="yes" fork="yes">
-			<classpath>
-				<pathelement location="${test.build.dir}" />
-				<pathelement location="${impl.lib.dir}/${jarfile}" />
-				<path refid="cp.streams" />
-			</classpath>
-
-			<formatter type="xml" />
-
-			<batchtest todir="${test.run.dir}">
-				<fileset dir="${src.dir}">
-					<include name="**/*Test.java" />
-				</fileset>
-			</batchtest>
-		</junit>
-		<!-- <junitreport todir="${test.run.dir}">
-			<fileset dir="${test.run.dir}">
-				<include name="TEST-*.xml"/>
-			</fileset>
-			<report format="frames" todir="${test.run.dir}/html"/>
-		</junitreport> -->
-	</target>
-
-	<target name="test-clean" description="Clean generated test artifacts">
-		<delete dir="${test.run.dir}" />
-		<delete dir="${test.build.dir}" />
-	</target>
 </project>
 
