@@ -52,34 +52,34 @@ public class InjectTuple extends SubmitterServlet {
             OutputTuple tuple) {
         for (Attribute attr : tuple.getStreamSchema()) {
               final String value = request.getParameter(attr.getName());
-              if (value == null)
-                  continue;
-              
+              if ((value == null) || value.isEmpty())
+                   continue;
               final int ai = attr.getIndex();
               switch (attr.getType().getMetaType()) {
               case INT8:
-            	  tuple.setByte(ai, Byte.parseByte(value));
-            	  break;
+                  tuple.setByte(ai, Byte.parseByte(value));
+                  break;
               case INT16:
-            	  tuple.setShort(ai, Short.parseShort(value));
-            	  break;
+                  tuple.setShort(ai, Short.parseShort(value));
+                  break;
               case INT32:
-            	  tuple.setInt(ai, Integer.parseInt(value));
-            	  break;
+                  tuple.setInt(ai, Integer.parseInt(value));
+                  break;
               case INT64:
-            	  tuple.setLong(ai, Long.parseLong(value));
-            	  break;
+                  tuple.setLong(ai, Long.parseLong(value));
+                  break;
               case FLOAT32:
-            	  tuple.setFloat(ai, Float.parseFloat(value));
-            	  break;
+                  tuple.setFloat(ai, Float.parseFloat(value));
+                  break;
               case FLOAT64:
-            	  tuple.setDouble(ai, Double.parseDouble(value));
-            	  break;
+                  tuple.setDouble(ai, Double.parseDouble(value));
+                  break;
               case BOOLEAN:
                   tuple.setBoolean(ai, Boolean.parseBoolean(value));
+                  break;
               default:
-            	  tuple.setString(ai, value);
-            	  break;
+                  tuple.setString(ai, value);
+                  break;
               }
         }
     }
