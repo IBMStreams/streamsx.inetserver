@@ -164,33 +164,33 @@ public class AccessWindowContents extends HttpServlet {
 	}
 	
 	private static Object getAttributeObject(Attribute attribute, String value) throws ServletException {
-	    switch (attribute.getType().getMetaType()) {
-	    case USTRING:
-	        return value;
-	    case BSTRING:
-	    case RSTRING:
-	        return new RString(value);
-	    case BOOLEAN:
-	        return new RString(value);
-	    case INT8:
-	        return Byte.valueOf(value);
-	    case INT16:
-	        return Short.valueOf(value);
-	    case INT32:
-	        return Integer.valueOf(value);
-	    case INT64:
-	        return Long.valueOf(value);
-	    case UINT8:
-	        return Short.valueOf(value).byteValue();
-        case UINT16:
-            return Integer.valueOf(value).shortValue();
-        case UINT32:
-            return Long.valueOf(value).intValue();
-        case UINT64:
-            return new BigInteger(value).longValue();
-	    default:
-	        throw new ServletException("Unsupported partition type for attribute: " + attribute.getName());
-	    }
+		switch (attribute.getType().getMetaType()) {
+		case USTRING:
+			return value;
+		case BSTRING:
+		case RSTRING:
+			return new RString(value);
+		case BOOLEAN:
+			return Boolean.valueOf(value);
+		case INT8:
+			return Byte.valueOf(value);
+		case INT16:
+			return Short.valueOf(value);
+		case INT32:
+			return Integer.valueOf(value);
+		case INT64:
+			return Long.valueOf(value);
+		case UINT8:
+			return Short.valueOf(value).byteValue();
+		case UINT16:
+			return Integer.valueOf(value).shortValue();
+		case UINT32:
+			return Long.valueOf(value).intValue();
+		case UINT64:
+			return new BigInteger(value).longValue();
+		default:
+			throw new ServletException("Unsupported partition type for attribute: " + attribute.getName());
+		}
 	}
 
 
