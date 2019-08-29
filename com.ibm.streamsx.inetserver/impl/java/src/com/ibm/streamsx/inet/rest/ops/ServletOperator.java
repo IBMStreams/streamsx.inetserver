@@ -29,7 +29,7 @@ public abstract class ServletOperator extends AbstractOperator {
 		this.jetty = jetty;
 	}
 
-	protected abstract String getSetupClass();
+	public abstract String getSetupClass();
 	
 	@Override
 	public void initialize(OperatorContext context) throws Exception {
@@ -38,7 +38,7 @@ public abstract class ServletOperator extends AbstractOperator {
 		
 		setJetty(ServletEngine.getServletEngine(context));
 		
-		getJetty().registerOperator(getSetupClass(), context, getConduit());
+		getJetty().registerOperator(this, getConduit());
 
 		createAvoidCompletionThreadIfNoInputs();
 	}

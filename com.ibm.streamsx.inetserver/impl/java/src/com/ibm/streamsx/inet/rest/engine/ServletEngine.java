@@ -54,6 +54,7 @@ import com.ibm.streams.operator.StreamingData;
 import com.ibm.streams.operator.management.OperatorManagement;
 import com.ibm.streamsx.inet.rest.ops.Functions;
 import com.ibm.streamsx.inet.rest.ops.PostTuple;
+import com.ibm.streamsx.inet.rest.ops.ServletOperator;
 import com.ibm.streamsx.inet.rest.servlets.ExposedPortsInfo;
 import com.ibm.streamsx.inet.rest.servlets.PortInfo;
 import com.ibm.streamsx.inet.rest.setup.ExposedPort;
@@ -399,8 +400,9 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 	}
 
 	@Override
-	public void registerOperator(final String operatorSetupClass, final OperatorContext operatorContext, Object conduit) throws Exception {
+	public void registerOperator(ServletOperator operator, Object conduit) throws Exception {
 
+		final OperatorContext operatorContext = operator.getOperatorContext();
 		trace.info("Register servlets for operator: " + operatorContext.getName());
 
 		final ServletContextHandler staticContext = addOperatorStaticContext(operatorContext);
@@ -458,9 +460,10 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		}
 
 		// Add servlets for the operator, driven by a Setup class that implements OperatorServletSetup.
+		final String operatorSetupClass = operator.getSetupClass();
 		OperatorServletSetup setup = Class.forName(operatorSetupClass).asSubclass(OperatorServletSetup.class).newInstance();
 		
-		List<ExposedPort> operatorPorts = setup.setup(operatorContext, staticContext, ports);
+		List<ExposedPort> operatorPorts = setup.setup(operator, staticContext, ports);
 		if (operatorPorts != null)
 			exposedPorts.addAll(operatorPorts);
 		

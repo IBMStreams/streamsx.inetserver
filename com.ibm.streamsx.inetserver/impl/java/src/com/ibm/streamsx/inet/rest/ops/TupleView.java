@@ -34,7 +34,7 @@ public class TupleView extends ServletOperator {
 	public void setHeaders(String[] headers) {}
 
 	@Override
-	protected String getSetupClass() {
+	public String getSetupClass() {
 		return com.ibm.streamsx.inet.rest.setup.TupleViewSetup.class.getName();
 	}
 

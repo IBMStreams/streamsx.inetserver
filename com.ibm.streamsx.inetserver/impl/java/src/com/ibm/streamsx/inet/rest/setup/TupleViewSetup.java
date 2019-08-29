@@ -15,6 +15,7 @@ import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.window.StreamWindow;
+import com.ibm.streamsx.inet.rest.ops.ServletOperator;
 import com.ibm.streamsx.inet.rest.servlets.AccessWindowContents;
 import com.ibm.streamsx.inet.window.WindowContentsAtTrigger;
 
@@ -22,9 +23,10 @@ import com.ibm.streamsx.inet.window.WindowContentsAtTrigger;
 public class TupleViewSetup implements OperatorServletSetup {
 
 	@Override
-	public List<ExposedPort> setup(OperatorContext operatorContext, ServletContextHandler staticContext, ServletContextHandler ports) {
+	public List<ExposedPort> setup(ServletOperator operator, ServletContextHandler staticContext, ServletContextHandler ports) {
 
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
+		OperatorContext operatorContext = operator.getOperatorContext();
 
 		final List<WindowContentsAtTrigger<Tuple>> windows = new ArrayList<WindowContentsAtTrigger<Tuple>>(operatorContext.getNumberOfStreamingOutputs());
 

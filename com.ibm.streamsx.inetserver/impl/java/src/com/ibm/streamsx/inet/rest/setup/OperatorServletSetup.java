@@ -8,22 +8,19 @@ import java.util.List;
 
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
-import com.ibm.streams.operator.OperatorContext;
+import com.ibm.streamsx.inet.rest.ops.ServletOperator;
 
 /**
  * Interface to set up the servlets for an operator using Jetty.
  * 
- * The servlet contexts contain these attributes for the operator creating the servlets:
- * 
- * operator.context = OperatorContext reference 
- * operator.conduit = Conduit object provided by the operator in the registerOperator() call.
+ * operator = Operator reference 
+ * staticContext = the jetty ServletContextHandler for the static content
+ * ports = the jetty ServletContextHandler for the static content
  * 
  * These attributes are available using the init method of the servlet,
  * see AccessXMLAttribute for an example.
  */
 public interface OperatorServletSetup {
 	
-	public List<ExposedPort> setup(OperatorContext operatorContext,
-			ServletContextHandler handler,
-			ServletContextHandler ports);
+	public List<ExposedPort> setup(ServletOperator operator, ServletContextHandler staticContext, ServletContextHandler ports);
 }

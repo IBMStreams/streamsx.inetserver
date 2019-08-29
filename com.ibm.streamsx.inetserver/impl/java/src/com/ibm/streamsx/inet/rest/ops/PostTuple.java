@@ -80,7 +80,7 @@ public class PostTuple extends ServletOperator {
 	}
 
 	@Override
-	protected String getSetupClass() {
+	public String getSetupClass() {
 		return com.ibm.streamsx.inet.rest.setup.PostTupleSetup.class.getName();
 	}
 }

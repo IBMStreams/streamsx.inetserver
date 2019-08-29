@@ -14,14 +14,16 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
+import com.ibm.streamsx.inet.rest.ops.ServletOperator;
 import com.ibm.streamsx.inet.rest.servlets.AccessXMLAttribute;
 
 public class XMLViewSetup implements OperatorServletSetup {
 
 	@Override
-	public List<ExposedPort> setup(OperatorContext operatorContext, ServletContextHandler staticContext, ServletContextHandler ports) {
+	public List<ExposedPort> setup(ServletOperator operator, ServletContextHandler staticContext, ServletContextHandler ports) {
 
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
+		OperatorContext operatorContext = operator.getOperatorContext();
 
 		Logger trace = Logger.getAnonymousLogger();
 

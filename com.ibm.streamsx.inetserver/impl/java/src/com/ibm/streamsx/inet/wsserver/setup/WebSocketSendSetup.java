@@ -10,6 +10,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
+import com.ibm.streamsx.inet.rest.ops.ServletOperator;
 import com.ibm.streamsx.inet.rest.setup.ExposedPort;
 import com.ibm.streamsx.inet.rest.setup.OperatorServletSetup;
 import com.ibm.streamsx.inet.wsserver.servlet.WebSocketSendServlet;
@@ -21,11 +22,12 @@ public class WebSocketSendSetup implements OperatorServletSetup {
 	 * @return 
 	 */
 	@Override
-	public List<ExposedPort> setup(OperatorContext operatorContext, ServletContextHandler handler, ServletContextHandler ports) {
+	public List<ExposedPort> setup(ServletOperator operator, ServletContextHandler staticContext, ServletContextHandler ports) {
 		
 		Logger trace = Logger.getAnonymousLogger();
 		
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
+		OperatorContext operatorContext = operator.getOperatorContext();
 
 		for (StreamingInput<Tuple> port : operatorContext.getStreamingInputs()) {
 
