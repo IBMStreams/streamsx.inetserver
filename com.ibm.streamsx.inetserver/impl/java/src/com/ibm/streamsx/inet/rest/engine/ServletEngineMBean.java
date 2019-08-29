@@ -1,6 +1,6 @@
 /*
 # Licensed Materials - Property of IBM
-# Copyright IBM Corp. 2011, 2012  
+# Copyright IBM Corp. 2019, 2020
 */
 package com.ibm.streamsx.inet.rest.engine;
 

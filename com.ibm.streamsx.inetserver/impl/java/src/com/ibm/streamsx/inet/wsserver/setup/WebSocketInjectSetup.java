@@ -24,7 +24,7 @@ public class WebSocketInjectSetup implements OperatorServletSetup {
 	@Override
 	public List<ExposedPort> setup(ServletOperator operator, ServletContextHandler staticContext, ServletContextHandler ports) {
 		
-		Logger trace = Logger.getAnonymousLogger();
+		Logger trace = Logger.getLogger(WebSocketInjectSetup.class.getName());
 		
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
 		OperatorContext operatorContext = operator.getOperatorContext();

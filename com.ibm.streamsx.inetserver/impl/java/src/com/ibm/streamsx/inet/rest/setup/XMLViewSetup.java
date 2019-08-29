@@ -1,6 +1,6 @@
 /*
 # Licensed Materials - Property of IBM
-# Copyright IBM Corp. 2014 
+# Copyright IBM Corp. 2019, 2020
 */
 package com.ibm.streamsx.inet.rest.setup;
 
@@ -25,7 +25,7 @@ public class XMLViewSetup implements OperatorServletSetup {
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
 		OperatorContext operatorContext = operator.getOperatorContext();
 
-		Logger trace = Logger.getAnonymousLogger();
+		Logger trace = Logger.getLogger(XMLViewSetup.class.getName());
 
 		// The XMLView operator only supports a single port
 		// at the moment, but code the ability to have multiple ports.

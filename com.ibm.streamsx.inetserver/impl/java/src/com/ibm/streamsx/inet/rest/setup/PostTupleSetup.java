@@ -1,6 +1,6 @@
 /*
 # Licensed Materials - Property of IBM
-# Copyright IBM Corp. 2014 
+# Copyright IBM Corp. 2019, 2020
 */
 package com.ibm.streamsx.inet.rest.setup;
 
@@ -31,7 +31,7 @@ public class PostTupleSetup implements OperatorServletSetup {
 	@Override
 	public List<ExposedPort> setup(ServletOperator operator, ServletContextHandler staticContext, ServletContextHandler ports) {
 
-		Logger trace = Logger.getAnonymousLogger();
+		Logger trace = Logger.getLogger(PostTupleSetup.class.getName());
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
 		OperatorContext operatorContext = operator.getOperatorContext();
 

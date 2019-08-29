@@ -1,6 +1,6 @@
 /*
 # Licensed Materials - Property of IBM
-# Copyright IBM Corp. 2014 
+# Copyright IBM Corp. 2019, 2020
 */
 package com.ibm.streamsx.inet.rest.setup;
 
@@ -30,7 +30,7 @@ public class TupleViewSetup implements OperatorServletSetup {
 
 		final List<WindowContentsAtTrigger<Tuple>> windows = new ArrayList<WindowContentsAtTrigger<Tuple>>(operatorContext.getNumberOfStreamingOutputs());
 
-		Logger trace = Logger.getAnonymousLogger();
+		Logger trace = Logger.getLogger(TupleViewSetup.class.getName());
 
 		for (StreamingInput<Tuple> port : operatorContext.getStreamingInputs()) {
 
