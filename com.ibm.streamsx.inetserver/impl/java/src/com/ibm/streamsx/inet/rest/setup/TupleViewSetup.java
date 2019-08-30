@@ -16,6 +16,7 @@ import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.window.StreamWindow;
 import com.ibm.streamsx.inet.rest.ops.ServletOperator;
+import com.ibm.streamsx.inet.rest.ops.TupleView;
 import com.ibm.streamsx.inet.rest.servlets.AccessWindowContents;
 import com.ibm.streamsx.inet.window.WindowContentsAtTrigger;
 
@@ -26,17 +27,20 @@ public class TupleViewSetup implements OperatorServletSetup {
 	public List<ExposedPort> setup(ServletOperator operator, ServletContextHandler staticContext, ServletContextHandler ports) {
 
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
+		TupleView tupleViewOperator = (TupleView) operator;
 		OperatorContext operatorContext = operator.getOperatorContext();
 
 		final List<WindowContentsAtTrigger<Tuple>> windows = new ArrayList<WindowContentsAtTrigger<Tuple>>(operatorContext.getNumberOfStreamingOutputs());
 
 		Logger trace = Logger.getLogger(TupleViewSetup.class.getName());
 
-		for (StreamingInput<Tuple> port : operatorContext.getStreamingInputs()) {
-
+		List<StreamingInput<Tuple>> inputPorts = operatorContext.getStreamingInputs();
+		for (int i = 0; i < inputPorts.size(); i++) {
+			
+			StreamingInput<Tuple> port = inputPorts.get(i);
 			StreamWindow<Tuple> window = port.getStreamWindow();
 
-			WindowContentsAtTrigger<Tuple> contents = new WindowContentsAtTrigger<Tuple>(operatorContext, port);
+			WindowContentsAtTrigger<Tuple> contents = new WindowContentsAtTrigger<Tuple>(tupleViewOperator, i);
 			windows.add(contents);
 			window.registerListener(contents, false);
 
