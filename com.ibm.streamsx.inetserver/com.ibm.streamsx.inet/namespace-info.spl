@@ -3,6 +3,22 @@
  * on an embedded jetty webserver.
  * 
  * + Sharing the Eclipse Jetty Instance
+ * All operators of this toolkit embed a Jetty webserver and  
+ * all operator invocations in an SPL application that are co-located/fused in same partition (PE) 
+ * will share a common Jetty instance. Thus by 
+ * fusing these operators together with a common port value, a single web-server serving a 
+ * single SPL application can be created. This sharing of the web-server by fusing multiple 
+ * operators allows the operators to be logically connected in the SPL graph, rather than a single 
+ * operator with multiple unrelated streams being connected to it. 
+ * 
+ * Static content in the sub-directory `html` of the application's `opt` directory will also be served 
+ * by the embedded web-server, thus allowing a complete web-application with live data to be 
+ * served by an SPL application. The default URL for the web-server resolves to 
+ * `{application_dir}/opt/html/index.html` 
+ * 
+ * Operators that support the `context` and `contextResourceBase` SPL parameters will serve 
+ * static files from the `contextResourceBase` directory rooted at the supplied context path.
+ * 
  * Multiple operators share a single jetty server instance if:
  * * they are fused in a single processing element (config placement: partitionColocation),
  * * and they use the same `port` parameter value

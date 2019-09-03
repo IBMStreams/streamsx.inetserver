@@ -5,7 +5,9 @@
 package com.ibm.streamsx.inet.rest.ops;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingInput;
@@ -33,11 +35,13 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
 public class TupleView extends ServletOperator {
 	
 	static final String opName = "HTTPTupleView";
+	Logger trace = Logger.getLogger(TupleView.class.getName());
 	
 	//parameter values
 	private ArrayList<String>  partitionKey = null;
 	private ArrayList<String>  partitionBy = null;
 	private boolean            namedPartitionQuery = false;
+	private boolean            forceEmpty = false;
 	//obtained properties
 	private boolean                       anyInputIsPartitioned   = false;
 	private ArrayList<ArrayList<String>>  partitonAttributeNames  = new ArrayList<ArrayList<String>>();
@@ -75,11 +79,21 @@ public class TupleView extends ServletOperator {
 		this.partitionBy =  new ArrayList<String>(partitionBy);
 	}
 	
-	@Parameter(optional=true, description="")
+	@Parameter(optional=true, description="Determines how the queries of the `/tuples URL` work. If false, the "
+			+ "partition values must be entered in the order of the partition definition in parameter `partitionKey` or `partitionBy`. "
+			+ "If true, the queries must be entered in the form 'name=value', where name is name of the partition and not "
+			+ "the 'partition' word. Default: false")
 	public void setNamedPartitionQuery(boolean namedPartitionQuery) {
 		this.namedPartitionQuery = namedPartitionQuery;
 	}
 
+	@Parameter(optional=true, description="If true, the operator returns an empty result if input port is partitioned "
+			+ "but the request does not specify a partition query. The parameter is meaningless for ports without partition. "
+			+ "Default: false")
+	public void setForceEmpty(boolean forceEmpty) {
+		this.forceEmpty = forceEmpty;
+	}
+	
 	// Parameter setters just to define the parameters in the SPL operator model.
 	@Parameter(optional = true, description = "List of headers to insert into the http reply. Formatted as header:value")
 	public void setHeaders(String[] headers) {}
@@ -108,12 +122,14 @@ public class TupleView extends ServletOperator {
 				anyInputIsPartitioned = true;
 		}
 		System.out.println("namedPartitionQuery:   " + Boolean.toString(namedPartitionQuery));
+		System.out.println("forceEmpty:            " + Boolean.toString(forceEmpty));
 		System.out.println("anyInputIsPartitioned: " + Boolean.toString(anyInputIsPartitioned));
 		
 		//if no input is partitioned partitionKey and partitionBy must be null or completely empty
 		if ( ! anyInputIsPartitioned ) {
-			if ((partitionKey != null) && (partitionKey.size() > 0) && ! partitionKey.get(0).isEmpty())
-				throw new IllegalArgumentException("No Input port window is partitioned, but parameter partitionKey has a non empty value");
+			if (partitionKey != null)
+				if ((partitionKey.size() > 1) || ((partitionKey.size() == 1) && ( ! partitionKey.get(0).isEmpty())))
+					throw new IllegalArgumentException("No Input port window is partitioned, but parameter partitionKey has a non empty value");
 			if (partitionBy != null) {
 				for (int i = 0; i < partitionBy.size(); i++) {
 					if ( ! partitionBy.get(i).isEmpty())
@@ -142,7 +158,17 @@ public class TupleView extends ServletOperator {
 					}
 				}
 			}
-		
+
+			//check duplicates
+			for (int i = 0; i < numberInputPorts; i++) {
+				ArrayList<String> portPartitonAttributeNames = partitonAttributeNames.get(i);
+				HashSet<String> portNameSet = new HashSet<String>();
+				for (String name : portPartitonAttributeNames) {
+					if ( ! portNameSet.add(name) )
+						throw new IllegalArgumentException("partition name: " + name + " is duplicate for input port " + Integer.toString(i));
+				}
+			}
+
 			//check every single entry in partitonAttributeNames for validity and add index to partitonAttributeIndexes
 			//determine attributeIsPartitionKey, suppressIsPartitionKey, callbackIsPartitionKey
 			for (int i = 0; i < numberInputPorts; i++) {
@@ -155,19 +181,35 @@ public class TupleView extends ServletOperator {
 						if (attributeIndex < 0)
 							throw new IllegalArgumentException("Input port " + Integer.toString(i) + " has no attribute with name " + attributeName);
 						partIndx.add(new Integer(attributeIndex));
-						if (attributeName.equals("attribute"))
-							attributeIsPartitionKey.set(i, new Boolean(true));
-						if (attributeName.equals("suppress"))
-							suppressIsPartitionKey.set(i, new Boolean(true));
-						if (attributeName.equals("callback"))
-							callbackIsPartitionKey.set(i, new Boolean(true));
+						if (namedPartitionQuery) {
+							if (attributeName.equals("attribute")) {
+								attributeIsPartitionKey.set(i, new Boolean(true));
+								trace.warning("On url /ports/input/" + Integer.toString(i) + "/tuples query parameter 'attribute' is a partition name");
+							}
+							if (attributeName.equals("suppress")) {
+								suppressIsPartitionKey.set(i, new Boolean(true));
+								trace.warning("On url /ports/input/" + Integer.toString(i) + "/tuples query parameter 'suppress' is a partition name");
+							}
+							if (attributeName.equals("callback")) {
+								callbackIsPartitionKey.set(i, new Boolean(true));
+								trace.warning("On url /ports/input/" + Integer.toString(i) + "/tuples query parameter 'callback' is a partition name");
+							}
+						}
 					}
 				} else {
 					ArrayList<String> portPartitonAttributeNames = partitonAttributeNames.get(i);
-					if ((portPartitonAttributeNames.size() > 0) && ! portPartitonAttributeNames.get(0).isEmpty())
+					if ((portPartitonAttributeNames.size() > 1) || (portPartitonAttributeNames.size() == 1) && ( ! portPartitonAttributeNames.get(0).isEmpty()))
 						throw new IllegalArgumentException("Input port " + Integer.toString(i) + " is not partitioned but has none empty partition name " + portPartitonAttributeNames.get(0));
 				}
 			}
+		}
+		
+		//emit warnings
+		if ( ! anyInputIsPartitioned ) {
+			if (namedPartitionQuery)
+				trace.warning("No Input port window is partitioned, but parameter namedPartitionQuery has value true. Parameter namedPartitionQuery will be ignored");
+			if (forceEmpty)
+				trace.warning("No Input port window is partitioned, but parameter forceEmpty has value true. Parameter forceEmpty will be ignored");
 		}
 		System.out.println("partitonAttributeNames: " + partitonAttributeNames.toString());
 		System.out.println("partitonAttributeIndexes: " + partitonAttributeIndexes.toString());
@@ -180,6 +222,7 @@ public class TupleView extends ServletOperator {
 
 	//getter
 	public boolean                       getNamedPartitionQuery()      { return namedPartitionQuery; }
+	public boolean                       getForceEmpty()               { return forceEmpty; }
 	public boolean                       getAnyInputIsPartitioned()    { return anyInputIsPartitioned; }
 	public ArrayList<ArrayList<String>>  getPartitonAttributeNames()   { return partitonAttributeNames; }
 	public ArrayList<ArrayList<Integer>> getPartitonAttributeIndexes() { return partitonAttributeIndexes; }
@@ -199,12 +242,18 @@ public class TupleView extends ServletOperator {
 			"* *context path*`/`*base operator name* - When the `context` parameter is set.\\n" +
 			"* *full operator name* - When the `context` parameter is **not** set.\\n" +
 			"\\n" + 
-			"The `/tuples` URL accepts these optional query parameters:\\n" + 
+			"The `/tuples` URL accepts optional query parameters. The parameter `namedPartitionQuery` determines how "+
+			"query parameters work. If parameter `namedPartitionQuery` is false (the default), the following query parameters are accepted :\\n" + 
 			"* `partition` – When the window is partitioned defines the partition to be extracted from the window. When partitionKey contains multiple attributes, partition must contain the same number of values as attributes and in the same order, e.g. `?partition=John&partition=Smith`. " + 
 			"would match the SPL partitionKey setting of: `partitionKey: “firstName”, “lastName”;`. When a window is partitioned and no partition query parameter is provided the data for all partitions is returned.\\n" + 
 			"* `attribute` – Restricts the returned data to the named attributes. Data is returned in the order the attribute names are provided. When not provided, all attributes in the input tuples are returned. E.g. `?format=json&attribute=lastName&attribute=city` will return only the `lastName` and `city` attributes in that order with `lastName` first.\\n" + 
 			"* `suppress` – Suppresses the named attributes from the output. When not provided, no attributes are suppressed. suppress is applied after applying the query parameter attribute. E.g. `?suppress=firstName&suppress=lastName` will not include lastName or firstName in the returned data.\\n" +
 			"* `callback` – Wrappers the returned JSON in a call to callbackvalue(...json...); to enable JSONP processing.\\n" +
+			"If `namedPartitionQuery` is true, the query parameters are accepted as follows:\\n" + 
+			"* `name=value`- where name is the name of the partition/attribute" +
+			"* `attribute` - if none of the partitions have the name `attribute`, it works like in the default case, otherwise it addresses the partition `attributes`.\\n" +
+			"* `suppress` - if none of the partitions have the name `suppress`, it works like in the default case, otherwise it addresses the partition `suppress`.\\n" +
+			"* `callback` - if none of the partitions have the name `callback`, it works like in the default case, otherwise it addresses the partition `callback`.\\n" +
 			"Query parameters are ignored if the input port's schema is `tuple<rstring jsonString>`.\\n" +
 			"\\n" + 
 			"The fixed URL `/ports/info` returns meta-data (using JSON) about all of the Streams ports that have associated URLs.\\n" + 
@@ -217,22 +266,6 @@ public class TupleView extends ServletOperator {
 			"* Within a tuple any attribute that is `rstring jsonString`, then the value is taken as " +
 			"serialized JSON and it is placed into the tuple's " +
 			"JSON object as its deserialized JSON with key `jsonString`.\\n" +
-			"\\n" + 
-			"`HTTPTupleView`, [HTTPTupleInjection], [HTTPXMLInjection] and [WebContext] embed a Jetty webserver and " + 
-			"all operator invocations in an SPL application that are co-located/fused in same partition (PE) " + 
-			"will share a common Jetty instance. Thus by " + 
-			"fusing these operators together with a common port value, a single web-server serving a " + 
-			"single SPL application can be created. This sharing of the web-server by fusing multiple " + 
-			"operators allows the operators to be logically connected in the SPL graph, rather than a single " + 
-			"operator with multiple unrelated streams being connected to it.\\n" + 
-			"\\n" + 
-			"Static content in the sub-directory `html` of the application's `opt` directory will also be served " + 
-			"by the embedded web-server, thus allowing a complete web-application with live data to be " + 
-			"served by an SPL application. The default URL for the web-server resolves to " + 
-			"`{application_dir}/opt/html/index.html`.\\n" + 
-			"\\n" + 
-			"Operators that support the `context` and `contextResourceBase` SPL parameters will serve " + 
-			"static files from the `contextResourceBase` directory rooted at the supplied context path.\\n" + 
 			"\\n" + 
 			"**Limitations**:\\n" + 
 			"* Error handling is limited, incorrect URLs can crash the application, e.g. providing the wrong number of partition values.\\n" + 

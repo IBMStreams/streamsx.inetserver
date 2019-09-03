@@ -148,7 +148,7 @@ public class AccessWindowContents extends HttpServlet {
 
 		// Not partitioned.
 		if (partitionAttributes.size() == 0)
-			return 0;
+			return new Integer(0);
 
 		if ( ! namedPartitionQuery) {
 			String[] partitionValues = request.getParameterValues("partition");
@@ -159,14 +159,12 @@ public class AccessWindowContents extends HttpServlet {
 				return getAttributeObject(partitionAttributes.get(0), partitionValues[0]);
 		
 			List<Object> partitionList = new ArrayList<Object>(partitionAttributes.size());
-
 			for (int i = 0; i < partitionAttributes.size(); i++){
 				partitionList.add(getAttributeObject(partitionAttributes.get(i), partitionValues[i]));
 			}
 			return partitionList;
 			
 		} else {
-			
 			Enumeration<String> parameterEnum = request.getParameterNames();
 			Set<String> parameterNames = new HashSet<String>();
 			while (parameterEnum.hasMoreElements()) {
@@ -182,6 +180,15 @@ public class AccessWindowContents extends HttpServlet {
 			
 			if (parameterNames.isEmpty())
 				return null; // partitioned but no partition given, return all the data.
+			
+			if (partitionAttributes.size() == 1) {
+				if (parameterNames.contains(partitionAttributes.get(0).getName())) {
+					String value = request.getParameter(partitionAttributes.get(0).getName());
+					return getAttributeObject(partitionAttributes.get(0), value);
+				} else {
+					return null; //no (valid) partition in parameter set
+				}
+			}
 			
 			List<Object> partitionList = new ArrayList<Object>(partitionAttributes.size());
 			for (int i = 0; i < partitionAttributes.size(); i++) {

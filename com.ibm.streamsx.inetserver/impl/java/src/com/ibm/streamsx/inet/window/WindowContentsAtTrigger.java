@@ -37,14 +37,15 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 	private final StreamingInput<Tuple> input;
 
 	private final boolean namedPartitionQuery;
+	private final boolean forceEmpty;
+	//lists must be empty if window is not partitioned
 	private final ArrayList<String>  partitonAttributeNames;
 	private final ArrayList<Integer> partitonAttributeIndexes;
-	
-	private final boolean isSliding;
-	
-	//the list of partition attributes in the order of definition
+	//the list of partition attributes in the order of definition; Size is 0 if window is not partitioned.
 	private final List<Attribute> partitionAttributes;
 	
+	private final boolean isSliding;
+
 	//the current window content
 	private final Map<Object,List<T>> windowContents = Collections.synchronizedMap(new HashMap<Object,List<T>>());
 
@@ -56,6 +57,7 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 		this.input = context.getStreamingInputs().get(portIndex);
 
 		namedPartitionQuery = operator.getNamedPartitionQuery();
+		forceEmpty = operator.getForceEmpty();
 		partitonAttributeNames = operator.getPartitonAttributeNames().get(portIndex);
 		partitonAttributeIndexes = operator.getPartitonAttributeIndexes().get(portIndex);
 
@@ -66,6 +68,9 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 			for (int i=0; i < partitonAttributeNames.size(); i++) {
 				System.out.println("par: " + partitonAttributeNames.get(i));
 			}
+			if ( ! input.getStreamWindow().isPartitioned())
+				throw new IllegalStateException("Window is not partitioned but has partitonAttributeNames");
+			
 			if (partitonAttributeNames.size() == 1) {
 				WindowUtilities.registerAttributePartitioner(input.getStreamWindow(), partitonAttributeNames.toArray(new String[0]));
 			} else {
@@ -86,10 +91,14 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 			List<Attribute> pa = new ArrayList<Attribute>();
 			for (String attributeName : partitonAttributeNames)
 				pa.add(input.getStreamSchema().getAttribute(attributeName));
+
 			partitionAttributes = Collections.unmodifiableList(pa);
 
 		} else {
 
+			if (input.getStreamWindow().isPartitioned())
+				throw new IllegalStateException("Window is partitioned but has no partitonAttributeNames");
+			
 			partitionAttributes = Collections.emptyList();
 
 		}
@@ -181,9 +190,11 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 	
 	private List<T> getAllPartitions() {
 		List<T> allTuples = new ArrayList<T>();
-		synchronized (windowContents) {
-			for (List<T> tuples : windowContents.values()) {
-				allTuples.addAll(tuples);
+		if (( ! forceEmpty ) || (partitonAttributeNames.size() == 0)) {
+			synchronized (windowContents) {
+				for (List<T> tuples : windowContents.values()) {
+					allTuples.addAll(tuples);
+				}
 			}
 		}
 		return allTuples;
