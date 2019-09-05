@@ -25,8 +25,9 @@
  * This allows operators to expose streams through the same webserver
  * without having to be connected in the SPL graph.
  * 
- * Operators which are using a shared jetty instance must have the same parameter values for parameters
+ * Operators which are using a shared jetty instance must have the **same parameter values for parameters**
  * * `port`
+ * * `host`
  * * `certificateAlias`
  * * `keyStore`
  * * `keyStorePassword`
