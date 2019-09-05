@@ -1,6 +1,6 @@
 /*
 # Licensed Materials - Property of IBM
-# Copyright IBM Corp. 2017
+# Copyright IBM Corp. 2019, 2020
 */
 package com.ibm.streamsx.inet.rest.ops;
 
@@ -24,7 +24,7 @@ description="Optional additional ports that emit a tuple for each POST request o
 public class PostBLOB extends ServletOperator {
 
 	@Override
-	protected String getSetupClass() {
+	public String getSetupClass() {
 		return com.ibm.streamsx.inet.rest.setup.PostBLOBSetup.class.getName();
 	}
 

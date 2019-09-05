@@ -25,7 +25,7 @@ description="Optional additional ports that emit a tuple for each POST request o
 public class PostJSON extends ServletOperator {
 
 	@Override
-	protected String getSetupClass() {
+	public String getSetupClass() {
 		return com.ibm.streamsx.inet.rest.setup.PostJSONSetup.class.getName();
 	}
 
@@ -73,10 +73,13 @@ public class PostJSON extends ServletOperator {
 			"* *context path*`/`*base operator name* - When the `context` parameter is set.\\n" +
 			"* *full operator name* - When the `context` parameter is **not** set.\\n" +
 			"\\n" +
+			"Sample command to post a tuple trough the output:\\n" +
+			"    curl --header 'Content-Type: application/json' --request POST --data '{\\\"username\\\":\\\"xyz\\\",\\\"password\\\":\\\"xyz\\\"}' http://<hostname:port>/<prefix>/ports/output/0/inject \\n" +
+			"\\n" +
 			"**Limitations**:\\n" + 
 			"* Error handling is limited, incorrect URLs can crash the application.\\n" + 
-			"* By default no security access is provided to the data, HTTPS must be explicitly configured.\\n"
-			+ "# HTTPS Support and Sharing the Jetty Server\\n "
-			+ "see also [namespace:com.ibm.streamsx.inet]";
+			"* By default no security access is provided to the data, HTTPS must be explicitly configured.\\n" +
+			"# HTTPS Support and Sharing the Jetty Server\\n " +
+			"see also [namespace:com.ibm.streamsx.inet]";
 
 }

@@ -1,0 +1,39 @@
+use com.ibm.streamsx.inet.rest::HTTPTupleView;
+
+public composite Main {
+	param
+		expression<int32> $port: (int32)getCompileTimeValue("port", "8080");
+	graph
+		stream<rstring a_string, ustring b_string, int32 c_int32, float64 d_float, boolean e_boolean> InStream1 = Beacon() {
+			param
+				iterations: 3;
+		}
+
+		//<7 8 9 10 11>stream<rstring a_string, ustring b_string, int32 c_int, float64 d_float, boolean e_boolean> InStream2 = Beacon() {param iterations: 4; }
+
+		() as Sink = HTTPTupleView(
+						InStream1
+						//<7 8 9 10 11>; InStream2
+					) {
+			window
+				InStream1: sliding, count(10), count(1)
+					//<!0 1>, partitioned
+					;
+				//<7 8>InStream2: sliding, count(10), count(1);
+				//<9 10 11>InStream2: sliding, count(10), count(1), partitioned;
+					
+			param
+				port: $port;
+				//<0> partitionKey: "a_string";
+				//<1> partitionBy: "b_string";
+				//<3> partitionBy: "b_string", "b_string";
+				//<4> partitionKey: "a_string,b_string,a_string";
+				//<5> partitionKey: "a_string", "b_string", "a_string";
+				//<6> partitionBy: "a_string,b_string,a_string";
+				//<7> partitionKey: "a_string,b_string";
+				//<8> partitionBy: "a_string,b_string", "a_string,b_string";
+				//<9> partitionKey: "a_string,c_int32";
+				//<10> partitionKey: "a_string", "c_int32";
+				//<11> partitionBy: "a_string,c_int32", "a_string,c_int32";
+		}
+}

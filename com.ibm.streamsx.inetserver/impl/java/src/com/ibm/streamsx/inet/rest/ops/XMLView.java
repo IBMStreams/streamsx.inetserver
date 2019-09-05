@@ -63,7 +63,7 @@ public class XMLView extends ServletOperator {
 	}
 
 	@Override
-	protected String getSetupClass() {
+	public String getSetupClass() {
 		return com.ibm.streamsx.inet.rest.setup.XMLViewSetup.class.getName();
 	}
 

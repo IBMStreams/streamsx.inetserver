@@ -1,6 +1,6 @@
 /*
 # Licensed Materials - Property of IBM
-# Copyright IBM Corp. 2014 
+# Copyright IBM Corp. 2019, 2020
 */
 package com.ibm.streamsx.inet.rest.setup;
 
@@ -14,6 +14,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamingOutput;
+import com.ibm.streamsx.inet.rest.ops.ServletOperator;
 import com.ibm.streamsx.inet.rest.servlets.InjectJSON;
 
 /**
@@ -27,10 +28,11 @@ public class PostJSONSetup implements OperatorServletSetup {
 	 * @return 
 	 */
 	@Override
-	public List<ExposedPort> setup(OperatorContext operatorContext, ServletContextHandler handler, ServletContextHandler ports) {
+	public List<ExposedPort> setup(ServletOperator operator, ServletContextHandler staticContext, ServletContextHandler ports) {
 
-		Logger trace = Logger.getAnonymousLogger();
+		Logger trace = Logger.getLogger(PostJSONSetup.class.getName());
 		List<ExposedPort> exposed = new ArrayList<ExposedPort>();
+		OperatorContext operatorContext = operator.getOperatorContext();
 
 		for (StreamingOutput<OutputTuple> port : operatorContext.getStreamingOutputs()) {
 			

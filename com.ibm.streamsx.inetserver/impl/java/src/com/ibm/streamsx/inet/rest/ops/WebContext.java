@@ -29,7 +29,7 @@ public class WebContext extends ServletOperator {
 	public void setContextResourceBase(String base) {}
 
 	@Override
-	protected String getSetupClass() {
+	public String getSetupClass() {
 		return com.ibm.streamsx.inet.rest.setup.WebContextSetup.class.getName();
 	}
 

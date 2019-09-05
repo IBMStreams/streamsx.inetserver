@@ -24,7 +24,7 @@ description="Optional additional ports that emit a tuple for each POST request o
 public class PostXML extends ServletOperator {
 
 	@Override
-	protected String getSetupClass() {
+	public String getSetupClass() {
 		return com.ibm.streamsx.inet.rest.setup.PostXMLSetup.class.getName();
 	}
 

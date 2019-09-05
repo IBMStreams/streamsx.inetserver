@@ -143,7 +143,7 @@ public class WebSocketSend extends ServletOperator {
 	}
 
 	@Override
-	protected String getSetupClass() {
+	public String getSetupClass() {
 		return com.ibm.streamsx.inet.wsserver.setup.WebSocketSendSetup.class.getName();
 	}
 

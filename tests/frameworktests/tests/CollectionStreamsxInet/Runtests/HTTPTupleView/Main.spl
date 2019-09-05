@@ -1,0 +1,36 @@
+use com.ibm.streamsx.inet.rest::HTTPTupleView;
+
+public composite Main {
+	param
+		expression<int32> $port: (int32)getSubmissionTimeValue("port", "8080");
+		expression<int32> $it1: (int32)getSubmissionTimeValue("iterations1", "16");
+	graph
+		stream<rstring a_string, ustring b_string, int32 c_int32, float64 d_float, boolean e_boolean> InStream1 = Beacon() {
+			param
+				iterations: $it1;
+			output InStream1:
+				a_string = "rstr_" + (rstring)IterationCount(),
+				b_string = "ustr_"u + (ustring)IterationCount(),
+				c_int32 = (int32)(IterationCount() % 4ul),
+				d_float = (float64)IterationCount(),
+				e_boolean = ((IterationCount() % 3ul)==0ul) ? false : true;
+		}
+
+		() as Sink = HTTPTupleView(
+						InStream1
+					) {
+			window
+				//<*noPart_slide_*>InStream1: sliding, count(16), count(1);
+				//<*part?_*slide_*>InStream1: sliding, count(16), count(1), partitioned;
+				//<*noPart_tumbl_*>InStream1: tumbling, count(16);
+			param
+				port: $port;
+				//<force_*>forceEmpty: true;
+				//<*part1_*>partitionKey: "c_int32";
+				//<*part2_*>partitionKey: "c_int32,e_boolean";
+				//<*npart*>namedPartitionQuery: true;
+		}
+		
+		config
+			restartable: false;
+}
