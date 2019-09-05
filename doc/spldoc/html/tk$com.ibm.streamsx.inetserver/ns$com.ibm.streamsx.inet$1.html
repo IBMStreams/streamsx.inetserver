@@ -22,12 +22,21 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.html">com.ibm.streamsx.inet</a> &gt; Sharing the Eclipse Jetty Instance</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.1.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.html">com.ibm.streamsx.inet</a> &gt; Sharing the Eclipse Jetty Instance</p>
 
 </div>
 
 
 <div class="section">
+<p class="p">All operators of this toolkit embed a Jetty webserver and   all operator invocations in an SPL application that are co-located/fused in same partition (PE)  will share a common Jetty instance. Thus by  fusing these operators together with a common port value, a single web-server serving a  single SPL application can be created. This sharing of the web-server by fusing multiple  operators allows the operators to be logically connected in the SPL graph, rather than a single  operator with multiple unrelated streams being connected to it. 
+</p>
+
+<p class="p">Static content in the sub-directory <tt class="ph tt">html</tt> of the application's <tt class="ph tt">opt</tt> directory will also be served  by the embedded web-server, thus allowing a complete web-application with live data to be  served by an SPL application. The default URL for the web-server resolves to  <tt class="ph tt">{application_dir}/opt/html/index.html</tt> 
+</p>
+
+<p class="p">Operators that support the <tt class="ph tt">context</tt> and <tt class="ph tt">contextResourceBase</tt> SPL parameters will serve  static files from the <tt class="ph tt">contextResourceBase</tt> directory rooted at the supplied context path.
+</p>
+
 <div class="p">Multiple operators share a single jetty server instance if:
 <ul class="ul">
 <li class="li"> they are fused in a single processing element (config placement: partitionColocation),</li>
@@ -38,9 +47,11 @@
 This allows operators to expose streams through the same webserver without having to be connected in the SPL graph.
 </div>
 
-<div class="p">Operators which are using a shared jetty instance must have the same parameter values for parameters
+<div class="p">Operators which are using a shared jetty instance must have the <strong class="ph b">same parameter values for parameters</strong>
 <ul class="ul">
 <li class="li"> <tt class="ph tt">port</tt></li>
+
+<li class="li"> <tt class="ph tt">host</tt></li>
 
 <li class="li"> <tt class="ph tt">certificateAlias</tt></li>
 

@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.rest.html">com.ibm.streamsx.inet.rest</a> &gt; HTTPTupleView</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.1.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.rest.html">com.ibm.streamsx.inet.rest</a> &gt; HTTPTupleView</p>
 
 </div>
 
@@ -52,7 +52,7 @@
 
 </div>
 
-<div class="p">The <tt class="ph tt">/tuples</tt> URL accepts these optional query parameters:
+<div class="p">The <tt class="ph tt">/tuples</tt> URL accepts optional query parameters. The parameter <tt class="ph tt">namedPartitionQuery</tt> determines how query parameters work. If parameter <tt class="ph tt">namedPartitionQuery</tt> is false (the default), the following query parameters are accepted :
 <ul class="ul">
 <li class="li"> <tt class="ph tt">partition</tt> – When the window is partitioned defines the partition to be extracted from the window. When partitionKey contains multiple attributes, partition must contain the same number of values as attributes and in the same order, e.g. <tt class="ph tt">?partition=John&amp;partition=Smith</tt>. would match the SPL partitionKey setting of: <tt class="ph tt">partitionKey: “firstName”, “lastName”;</tt>. When a window is partitioned and no partition query parameter is provided the data for all partitions is returned.</li>
 
@@ -61,6 +61,15 @@
 <li class="li"> <tt class="ph tt">suppress</tt> – Suppresses the named attributes from the output. When not provided, no attributes are suppressed. suppress is applied after applying the query parameter attribute. E.g. <tt class="ph tt">?suppress=firstName&amp;suppress=lastName</tt> will not include lastName or firstName in the returned data.</li>
 
 <li class="li"> <tt class="ph tt">callback</tt> – Wrappers the returned JSON in a call to callbackvalue(...json...); to enable JSONP processing.</li>
+
+</ul>
+If <tt class="ph tt">namedPartitionQuery</tt> is true, the query parameters are accepted as follows:
+<ul class="ul">
+<li class="li"> <tt class="ph tt">name=value</tt>- where name is the name of the partition/attribute* <tt class="ph tt">attribute</tt> - if none of the partitions have the name <tt class="ph tt">attribute</tt>, it works like in the default case, otherwise it addresses the partition <tt class="ph tt">attributes</tt>.</li>
+
+<li class="li"> <tt class="ph tt">suppress</tt> - if none of the partitions have the name <tt class="ph tt">suppress</tt>, it works like in the default case, otherwise it addresses the partition <tt class="ph tt">suppress</tt>.</li>
+
+<li class="li"> <tt class="ph tt">callback</tt> - if none of the partitions have the name <tt class="ph tt">callback</tt>, it works like in the default case, otherwise it addresses the partition <tt class="ph tt">callback</tt>.</li>
 
 </ul>
 Query parameters are ignored if the input port's schema is <tt class="ph tt">tuple&lt;rstring jsonString&gt;</tt>.
@@ -78,15 +87,6 @@ Query parameters are ignored if the input port's schema is <tt class="ph tt">tup
 </ul>
 
 </div>
-
-<p class="p"><tt class="ph tt">HTTPTupleView</tt>, <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPTupleInjection.html">HTTPTupleInjection</a>, <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPXMLInjection.html">HTTPXMLInjection</a> and <a class="xref" href="op$com.ibm.streamsx.inet.rest$WebContext.html">WebContext</a> embed a Jetty webserver and all operator invocations in an SPL application that are co-located/fused in same partition (PE) will share a common Jetty instance. Thus by fusing these operators together with a common port value, a single web-server serving a single SPL application can be created. This sharing of the web-server by fusing multiple operators allows the operators to be logically connected in the SPL graph, rather than a single operator with multiple unrelated streams being connected to it.
-</p>
-
-<p class="p">Static content in the sub-directory <tt class="ph tt">html</tt> of the application's <tt class="ph tt">opt</tt> directory will also be served by the embedded web-server, thus allowing a complete web-application with live data to be served by an SPL application. The default URL for the web-server resolves to <tt class="ph tt">{application_dir}/opt/html/index.html</tt>.
-</p>
-
-<p class="p">Operators that support the <tt class="ph tt">context</tt> and <tt class="ph tt">contextResourceBase</tt> SPL parameters will serve static files from the <tt class="ph tt">contextResourceBase</tt> directory rooted at the supplied context path.
-</p>
 
 <div class="p"><strong class="ph b">Limitations</strong>:
 <ul class="ul">
@@ -126,9 +126,9 @@ Query parameters are ignored if the input port's schema is <tt class="ph tt">tup
  
   <dt class="dt dlterm">Parameters</dt>
 
-  <dd class="dd">This operator supports 11 parameters.
+  <dd class="dd">This operator supports 15 parameters.
 <p class="p"> Optional: 
-<a class="xref" href="#spldoc_operator__parameter__certificateAlias">certificateAlias</a>, <a class="xref" href="#spldoc_operator__parameter__context">context</a>, <a class="xref" href="#spldoc_operator__parameter__contextResourceBase">contextResourceBase</a>, <a class="xref" href="#spldoc_operator__parameter__headers">headers</a>, <a class="xref" href="#spldoc_operator__parameter__keyPassword">keyPassword</a>, <a class="xref" href="#spldoc_operator__parameter__keyStore">keyStore</a>, <a class="xref" href="#spldoc_operator__parameter__keyStorePassword">keyStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__partitionKey">partitionKey</a>, <a class="xref" href="#spldoc_operator__parameter__port">port</a>, <a class="xref" href="#spldoc_operator__parameter__trustStore">trustStore</a>, <a class="xref" href="#spldoc_operator__parameter__trustStorePassword">trustStorePassword</a>
+<a class="xref" href="#spldoc_operator__parameter__certificateAlias">certificateAlias</a>, <a class="xref" href="#spldoc_operator__parameter__context">context</a>, <a class="xref" href="#spldoc_operator__parameter__contextResourceBase">contextResourceBase</a>, <a class="xref" href="#spldoc_operator__parameter__forceEmpty">forceEmpty</a>, <a class="xref" href="#spldoc_operator__parameter__headers">headers</a>, <a class="xref" href="#spldoc_operator__parameter__host">host</a>, <a class="xref" href="#spldoc_operator__parameter__keyPassword">keyPassword</a>, <a class="xref" href="#spldoc_operator__parameter__keyStore">keyStore</a>, <a class="xref" href="#spldoc_operator__parameter__keyStorePassword">keyStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__namedPartitionQuery">namedPartitionQuery</a>, <a class="xref" href="#spldoc_operator__parameter__partitionBy">partitionBy</a>, <a class="xref" href="#spldoc_operator__parameter__partitionKey">partitionKey</a>, <a class="xref" href="#spldoc_operator__parameter__port">port</a>, <a class="xref" href="#spldoc_operator__parameter__trustStore">trustStore</a>, <a class="xref" href="#spldoc_operator__parameter__trustStorePassword">trustStorePassword</a>
 
 </p>
 </dd>
@@ -232,9 +232,9 @@ Query parameters are ignored if the input port's schema is <tt class="ph tt">tup
 
 <div class="section">
 <p class="p splhead-1"><strong class="ph b"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters">Parameters</a></strong></p>
-This operator supports 11 parameters.
+This operator supports 15 parameters.
 <p class="p"> Optional: 
-<a class="xref" href="#spldoc_operator__parameter__certificateAlias">certificateAlias</a>, <a class="xref" href="#spldoc_operator__parameter__context">context</a>, <a class="xref" href="#spldoc_operator__parameter__contextResourceBase">contextResourceBase</a>, <a class="xref" href="#spldoc_operator__parameter__headers">headers</a>, <a class="xref" href="#spldoc_operator__parameter__keyPassword">keyPassword</a>, <a class="xref" href="#spldoc_operator__parameter__keyStore">keyStore</a>, <a class="xref" href="#spldoc_operator__parameter__keyStorePassword">keyStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__partitionKey">partitionKey</a>, <a class="xref" href="#spldoc_operator__parameter__port">port</a>, <a class="xref" href="#spldoc_operator__parameter__trustStore">trustStore</a>, <a class="xref" href="#spldoc_operator__parameter__trustStorePassword">trustStorePassword</a>
+<a class="xref" href="#spldoc_operator__parameter__certificateAlias">certificateAlias</a>, <a class="xref" href="#spldoc_operator__parameter__context">context</a>, <a class="xref" href="#spldoc_operator__parameter__contextResourceBase">contextResourceBase</a>, <a class="xref" href="#spldoc_operator__parameter__forceEmpty">forceEmpty</a>, <a class="xref" href="#spldoc_operator__parameter__headers">headers</a>, <a class="xref" href="#spldoc_operator__parameter__host">host</a>, <a class="xref" href="#spldoc_operator__parameter__keyPassword">keyPassword</a>, <a class="xref" href="#spldoc_operator__parameter__keyStore">keyStore</a>, <a class="xref" href="#spldoc_operator__parameter__keyStorePassword">keyStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__namedPartitionQuery">namedPartitionQuery</a>, <a class="xref" href="#spldoc_operator__parameter__partitionBy">partitionBy</a>, <a class="xref" href="#spldoc_operator__parameter__partitionKey">partitionKey</a>, <a class="xref" href="#spldoc_operator__parameter__port">port</a>, <a class="xref" href="#spldoc_operator__parameter__trustStore">trustStore</a>, <a class="xref" href="#spldoc_operator__parameter__trustStorePassword">trustStorePassword</a>
 
 </p>
 <dl class="dl">
@@ -348,6 +348,37 @@ param
 
 
 
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__forceEmpty"><!-- --></a><tt class="ph tt">forceEmpty</tt></dt>
+
+<dd class="dd">
+<p class="p">If true, the operator returns an empty result if input port is partitioned but the request does not specify a partition query. The parameter is meaningless for ports without partition. Default: false
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: boolean
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__headers"><!-- --></a><tt class="ph tt">headers</tt></dt>
 
 <dd class="dd">
@@ -361,6 +392,37 @@ param
   <ul class="sl simple">
   <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
   </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__host"><!-- --></a><tt class="ph tt">host</tt></dt>
+
+<dd class="dd">
+<p class="p">You can configure a host either as a host name or IP address to identify a specific network interface on which to listen. If not set, or set to the value of 0.0.0.0, the integrated jetty server listens on all local interfaces.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
 
      <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
      </li>
@@ -469,10 +531,69 @@ param
 
 
 
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__namedPartitionQuery"><!-- --></a><tt class="ph tt">namedPartitionQuery</tt></dt>
+
+<dd class="dd">
+<p class="p">Determines how the queries of the <tt class="ph tt">/tuples URL</tt> work. If false, the partition values must be entered in the order of the partition definition in parameter <tt class="ph tt">partitionKey</tt> or <tt class="ph tt">partitionBy</tt>. If true, the queries must be entered in the form 'name=value', where name is name of the partition and not the 'partition' word. Default: false
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: boolean
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__partitionBy"><!-- --></a><tt class="ph tt">partitionBy</tt></dt>
+
+<dd class="dd">
+<p class="p">Names of attributes to partition the window by. The cardinality of this parameter must be equal the number of input ports. Each value must contain one a comma separated list of the partition attributes of the corresponding input port. If an input port is not partitioned, the corresponding value must be the empty string. Thus the input ports may have different port schemata. This parameter must not be used with parameter <tt class="ph tt">partitionKey</tt>.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__partitionKey"><!-- --></a><tt class="ph tt">partitionKey</tt></dt>
 
 <dd class="dd">
-<p class="p">Names of attributes to partition the window by. If the cardinality of this parameter is &gt; 1,then every value represents one attribute name. If the cadinality equals to 1, the value may contain one attribute name or a comma separated list of attribute names.
+<p class="p">Names of attributes to partition the window by. If the cardinality of this parameter is &gt; 1, then every value represents one attribute name. If the cadinality equals to 1, the value may contain one attribute name or a comma separated list of attribute names. The values of this parameter list are applied to the window partitions of all input ports. Thus the input ports must have equal port schemata. If different partition lists are necessary use parameter <tt class="ph tt">partitionBy</tt>. Empty values are omitted. This parameter must not be used with parameter <tt class="ph tt">partitionBy</tt>.
 </p>
 <dl class="dl">
 

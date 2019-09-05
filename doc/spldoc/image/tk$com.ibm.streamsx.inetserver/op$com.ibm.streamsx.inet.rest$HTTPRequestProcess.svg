@@ -112,13 +112,13 @@ gg=="
       ><set attributeName="visibility" from="hidden" end="sdt1.mouseout" to="visible" begin="sdt1.mouseover"
     /></g
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"
-    ><rect x="47.65" y="-30.0" width="448.25998" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="137.0"
+    ><rect x="47.65" y="-30.0" width="451.43997" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="137.0"
       /><text x="48.65" y="-17.0"
       >Optional: certificateAlias, contentTypeAttributeName, </text
       ><text x="48.65" y="-2.0"
       >context, contextPathAttributeName, contextResourceBase, </text
       ><text x="48.65" y="13.0"
-      >headerAttributeName, jsonAttributeName, keyAttributeName, </text
+      >headerAttributeName, host, jsonAttributeName, keyAttributeName, </text
       ><text x="48.65" y="28.0"
       >keyPassword, keyStore, keyStorePassword, methodAttributeName, </text
       ><text x="48.65" y="43.0"
