@@ -95,16 +95,21 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 	public static final String METRIC_NAME_PORT = "serverPort";
 
 	public static ServletEngineMBean getServletEngine(OperatorContext operatorContext) throws Exception {
+
 		int portNumber = DEFAULT_PORT;
 		if (operatorContext.getParameterNames().contains("port"))
 			portNumber = Integer.valueOf(operatorContext.getParameterValues("port").get(0));
+
+		String host = null;
+		if (operatorContext.getParameterNames().contains("host"))
+			host = operatorContext.getParameterValues("host").get(0);
 
 		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		final ObjectName jetty = new ObjectName("com.ibm.streamsx.inet.rest:type=jetty,port=" + portNumber);
 		synchronized (syncMe) {
 			if (!mbs.isRegistered(jetty)) {
 				try {
-					mbs.registerMBean(new ServletEngine(jetty, operatorContext, portNumber), jetty);
+					mbs.registerMBean(new ServletEngine(jetty, operatorContext, portNumber, host), jetty);
 				} catch (InstanceAlreadyExistsException infe) {
 				}
 			}
@@ -127,7 +132,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 	private final Map<String, ServletContextHandler> staticContexts = Collections.synchronizedMap(new HashMap<String, ServletContextHandler>());
 	private final List<ExposedPort> exposedPorts = Collections.synchronizedList(new ArrayList<ExposedPort>());
 
-	private ServletEngine(ObjectName myObjectName, OperatorContext operatorContext, int portNumber) throws Exception {
+	private ServletEngine(ObjectName myObjectName, OperatorContext operatorContext, int portNumber, String host) throws Exception {
 		this.myObjectName = myObjectName;
 		this.startingOperatorContext = operatorContext;
 		final ThreadPoolExecutor tpe = newContextThreadPoolExecutor(operatorContext);
@@ -164,9 +169,9 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		handlers = new ContextHandlerCollection();
 
 		if (operatorContext.getParameterNames().contains(SSL_CERT_ALIAS_PARAM))
-			setHTTPSConnector(operatorContext, server, portNumber);
+			setHTTPSConnector(operatorContext, server, portNumber, host);
 		else
-			setHTTPConnector(operatorContext, server, portNumber);
+			setHTTPConnector(operatorContext, server, portNumber, host);
 		operatorContext.getMetrics().getCustomMetric(METRIC_NAME_HTTPS).setValue(isSSL ? 1 : 0);
 
 		ServletContextHandler portsIntro = new ServletContextHandler(server, "/ports", ServletContextHandler.SESSIONS);
@@ -187,10 +192,12 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 	/**
 	 * Setup an HTTP connector.
 	 */
-	private void setHTTPConnector(OperatorContext operatorContext, Server server, int portNumber) {
+	private void setHTTPConnector(OperatorContext operatorContext, Server server, int portNumber, String host) {
 		HttpConfiguration http_config = new HttpConfiguration();
 		ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory(http_config));
 		connector.setPort(portNumber);
+		if (host != null)
+			connector.setHost(host);
 		connector.setIdleTimeout(IDLE_TIMEOUT);
 		server.addConnector(connector);
 	}
@@ -198,7 +205,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 	/**
 	 * Setup an HTTPS connector.
 	 */
-	private void setHTTPSConnector(OperatorContext operatorContext, Server server, int httpsPort) {
+	private void setHTTPSConnector(OperatorContext operatorContext, Server server, int httpsPort, String host) {
 		SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
 		//Key Store is required
 		String keyStorePath = operatorContext.getParameterValues(SSL_KEYSTORE_PARAM).get(0);
@@ -250,6 +257,8 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 				new HttpConnectionFactory(https_config));
 
 		connector.setPort(httpsPort);
+		if (host != null)
+			connector.setHost(host);
 		connector.setIdleTimeout(IDLE_TIMEOUT);
 		server.addConnector(connector); 
 

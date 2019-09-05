@@ -70,6 +70,10 @@ public abstract class ServletOperator extends AbstractOperator {
 	@Parameter(optional=true, description="Port number for the embedded Jetty HTTP server, default: \\\"" + ServletEngine.DEFAULT_PORT + "\\\". "
 			+ "If the port is set to 0, the jetty server uses a free tcp port, and the metric `serverPort` delivers the actual value.")
 	public void setPort(int port) {}
+	@Parameter(optional=true, description="You can configure a host either as a host name or IP address to identify a "
+			+ "specific network interface on which to listen. If not set, or set to the value of 0.0.0.0, the integrated "
+			+ "jetty server listens on all local interfaces.")
+	public void setHost(String host) {}
 	@Parameter(optional=true, description=CONTEXT_DESC)
 	public void setContext(String context) {}
 	@Parameter(optional=true, description=CRB_DESC)
