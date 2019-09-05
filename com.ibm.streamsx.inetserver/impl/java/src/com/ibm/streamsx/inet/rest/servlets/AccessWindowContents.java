@@ -234,7 +234,6 @@ public class AccessWindowContents extends HttpServlet {
 		}
 	}
 
-
     protected void formatJSON(PrintWriter out, List<Tuple> tuples, Iterable<Attribute> attributes) throws IOException {
         JSONArray jsonTuples = new JSONArray(tuples.size());
         for (Tuple tuple : tuples) {

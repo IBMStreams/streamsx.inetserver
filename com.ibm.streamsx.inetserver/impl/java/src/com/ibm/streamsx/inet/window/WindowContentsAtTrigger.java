@@ -65,9 +65,6 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 		
 		if (!partitonAttributeNames.isEmpty()) {
 
-			for (int i=0; i < partitonAttributeNames.size(); i++) {
-				System.out.println("par: " + partitonAttributeNames.get(i));
-			}
 			if ( ! input.getStreamWindow().isPartitioned())
 				throw new IllegalStateException("Window is not partitioned but has partitonAttributeNames");
 			
@@ -108,11 +105,6 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 	@Override
 	public synchronized void handleEvent(final StreamWindowEvent<T> event) throws Exception {
 		final Object partition = event.getPartition();
-		System.out.println("****** " + event.getType().toString());
-		System.out.println("+++ " + partition.toString() + " +++");
-		for (T tuple : event.getTuples()) {
-			System.out.println(tuple.toString());
-		}
 		switch (event.getType()) {
 		case EVICTION:
 			if (isSliding)
