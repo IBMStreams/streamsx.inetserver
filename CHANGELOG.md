@@ -30,9 +30,9 @@
 * Removed puzzeling RequestProcessTuple Json Sample
 
 ## v4.1.0
-* Enhancement in operator HTTPTupleInjection: Flexible partition query
-* Enhancement in operator HTTPTupleInjection: new parameter 'partitionBy'
+* Enhancement in operator HTTPTupleView: Flexible partition query
+* Enhancement in operator HTTPTupleView: new parameter 'partitionBy'
 * Enhancement in Servlet Operator: new Parameter 'host'
 * Enhancement in operator HTTPTupleInjection: insert the default values
-* Correction in operator HTTPTupleInjection: selection of partition fails if attribute has type boolean
+* Correction in operator HTTPTupleView: selection of partition fails if attribute has type boolean
 
