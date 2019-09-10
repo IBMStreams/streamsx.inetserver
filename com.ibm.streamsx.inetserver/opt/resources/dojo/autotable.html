@@ -2,10 +2,10 @@
 <meta charset="utf-8">
 <title>Auto Live Table</title>
 
-<link rel="stylesheet" href="/streamsx.inet.dojo/dojo/resources/dojo.css">
-<link rel="stylesheet" href="/streamsx.inet.dojo/dijit/themes/claro/claro.css">
-<link rel="stylesheet" href="/streamsx.inet.dojo/dojox/grid/resources/claroGrid.css">
-<script src="/streamsx.inet.dojo/dojo/dojo.js"></script>
+<link rel="stylesheet" href="../../streamsx.inet.dojo/dojo/resources/dojo.css">
+<link rel="stylesheet" href="../../streamsx.inet.dojo/dijit/themes/claro/claro.css">
+<link rel="stylesheet" href="../../streamsx.inet.dojo/dojox/grid/resources/claroGrid.css">
+<script src="../../streamsx.inet.dojo/dojo/dojo.js"></script>
 <script src="../utils.js"></script>
 <script src="dojoutils.js"></script>
 
@@ -17,7 +17,7 @@ createGrid = function() {
      var qp = getQueryParameters();
      var raw = qp["raw"];
 
-     var urlinfo = qp["info"];
+     var urlinfo = '../..' + qp["info"];
      dojo.xhrGet({ url: urlinfo, handleAs: "json", load: function(portInfo) {
 
   document.title = portInfo.operatorName + '.' + portInfo.portName;
@@ -48,7 +48,7 @@ createGrid = function() {
 						"ag");
 	grid.startup();
 
-     var urldata = qp["json"];
+     var urldata = '../..' + qp["json"];
 
      periodicUpdateGrid(urldata, 1, grid);
 }
