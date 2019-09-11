@@ -2,10 +2,10 @@
 <meta charset="utf-8">
 <title>Auto Live Table</title>
 
-<link rel="stylesheet" href="/streamsx.inet.dojo/dojo/resources/dojo.css">
-<link rel="stylesheet" href="/streamsx.inet.dojo/dijit/themes/claro/claro.css">
-<link rel="stylesheet" href="/streamsx.inet.dojo/dojox/grid/resources/claroGrid.css">
-<script src="/streamsx.inet.dojo/dojo/dojo.js"></script>
+<link rel="stylesheet" href="../../streamsx.inet.dojo/dojo/resources/dojo.css">
+<link rel="stylesheet" href="../../streamsx.inet.dojo/dijit/themes/claro/claro.css">
+<link rel="stylesheet" href="../../streamsx.inet.dojo/dojox/grid/resources/claroGrid.css">
+<script src="../../streamsx.inet.dojo/dojo/dojo.js"></script>
 <script src="../utils.js"></script>
 <script src="dojoutils.js"></script>
 
@@ -25,7 +25,7 @@ mapLink = function(cp) {
 createGrid = function() {
  require(["dojox/grid/DataGrid", "dojo/number", "dojo/store/Memory", "dojo/data/ObjectStore"],
    function(DataGrid, number, Memory, ObjectStore) {
-     var urlinfo = "/ports/info"
+     var urlinfo = "../../ports/info"
      dojo.xhrGet({ url: urlinfo, handleAs: "json", load: function(portInfo) {
 
   var layout = [[
