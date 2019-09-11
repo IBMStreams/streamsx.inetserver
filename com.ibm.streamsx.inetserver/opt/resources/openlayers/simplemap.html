@@ -23,7 +23,7 @@ html,body,#map-canvas {
 <body>
   <div id="test"></div>
   <div id="map-canvas"></div>
-  <script src="http://www.openlayers.org/api/OpenLayers.js"></script>
+  <script src="https://www.openlayers.org/api/OpenLayers.js"></script>
   <script>
       
     var qp = getQueryParameters();
@@ -47,7 +47,16 @@ html,body,#map-canvas {
                      new OpenLayers.Control.LayerSwitcher() ]
       };
       var map = new OpenLayers.Map('map-canvas', map_options);
-      map.addLayer(new OpenLayers.Layer.OSM());
+      // Avoid http cross-origin issues
+      // See https://github.com/eclipse/sumo/issues/3991#issue-314263257
+      map.addLayer(new OpenLayers.Layer.OSM(
+        "OpenStreetMap", 
+        // Official OSM tileset as forced HTTPS URLs
+        [
+            'https://a.tile.openstreetmap.org/${z}/${x}/${y}.png',
+            'https://b.tile.openstreetmap.org/${z}/${x}/${y}.png',
+            'https://c.tile.openstreetmap.org/${z}/${x}/${y}.png'
+        ], null));
 
       // create marker layer
       var markerLayers = {};
