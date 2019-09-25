@@ -47,7 +47,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.ThreadPool;
-import org.eclipse.jetty.webapp.WebAppContext;
 
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingData;
@@ -480,10 +479,10 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 			addHandler(ports);
 	}
 
-	public static class OperatorWebAppContext extends WebAppContext {
+	/*public static class OperatorWebAppContext extends WebAppContext {
 		public OperatorWebAppContext() {
 		}
-	}
+	}*/
 
 	@Override
 	public void postDeregister() {
