@@ -211,14 +211,18 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		File keyStorePathFile = new File(keyStorePath);
 		if (!keyStorePathFile.isAbsolute())
 			keyStorePathFile = new File(operatorContext.getPE().getApplicationDirectory(), keyStorePath);
-		sslContextFactory.setKeyStorePath(keyStorePathFile.getAbsolutePath());
+		String keyStorePathToLoad = keyStorePathFile.getAbsolutePath();
+		System.out.println("keyStorePathToLoad=" + keyStorePathToLoad);
+		sslContextFactory.setKeyStorePath(keyStorePathToLoad);
 		//the key store password is optional
 		if (operatorContext.getParameterNames().contains(SSL_KEYSTORE_PASSWORD_PARAM)) {
 			String keyStorePassword = operatorContext.getParameterValues(SSL_KEYSTORE_PASSWORD_PARAM).get(0);
+			System.out.println("keyStorePassword=****");
 			sslContextFactory.setKeyStorePassword(Functions.obfuscate(keyStorePassword));
 		}
 		//Key password is required
 		String keyPassword = operatorContext.getParameterValues(SSL_KEY_PASSWORD_PARAM).get(0);
+		System.out.println("keyPassword=****");
 		sslContextFactory.setKeyManagerPassword(Functions.obfuscate(keyPassword));
 		//Key alias
 		String alias = operatorContext.getParameterValues(SSL_CERT_ALIAS_PARAM).get(0);
@@ -229,10 +233,13 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 			File trustStorePathFile = new File(trustStorePath);
 			if (!trustStorePathFile.isAbsolute())
 				trustStorePathFile = new File(operatorContext.getPE().getApplicationDirectory(), trustStorePath);
-			sslContextFactory.setTrustStorePath(trustStorePath);
+			String trustStorePathToLoad = trustStorePathFile.getAbsolutePath();
+			System.out.println("trustStorePathToLoad=" + trustStorePathToLoad);
+			sslContextFactory.setTrustStorePath(trustStorePathToLoad);
 			sslContextFactory.setNeedClientAuth(true);
 			if (operatorContext.getParameterNames().contains(SSL_TRUSTSTORE_PASSWORD_PARAM)) {
 				String trustStorePassword = operatorContext.getParameterValues(SSL_TRUSTSTORE_PASSWORD_PARAM).get(0);
+				System.out.println("trustStorePassword=****");
 				sslContextFactory.setTrustStorePassword(Functions.obfuscate(trustStorePassword));
 			}
 		}
