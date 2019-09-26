@@ -420,10 +420,10 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 				staticContext.setAttribute("operator.conduit", conduit);
 		}
 
-		// For a static context just use the name of the
-		// base operator (without the composite nesting qualifiers)
-		// as the lead in for resources exposed by this operator.
-		// Otherwise use the full name of the operator so that it is unique.
+		// If there is a (static) context parameter in this operator
+		// just use the base name of the operator (without the composite nesting qualifiers)
+		// as the lead in for port resources exposed by this operator.
+		// Otherwise use the full operator name so that it is unique.
 		String leadIn = operatorContext.getName(); // .replace('.', '/');
 		if (staticContext != null && leadIn.indexOf('.') != -1) {
 			leadIn = leadIn.substring(leadIn.lastIndexOf('.') + 1);
