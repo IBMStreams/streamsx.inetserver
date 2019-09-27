@@ -36,9 +36,13 @@
  * [http://d3js.org|D3].
  * 
  * Meta-data for the streams connected to the operators is also available through `HTTP GET` requests,
- * to allow JavaScript applications to self-discover the format of the data.
+ * to allow JavaScript applications to self-discover the format of the data and the to self-discover the connected 
+ * streams and exposed contexts:
+ * * `ports/info` Meta information of the connected ports
+ * * `contexts/info` Meta information of the exposed contexts
+ * * `/` default context mapped to `application_directory/opt/html`
  * 
- * These fixed contexts are provided by the operators:
+ * More fixed contexts are provided by the operators:
  * * `streamsx.inet.resources` Utilities provided by the operators.
  * * `streamsx.inet.dojo` The Dojo Javascript library located at `$STREAMS_INSTALL/ext/dojo`. 
  * 
