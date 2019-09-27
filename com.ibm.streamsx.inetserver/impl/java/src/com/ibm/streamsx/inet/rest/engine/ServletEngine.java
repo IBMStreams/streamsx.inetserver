@@ -427,12 +427,21 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 				staticContext.setAttribute("operator.conduit", conduit);
 		}
 
-		// If there is a (static) context parameter in this operator
+		// If there is a context parameter in this operator
 		// just use the base name of the operator (without the composite nesting qualifiers)
 		// as the lead in for port resources exposed by this operator.
 		// Otherwise use the full operator name so that it is unique.
+		String ctxName = null;
+		if (operatorContext.getParameterNames().contains(CONTEXT_PARAM)) {
+			ctxName = operatorContext.getParameterValues(CONTEXT_PARAM).get(0);
+
+			if ("".equals(ctxName))
+				throw new IllegalArgumentException("Parameter " + CONTEXT_PARAM + " cannot be empty");
+
+		}
+		
 		String leadIn = operatorContext.getName(); // .replace('.', '/');
-		if (staticContext != null && leadIn.indexOf('.') != -1) {
+		if (ctxName != null && leadIn.indexOf('.') != -1) {
 			leadIn = leadIn.substring(leadIn.lastIndexOf('.') + 1);
 		}
 
@@ -442,10 +451,9 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 				operatorContext.getNumberOfStreamingOutputs() != 0) {
 
 			String portsContextPath = "/" + leadIn + "/ports";
-			if (staticContext != null)
-				portsContextPath = staticContext.getContextPath() + portsContextPath;
-			ports = new ServletContextHandler(server, portsContextPath,
-					ServletContextHandler.SESSIONS);
+			if (ctxName != null)
+				portsContextPath = "/" + ctxName + portsContextPath;
+			ports = new ServletContextHandler(server, portsContextPath, ServletContextHandler.SESSIONS);
 
 			ports.setAttribute("operator.context", operatorContext);
 			if (conduit != null)
