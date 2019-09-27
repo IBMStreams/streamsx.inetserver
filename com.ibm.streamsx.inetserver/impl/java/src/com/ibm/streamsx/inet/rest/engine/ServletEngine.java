@@ -54,6 +54,7 @@ import com.ibm.streams.operator.management.OperatorManagement;
 import com.ibm.streamsx.inet.rest.ops.Functions;
 import com.ibm.streamsx.inet.rest.ops.PostTuple;
 import com.ibm.streamsx.inet.rest.ops.ServletOperator;
+import com.ibm.streamsx.inet.rest.servlets.ExposedContextInfo;
 import com.ibm.streamsx.inet.rest.servlets.ExposedPortsInfo;
 import com.ibm.streamsx.inet.rest.servlets.PortInfo;
 import com.ibm.streamsx.inet.rest.setup.ExposedPort;
@@ -176,6 +177,10 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		ServletContextHandler portsIntro = new ServletContextHandler(server, "/ports", ServletContextHandler.SESSIONS);
 		portsIntro.addServlet(new ServletHolder( new ExposedPortsInfo(exposedPorts)), "/info");
 		addHandler(portsIntro);
+
+		ServletContextHandler contextIntro = new ServletContextHandler(server, "/contexts", ServletContextHandler.SESSIONS);
+		contextIntro.addServlet(new ServletHolder( new ExposedContextInfo(staticContexts)), "/info");
+		addHandler(contextIntro);
 
 		// making a abs path by combining toolkit directory with the opt/resources dir
 		URI baseToolkitDir = operatorContext.getToolkitDirectory().toURI();
