@@ -49,7 +49,6 @@ public composite ExchangeWebSocketSample {
 			param
 				port : $jettyPort;
 				context : "websocketsample";
-				contextResourceBase : "opt/html";
 		}
 
 	config

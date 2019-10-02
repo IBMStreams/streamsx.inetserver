@@ -76,28 +76,40 @@
  * * `trustStorePassword` - Password to the trust store.
  *
  * # Server Key and Certificate
- * To generate a server key pair use the following command: 
+ * To generate a server key pair in a jks-keystore. Use the following command: 
  *     keytool -genkeypair -keyalg RSA -alias mykey -keypass changeit -storepass changeit -validity 1000 -keystore etc/keystore.jks -dname "CN=<name/hostname>, OU=<org unit>, O=<organization>, L=<locality>, ST=<state>, C=<two-letter country code>"
  * 
  * Check the content of an keystore file:
  *     keytool -list -v -keystore etc/keystore.jks
  * 
- * Extract the certificate for the client trust manager:
+ * Extract the certificate for the client trust manager (pem-file):
  *     keytool -export -rfc -alias mykey -file etc/servercert.pem -storepass changeit -keystore etc/keystore.jks
  * 
- * Insert the the certificate into a new truststore at the client site:
- *     keytool -import -file etc/servercert.pem -alias mykey -keystore etc/cacert.jks -storepass changeit -trustcacerts'
+ * Insert the certificate into a new jks-truststore at the client site:
+ *     keytool -import -file etc/servercert.pem -alias mykey -keystore etc/cacert.jks -storepass changeit -trustcacerts
  * 
- * # Client Key and Certificate
+ * # Client Key and Certificate for clients with jks based keystore
  * 
- * The `dname` of an client key must match to the `dname` of the server key. To generate a client key use the following commands:
- *     keytool -genkeypair -keyalg RSA -alias myclientkey -keypass changeit -storepass changeit -keystore etc/clientkey.jks -dname '<the dname string from the server certificate>'
+ * To generate a client key use the following commands:
+ *     keytool -genkeypair -keyalg RSA -alias myclientkey -keypass changeit -storepass changeit -keystore etc/clientkey.jks -dname "CN=<name/hostname>, OU=<org unit>, O=<organization>, L=<locality>, ST=<state>, C=<two-letter country code>"
  * 
  * Extract the certificate for the server trust manager:
  *     keytool -export -rfc -alias myclientkey -file etc/clientkey.pem -keystore etc/clientkey.jks -storepass changeit -keypass changeit
  * 
- * Insert the the certificate into a new truststore at the srver site:
+ * Insert the the certificate into a new jks-truststore at the server site:
  *     keytool -import -file etc/clientkey.pem -alias myclientkey -keystore etc/cacert.jks -storepass changeit -trustcacerts
+ * 
+ * # Client Key and Certificate for a Browser / Clients with PKCS:
+ * Generate a client key pair in a .pfx file that can be imported into browser.
+ *     keytool -genkeypair -keyalg RSA -alias myclientkey -storepass changeit -keystore etc/client.pfx -storetype PKCS12 -dname "CN=<name/hostname>, OU=<org unit>, O=<organization>, L=<locality>, ST=<state>, C=<two-letter country code>"
+ * 
+ * Export for server as .pem file:
+ *     keytool -export -rfc -alias myclientkey -file etc/clientkey.pem -storepass changeit -keystore etc/client.pfx -storetype PKCS12
+ * 
+ * Import the certificate into a new jks-truststore at the server site:
+ *     keytool -import -file etc/clientkey.pem -keystore etc/cacerts.jks -storepass changeit -trustcacerts
+ *     rm etc/clientkey.pem
+ * 
 */
 
 namespace com.ibm.streamsx.inet;

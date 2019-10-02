@@ -36,3 +36,8 @@
 * Enhancement in operator HTTPTupleInjection: insert the default values
 * Correction in operator HTTPTupleView: selection of partition fails if attribute has type boolean
 
+## v4.2.0
+* Fixed: Operators can not load trustStore file if path is not an absolute one
+* Enhancemement: Parameter contextResourceBase is now independent from parameter context
+* Enhancemement in description for generation of client certitficate which can be used in a brower
+

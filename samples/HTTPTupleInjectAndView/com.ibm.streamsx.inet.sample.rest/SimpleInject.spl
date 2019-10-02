@@ -45,6 +45,7 @@ public composite SimpleInject {
 				certificateAlias: "mykey";
 				keyStore: "etc/keystore.jks";
 				keyPassword: "changeit";
+				//context: "sensors";
 			config
 				// Ensure the operators are in a single PE to have a single web-server
 				placement: partitionColocation("jetty1443");
@@ -58,6 +59,8 @@ public composite SimpleInject {
 				certificateAlias: "mykey";
 				keyStore: "etc/keystore.jks";
 				keyPassword: "changeit";
+				context: "state";
+				contextResourceBase: "opt/statetest";
 			config
 				// Ensure the operators are in a single PE to have a single web-server
 				placement: partitionColocation("jetty1443");

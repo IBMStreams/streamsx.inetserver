@@ -47,7 +47,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.ThreadPool;
-import org.eclipse.jetty.webapp.WebAppContext;
 
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.StreamingData;
@@ -55,6 +54,7 @@ import com.ibm.streams.operator.management.OperatorManagement;
 import com.ibm.streamsx.inet.rest.ops.Functions;
 import com.ibm.streamsx.inet.rest.ops.PostTuple;
 import com.ibm.streamsx.inet.rest.ops.ServletOperator;
+import com.ibm.streamsx.inet.rest.servlets.ExposedContextInfo;
 import com.ibm.streamsx.inet.rest.servlets.ExposedPortsInfo;
 import com.ibm.streamsx.inet.rest.servlets.PortInfo;
 import com.ibm.streamsx.inet.rest.setup.ExposedPort;
@@ -178,6 +178,10 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		portsIntro.addServlet(new ServletHolder( new ExposedPortsInfo(exposedPorts)), "/info");
 		addHandler(portsIntro);
 
+		ServletContextHandler contextIntro = new ServletContextHandler(server, "/contexts", ServletContextHandler.SESSIONS);
+		contextIntro.addServlet(new ServletHolder( new ExposedContextInfo(staticContexts)), "/info");
+		addHandler(contextIntro);
+
 		// making a abs path by combining toolkit directory with the opt/resources dir
 		URI baseToolkitDir = operatorContext.getToolkitDirectory().toURI();
 		addStaticContext("streamsx.inet.resources", PathConversionHelper.convertToAbsPath(baseToolkitDir, "opt/resources"));
@@ -212,14 +216,18 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		File keyStorePathFile = new File(keyStorePath);
 		if (!keyStorePathFile.isAbsolute())
 			keyStorePathFile = new File(operatorContext.getPE().getApplicationDirectory(), keyStorePath);
-		sslContextFactory.setKeyStorePath(keyStorePathFile.getAbsolutePath());
+		String keyStorePathToLoad = keyStorePathFile.getAbsolutePath();
+		System.out.println("keyStorePathToLoad=" + keyStorePathToLoad);
+		sslContextFactory.setKeyStorePath(keyStorePathToLoad);
 		//the key store password is optional
 		if (operatorContext.getParameterNames().contains(SSL_KEYSTORE_PASSWORD_PARAM)) {
 			String keyStorePassword = operatorContext.getParameterValues(SSL_KEYSTORE_PASSWORD_PARAM).get(0);
+			System.out.println("keyStorePassword=****");
 			sslContextFactory.setKeyStorePassword(Functions.obfuscate(keyStorePassword));
 		}
 		//Key password is required
 		String keyPassword = operatorContext.getParameterValues(SSL_KEY_PASSWORD_PARAM).get(0);
+		System.out.println("keyPassword=****");
 		sslContextFactory.setKeyManagerPassword(Functions.obfuscate(keyPassword));
 		//Key alias
 		String alias = operatorContext.getParameterValues(SSL_CERT_ALIAS_PARAM).get(0);
@@ -230,10 +238,13 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 			File trustStorePathFile = new File(trustStorePath);
 			if (!trustStorePathFile.isAbsolute())
 				trustStorePathFile = new File(operatorContext.getPE().getApplicationDirectory(), trustStorePath);
-			sslContextFactory.setTrustStorePath(trustStorePath);
+			String trustStorePathToLoad = trustStorePathFile.getAbsolutePath();
+			System.out.println("trustStorePathToLoad=" + trustStorePathToLoad);
+			sslContextFactory.setTrustStorePath(trustStorePathToLoad);
 			sslContextFactory.setNeedClientAuth(true);
 			if (operatorContext.getParameterNames().contains(SSL_TRUSTSTORE_PASSWORD_PARAM)) {
 				String trustStorePassword = operatorContext.getParameterValues(SSL_TRUSTSTORE_PASSWORD_PARAM).get(0);
+				System.out.println("trustStorePassword=****");
 				sslContextFactory.setTrustStorePassword(Functions.obfuscate(trustStorePassword));
 			}
 		}
@@ -421,12 +432,21 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 				staticContext.setAttribute("operator.conduit", conduit);
 		}
 
-		// For a static context just use the name of the
-		// base operator (without the composite nesting qualifiers)
-		// as the lead in for resources exposed by this operator.
-		// Otherwise use the full name of the operator so that it is unique.
+		// If there is a context parameter in this operator
+		// just use the base name of the operator (without the composite nesting qualifiers)
+		// as the lead in for port resources exposed by this operator.
+		// Otherwise use the full operator name so that it is unique.
+		String ctxName = null;
+		if (operatorContext.getParameterNames().contains(CONTEXT_PARAM)) {
+			ctxName = operatorContext.getParameterValues(CONTEXT_PARAM).get(0);
+
+			if ("".equals(ctxName))
+				throw new IllegalArgumentException("Parameter " + CONTEXT_PARAM + " cannot be empty");
+
+		}
+		
 		String leadIn = operatorContext.getName(); // .replace('.', '/');
-		if (staticContext != null && leadIn.indexOf('.') != -1) {
+		if (ctxName != null && leadIn.indexOf('.') != -1) {
 			leadIn = leadIn.substring(leadIn.lastIndexOf('.') + 1);
 		}
 
@@ -436,10 +456,9 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 				operatorContext.getNumberOfStreamingOutputs() != 0) {
 
 			String portsContextPath = "/" + leadIn + "/ports";
-			if (staticContext != null)
-				portsContextPath = staticContext.getContextPath() + portsContextPath;
-			ports = new ServletContextHandler(server, portsContextPath,
-					ServletContextHandler.SESSIONS);
+			if (ctxName != null)
+				portsContextPath = "/" + ctxName + portsContextPath;
+			ports = new ServletContextHandler(server, portsContextPath, ServletContextHandler.SESSIONS);
 
 			ports.setAttribute("operator.context", operatorContext);
 			if (conduit != null)
@@ -480,10 +499,10 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 			addHandler(ports);
 	}
 
-	public static class OperatorWebAppContext extends WebAppContext {
+	/*public static class OperatorWebAppContext extends WebAppContext {
 		public OperatorWebAppContext() {
 		}
-	}
+	}*/
 
 	@Override
 	public void postDeregister() {

@@ -114,8 +114,6 @@ public abstract class ServletOperator extends AbstractOperator {
 	
 	@ContextCheck
 	public static void checkContextParameters(OperatorContextChecker checker) {	
-		checker.checkDependentParameters("context", "contextResourceBase");
-		checker.checkDependentParameters("contextResourceBase", "context");
 
 		checker.checkDependentParameters(ServletEngine.SSL_CERT_ALIAS_PARAM, ServletEngine.SSL_KEYSTORE_PARAM, ServletEngine.SSL_KEY_PASSWORD_PARAM);
 		checker.checkDependentParameters(ServletEngine.SSL_KEY_PASSWORD_PARAM, ServletEngine.SSL_CERT_ALIAS_PARAM);
@@ -123,12 +121,11 @@ public abstract class ServletOperator extends AbstractOperator {
 
 		checker.checkDependentParameters(ServletEngine.SSL_TRUSTSTORE_PARAM, ServletEngine.SSL_CERT_ALIAS_PARAM);
 		checker.checkDependentParameters(ServletEngine.SSL_TRUSTSTORE_PASSWORD_PARAM, ServletEngine.SSL_TRUSTSTORE_PARAM);
-		
-		checker.checkDependentParameters(ServletEngine.CONTEXT_PARAM, ServletEngine.CONTEXT_RESOURCE_BASE_PARAM);
+	
 		checker.checkDependentParameters(ServletEngine.CONTEXT_RESOURCE_BASE_PARAM, ServletEngine.CONTEXT_PARAM);
 	}
 	
-	static final String CONTEXT_DESC = "Define a URL context path that maps to the resources defined by" + 
+	static final String CONTEXT_DESC = "Define a URL context path that maps to the resources defined by " + 
 			"`contextResourceBase`. This allows a composite that invokes this operator in a " + 
 			"toolkit to provide resources regardless of the value of the application's data directory. " + 
 			"For example setting it to *maps* would result in the URL */maps/index.html* " + 
@@ -159,5 +156,6 @@ public abstract class ServletOperator extends AbstractOperator {
 			"\\n" + 
 			"    param\\n" + 
 			"      context: “maps”\\n" + 
-			"      contextResourceBase: getThisToolkitDir() + “/opt/resources/mapinfo”\\n";
+			"      contextResourceBase: getThisToolkitDir() + “/opt/resources/mapinfo”\\n\\n" +
+			"If this parameter is applied parameter `" + ServletEngine.CONTEXT_RESOURCE_BASE_PARAM + "` is required too.";
 }
