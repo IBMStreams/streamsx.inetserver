@@ -20,6 +20,7 @@ sidebar:
 Reference of former releases:
 * [v3.0](https://ibmstreams.github.io/streamsx.inetserver/v3.0/doc/spldoc/html/index.html)
 * [v4.0](https://ibmstreams.github.io/streamsx.inetserver/v4.0/doc/spldoc/html/index.html)
+* [v4.1](https://ibmstreams.github.io/streamsx.inetserver/v4.1/doc/spldoc/html/index.html)
 
 ## Samples
 

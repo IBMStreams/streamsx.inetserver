@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.1.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.html">com.ibm.streamsx.inet</a> &gt; HTTPS Support</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.2.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.html">com.ibm.streamsx.inet</a> &gt; HTTPS Support</p>
 
 </div>
 
@@ -87,7 +87,7 @@
 <div class="section"><h2 class="title sectiontitle">Server Key and Certificate
 </h2>
 
-<div class="p">To generate a server key pair use the following command: 
+<div class="p">To generate a server key pair in a jks-keystore. Use the following command: 
 <pre class="pre codeblock">
 keytool -genkeypair -keyalg RSA -alias mykey -keypass changeit -storepass changeit -validity 1000 -keystore etc/keystore.jks -dname "CN=&lt;name/hostname&gt;, OU=&lt;org unit&gt;, O=&lt;organization&gt;, L=&lt;locality&gt;, ST=&lt;state&gt;, C=&lt;two-letter country code&gt;"
 </pre>
@@ -103,7 +103,7 @@ keytool -list -v -keystore etc/keystore.jks
 
 </div>
 
-<div class="p">Extract the certificate for the client trust manager:
+<div class="p">Extract the certificate for the client trust manager (pem-file):
 <pre class="pre codeblock">
 keytool -export -rfc -alias mykey -file etc/servercert.pem -storepass changeit -keystore etc/keystore.jks
 </pre>
@@ -111,9 +111,9 @@ keytool -export -rfc -alias mykey -file etc/servercert.pem -storepass changeit -
 
 </div>
 
-<div class="p">Insert the the certificate into a new truststore at the client site:
+<div class="p">Insert the certificate into a new jks-truststore at the client site:
 <pre class="pre codeblock">
-keytool -import -file etc/servercert.pem -alias mykey -keystore etc/cacert.jks -storepass changeit -trustcacerts'
+keytool -import -file etc/servercert.pem -alias mykey -keystore etc/cacert.jks -storepass changeit -trustcacerts
 </pre>
 
 
@@ -121,12 +121,12 @@ keytool -import -file etc/servercert.pem -alias mykey -keystore etc/cacert.jks -
 
 </div>
 
-<div class="section"><h2 class="title sectiontitle">Client Key and Certificate
+<div class="section"><h2 class="title sectiontitle">Client Key and Certificate for clients with jks based keystore
 </h2>
 
-<div class="p">The <tt class="ph tt">dname</tt> of an client key must match to the <tt class="ph tt">dname</tt> of the server key. To generate a client key use the following commands:
+<div class="p">To generate a client key use the following commands:
 <pre class="pre codeblock">
-keytool -genkeypair -keyalg RSA -alias myclientkey -keypass changeit -storepass changeit -keystore etc/clientkey.jks -dname '&lt;the dname string from the server certificate&gt;'
+keytool -genkeypair -keyalg RSA -alias myclientkey -keypass changeit -storepass changeit -keystore etc/clientkey.jks -dname "CN=&lt;name/hostname&gt;, OU=&lt;org unit&gt;, O=&lt;organization&gt;, L=&lt;locality&gt;, ST=&lt;state&gt;, C=&lt;two-letter country code&gt;"
 </pre>
 
 
@@ -140,9 +140,39 @@ keytool -export -rfc -alias myclientkey -file etc/clientkey.pem -keystore etc/cl
 
 </div>
 
-<div class="p">Insert the the certificate into a new truststore at the srver site:
+<div class="p">Insert the the certificate into a new jks-truststore at the server site:
 <pre class="pre codeblock">
 keytool -import -file etc/clientkey.pem -alias myclientkey -keystore etc/cacert.jks -storepass changeit -trustcacerts
+</pre>
+
+
+</div>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Client Key and Certificate for a Browser / Clients with PKCS:
+</h2>
+
+<div class="p">Generate a client key pair in a .pfx file that can be imported into browser.
+<pre class="pre codeblock">
+keytool -genkeypair -keyalg RSA -alias myclientkey -storepass changeit -keystore etc/client.pfx -storetype PKCS12 -dname "CN=&lt;name/hostname&gt;, OU=&lt;org unit&gt;, O=&lt;organization&gt;, L=&lt;locality&gt;, ST=&lt;state&gt;, C=&lt;two-letter country code&gt;"
+</pre>
+
+
+</div>
+
+<div class="p">Export for server as .pem file:
+<pre class="pre codeblock">
+keytool -export -rfc -alias myclientkey -file etc/clientkey.pem -storepass changeit -keystore etc/client.pfx -storetype PKCS12
+</pre>
+
+
+</div>
+
+<div class="p">Import the certificate into a new jks-truststore at the server site:
+<pre class="pre codeblock">
+keytool -import -file etc/clientkey.pem -keystore etc/cacerts.jks -storepass changeit -trustcacerts
+rm etc/clientkey.pem
 </pre>
 
 

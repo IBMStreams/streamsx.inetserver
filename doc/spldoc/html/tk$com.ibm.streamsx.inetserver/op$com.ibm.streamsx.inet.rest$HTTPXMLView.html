@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.1.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.rest.html">com.ibm.streamsx.inet.rest</a> &gt; HTTPXMLView</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.2.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.rest.html">com.ibm.streamsx.inet.rest</a> &gt; HTTPXMLView</p>
 
 </div>
 
@@ -206,7 +206,7 @@ This operator supports 10 parameters.
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__context"><!-- --></a><tt class="ph tt">context</tt></dt>
 
 <dd class="dd">
-<p class="p">Define a URL context path that maps to the resources defined by<tt class="ph tt">contextResourceBase</tt>. This allows a composite that invokes this operator in a toolkit to provide resources regardless of the value of the application's data directory. For example setting it to <em class="ph i">maps</em> would result in the URL <em class="ph i">/maps/index.html</em> mapping to the file <em class="ph i">index.html</em> in the directory defined by <tt class="ph tt">contextResourceBase</tt>. Requires the parameter <tt class="ph tt">contextResourceBase</tt> to be set. If when the operator is initialized the context already exists then no action is taken. This allows multiple independent composites in the same toolkit to have common <tt class="ph tt">context</tt> and <tt class="ph tt">contextResourceBase</tt> settings, typically to point to a single set of HTML and Javascript resources for the toolkit.
+<p class="p">Define a URL context path that maps to the resources defined by <tt class="ph tt">contextResourceBase</tt>. This allows a composite that invokes this operator in a toolkit to provide resources regardless of the value of the application's data directory. For example setting it to <em class="ph i">maps</em> would result in the URL <em class="ph i">/maps/index.html</em> mapping to the file <em class="ph i">index.html</em> in the directory defined by <tt class="ph tt">contextResourceBase</tt>. Requires the parameter <tt class="ph tt">contextResourceBase</tt> to be set. If when the operator is initialized the context already exists then no action is taken. This allows multiple independent composites in the same toolkit to have common <tt class="ph tt">context</tt> and <tt class="ph tt">contextResourceBase</tt> settings, typically to point to a single set of HTML and Javascript resources for the toolkit.
 </p>
 
 <p class="p">If the operator provides URLs for its input or output ports then they are placed in the this context when this parameter is set. This then provides fixed locations for the URLs regardless of the depth of the operator invocation in the main composite.
@@ -255,6 +255,9 @@ param
 
 
 </div>
+
+<p class="p">If this parameter is applied parameter <tt class="ph tt">contextResourceBase</tt> is required too.
+</p>
 <dl class="dl">
 
  <dt class="dt dlterm">Properties </dt>

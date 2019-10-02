@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.1.0</a> &gt; com.ibm.streamsx.inet.rest</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.2.0</a> &gt; com.ibm.streamsx.inet.rest</p>
 
 </div>
 
@@ -49,10 +49,19 @@
 <p class="p">Overall, these set of operators allow a complete web-application to be self-contained within an SPL application. In addition to the operators the webserver will serve up HTML and Javascript files. Javascript can be used with the JSON data provided by <a class="xref" href="op$com.ibm.streamsx.inet.rest$HTTPTupleView.html">HTTPTupleView</a> to visual live data using graphical packages such as <a class="xref" href="http://dojotoolkit.org">DOJO</a> and  <a class="xref" href="http://d3js.org">D3</a>.
 </p>
 
-<p class="p">Meta-data for the streams connected to the operators is also available through <tt class="ph tt">HTTP GET</tt> requests, to allow JavaScript applications to self-discover the format of the data.
-</p>
+<div class="p">Meta-data for the streams connected to the operators is also available through <tt class="ph tt">HTTP GET</tt> requests, to allow JavaScript applications to self-discover the format of the data and the to self-discover the connected  streams and exposed contexts:
+<ul class="ul">
+<li class="li"> <tt class="ph tt">ports/info</tt> Meta information of the connected ports</li>
 
-<div class="p">These fixed contexts are provided by the operators:
+<li class="li"> <tt class="ph tt">contexts/info</tt> Meta information of the exposed contexts</li>
+
+<li class="li"> <tt class="ph tt">/</tt> default context mapped to <tt class="ph tt">application_directory/opt/html</tt></li>
+
+</ul>
+
+</div>
+
+<div class="p">More fixed contexts are provided by the operators:
 <ul class="ul">
 <li class="li"> <tt class="ph tt">streamsx.inet.resources</tt> Utilities provided by the operators.</li>
 

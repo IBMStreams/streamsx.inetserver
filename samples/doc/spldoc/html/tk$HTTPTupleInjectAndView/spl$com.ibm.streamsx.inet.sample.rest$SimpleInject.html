@@ -132,6 +132,7 @@ Point browser to [https://localhost:1443] and accept the SEC_ERROR_UNKNOWN_ISSUE
  				certificateAlias: "mykey";
  				keyStore: "etc/keystore.jks";
  				keyPassword: "changeit";
+ 				//context: "sensors";
  			config
  				// Ensure the operators are in a single PE to have a single web-server
  				placement: partitionColocation("jetty1443");
@@ -145,6 +146,8 @@ Point browser to [https://localhost:1443] and accept the SEC_ERROR_UNKNOWN_ISSUE
  				certificateAlias: "mykey";
  				keyStore: "etc/keystore.jks";
  				keyPassword: "changeit";
+ 				context: "state";
+ 				contextResourceBase: "opt/statetest";
  			config
  				// Ensure the operators are in a single PE to have a single web-server
  				placement: partitionColocation("jetty1443");
