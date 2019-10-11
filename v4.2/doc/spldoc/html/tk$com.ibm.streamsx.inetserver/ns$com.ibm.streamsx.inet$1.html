@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en-us" lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="copyright" content="(C) Copyright 2005"/>
+<meta name="DC.rights.owner" content="(C) Copyright 2005"/>
+<meta name="DC.Type" content="reference"/>
+<meta name="DC.Title" content="Sharing the Eclipse Jetty Instance"/>
+<meta name="DC.Format" content="XHTML"/>
+<meta name="DC.Identifier" content="spldoc_page"/>
+<link rel="stylesheet" type="text/css" href="../../html/commonltr.css"/>
+<link rel="stylesheet" type="text/css" href="../../html/spldoc.css"/>
+<title>Sharing the Eclipse Jetty Instance</title>
+</head>
+<body id="spldoc_page">
+
+
+<h1 class="title topictitle1">Sharing the Eclipse Jetty Instance</h1>
+
+<div class="body refbody">
+<div class="section">
+<p class="p">
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.2.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.html">com.ibm.streamsx.inet</a> &gt; Sharing the Eclipse Jetty Instance</p>
+
+</div>
+
+
+<div class="section">
+<p class="p">All operators of this toolkit embed a Jetty webserver and   all operator invocations in an SPL application that are co-located/fused in same partition (PE)  will share a common Jetty instance. Thus by  fusing these operators together with a common port value, a single web-server serving a  single SPL application can be created. This sharing of the web-server by fusing multiple  operators allows the operators to be logically connected in the SPL graph, rather than a single  operator with multiple unrelated streams being connected to it. 
+</p>
+
+<p class="p">Static content in the sub-directory <tt class="ph tt">html</tt> of the application's <tt class="ph tt">opt</tt> directory will also be served  by the embedded web-server, thus allowing a complete web-application with live data to be  served by an SPL application. The default URL for the web-server resolves to  <tt class="ph tt">{application_dir}/opt/html/index.html</tt> 
+</p>
+
+<p class="p">Operators that support the <tt class="ph tt">context</tt> and <tt class="ph tt">contextResourceBase</tt> SPL parameters will serve  static files from the <tt class="ph tt">contextResourceBase</tt> directory rooted at the supplied context path.
+</p>
+
+<div class="p">Multiple operators share a single jetty server instance if:
+<ul class="ul">
+<li class="li"> they are fused in a single processing element (config placement: partitionColocation),</li>
+
+<li class="li"> and they use the same <tt class="ph tt">port</tt> parameter value</li>
+
+</ul>
+This allows operators to expose streams through the same webserver without having to be connected in the SPL graph.
+</div>
+
+<div class="p">Operators which are using a shared jetty instance must have the <strong class="ph b">same parameter values for parameters</strong>
+<ul class="ul">
+<li class="li"> <tt class="ph tt">port</tt></li>
+
+<li class="li"> <tt class="ph tt">host</tt></li>
+
+<li class="li"> <tt class="ph tt">certificateAlias</tt></li>
+
+<li class="li"> <tt class="ph tt">keyStore</tt></li>
+
+<li class="li"> <tt class="ph tt">keyStorePassword</tt></li>
+
+<li class="li"> <tt class="ph tt">keyPassword</tt></li>
+
+</ul>
+
+</div>
+
+<p class="p"><strong class="ph b">Note:</strong> Jetty server instances will fail to start if they are placed on a single host and use the same port number. 
+</p>
+
+</div>
+
+</div>
+
+
+</body>
+</html>

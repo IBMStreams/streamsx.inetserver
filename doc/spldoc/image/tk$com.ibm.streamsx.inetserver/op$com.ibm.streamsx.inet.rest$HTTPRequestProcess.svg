@@ -112,25 +112,27 @@ gg=="
       ><set attributeName="visibility" from="hidden" end="sdt1.mouseout" to="visible" begin="sdt1.mouseover"
     /></g
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"
-    ><rect x="47.65" y="-30.0" width="451.43997" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="137.0"
-      /><text x="48.65" y="-17.0"
+    ><rect x="47.65" y="-45.0" width="451.43997" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="152.0"
+      /><text x="48.65" y="-32.0"
       >Optional: certificateAlias, contentTypeAttributeName, </text
-      ><text x="48.65" y="-2.0"
+      ><text x="48.65" y="-17.0"
       >context, contextPathAttributeName, contextResourceBase, </text
-      ><text x="48.65" y="13.0"
+      ><text x="48.65" y="-2.0"
       >headerAttributeName, host, jsonAttributeName, keyAttributeName, </text
-      ><text x="48.65" y="28.0"
+      ><text x="48.65" y="13.0"
       >keyPassword, keyStore, keyStorePassword, methodAttributeName, </text
-      ><text x="48.65" y="43.0"
+      ><text x="48.65" y="28.0"
       >pathInfoAttributeName, port, requestAttributeName, </text
-      ><text x="48.65" y="58.0"
+      ><text x="48.65" y="43.0"
       >responseAttributeName, responseContentTypeAttributeName, </text
-      ><text x="48.65" y="73.0"
+      ><text x="48.65" y="58.0"
       >responseHeaderAttributeName, responseJsonAttributeName, </text
+      ><text x="48.65" y="73.0"
+      >responseStatusAttributeName, sslAppConfigName, </text
       ><text x="48.65" y="88.0"
-      >responseStatusAttributeName, trustStore, trustStorePassword, </text
+      >trustStore, trustStorePassword, urlAttributeName, </text
       ><text x="48.65" y="103.0"
-      >urlAttributeName, webTimeout</text
+      >webTimeout</text
       ><set attributeName="visibility" from="hidden" end="sdt2.mouseout" to="visible" begin="sdt2.mouseover"
     /></g
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"

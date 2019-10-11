@@ -104,6 +104,20 @@ Point browser to [https://localhost:1443] and accept the SEC_ERROR_UNKNOWN_ISSUE
 
 </div>
 
+<p class="p">This sample is enabled to use a secure connection by default. The server key and self signed certificate are stored  in key store etc/keystore.jks.
+</p>
+
+<p class="p">To enable client authentication with client certificate add parameter <tt class="ph tt">trustStore: "etc/cacerts.jks</tt> to all three  rest operators and import the client key/certificate file <tt class="ph tt">etc/client.pfx</tt> into your browser certificate manager.
+</p>
+
+<div class="p">Alternatively the import of the key- and trust-material from an Streams application configuration is supported. Add parameter <tt class="ph tt">sslAppConfigName: "streams-certs"</tt> to all tree rest operators and remove <tt class="ph tt">certificateAlias</tt>,  <tt class="ph tt">keyStore</tt>, <tt class="ph tt">keyPassword</tt> and <tt class="ph tt">trustStore</tt>. Generate the application configuration:
+<pre class="pre codeblock">
+	streamtool mkappconfig --description 'server cert and trust store' --property "server.jks=$(base64 --wrap=0 etc/keystore.jks)" --property "server.pass=changeit" --property "cacerts.jks=$(base64 --wrap=0 etc/cacerts.jks)" streams-certs
+</pre>
+
+
+</div>
+
 </div>
 
 <div class="section">
@@ -132,7 +146,8 @@ Point browser to [https://localhost:1443] and accept the SEC_ERROR_UNKNOWN_ISSUE
  				certificateAlias: "mykey";
  				keyStore: "etc/keystore.jks";
  				keyPassword: "changeit";
- 				//context: "sensors";
+ 				//trustStore: "etc/cacerts.jks";
+ 				//sslAppConfigName: "streams-certs";
  			config
  				// Ensure the operators are in a single PE to have a single web-server
  				placement: partitionColocation("jetty1443");
@@ -146,6 +161,8 @@ Point browser to [https://localhost:1443] and accept the SEC_ERROR_UNKNOWN_ISSUE
  				certificateAlias: "mykey";
  				keyStore: "etc/keystore.jks";
  				keyPassword: "changeit";
+ 				//trustStore: "etc/cacerts.jks";
+ 				//sslAppConfigName: "streams-certs";
  				context: "state";
  				contextResourceBase: "opt/statetest";
  			config
@@ -159,6 +176,8 @@ Point browser to [https://localhost:1443] and accept the SEC_ERROR_UNKNOWN_ISSUE
  				certificateAlias: "mykey";
  				keyStore: "etc/keystore.jks";
  				keyPassword: "changeit";
+ 				//trustStore: "etc/cacerts.jks";
+ 				//sslAppConfigName: "streams-certs";
  				context: "wct";
  				contextResourceBase: "opt/wctest";
  			config

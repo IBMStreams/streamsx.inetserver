@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.2.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.rest.html">com.ibm.streamsx.inet.rest</a> &gt; HTTPBLOBInjection</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams streamsx.inetserver Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.inetserver.html">com.ibm.streamsx.inetserver 4.3.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.inet.rest.html">com.ibm.streamsx.inet.rest</a> &gt; HTTPBLOBInjection</p>
 
 </div>
 
@@ -96,9 +96,9 @@
  
   <dt class="dt dlterm">Parameters</dt>
 
-  <dd class="dd">This operator supports 10 parameters.
+  <dd class="dd">This operator supports 11 parameters.
 <p class="p"> Optional: 
-<a class="xref" href="#spldoc_operator__parameter__certificateAlias">certificateAlias</a>, <a class="xref" href="#spldoc_operator__parameter__context">context</a>, <a class="xref" href="#spldoc_operator__parameter__contextResourceBase">contextResourceBase</a>, <a class="xref" href="#spldoc_operator__parameter__host">host</a>, <a class="xref" href="#spldoc_operator__parameter__keyPassword">keyPassword</a>, <a class="xref" href="#spldoc_operator__parameter__keyStore">keyStore</a>, <a class="xref" href="#spldoc_operator__parameter__keyStorePassword">keyStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__port">port</a>, <a class="xref" href="#spldoc_operator__parameter__trustStore">trustStore</a>, <a class="xref" href="#spldoc_operator__parameter__trustStorePassword">trustStorePassword</a>
+<a class="xref" href="#spldoc_operator__parameter__certificateAlias">certificateAlias</a>, <a class="xref" href="#spldoc_operator__parameter__context">context</a>, <a class="xref" href="#spldoc_operator__parameter__contextResourceBase">contextResourceBase</a>, <a class="xref" href="#spldoc_operator__parameter__host">host</a>, <a class="xref" href="#spldoc_operator__parameter__keyPassword">keyPassword</a>, <a class="xref" href="#spldoc_operator__parameter__keyStore">keyStore</a>, <a class="xref" href="#spldoc_operator__parameter__keyStorePassword">keyStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__port">port</a>, <a class="xref" href="#spldoc_operator__parameter__sslAppConfigName">sslAppConfigName</a>, <a class="xref" href="#spldoc_operator__parameter__trustStore">trustStore</a>, <a class="xref" href="#spldoc_operator__parameter__trustStorePassword">trustStorePassword</a>
 
 </p>
 </dd>
@@ -213,9 +213,9 @@
 
 <div class="section">
 <p class="p splhead-1"><strong class="ph b"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters">Parameters</a></strong></p>
-This operator supports 10 parameters.
+This operator supports 11 parameters.
 <p class="p"> Optional: 
-<a class="xref" href="#spldoc_operator__parameter__certificateAlias">certificateAlias</a>, <a class="xref" href="#spldoc_operator__parameter__context">context</a>, <a class="xref" href="#spldoc_operator__parameter__contextResourceBase">contextResourceBase</a>, <a class="xref" href="#spldoc_operator__parameter__host">host</a>, <a class="xref" href="#spldoc_operator__parameter__keyPassword">keyPassword</a>, <a class="xref" href="#spldoc_operator__parameter__keyStore">keyStore</a>, <a class="xref" href="#spldoc_operator__parameter__keyStorePassword">keyStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__port">port</a>, <a class="xref" href="#spldoc_operator__parameter__trustStore">trustStore</a>, <a class="xref" href="#spldoc_operator__parameter__trustStorePassword">trustStorePassword</a>
+<a class="xref" href="#spldoc_operator__parameter__certificateAlias">certificateAlias</a>, <a class="xref" href="#spldoc_operator__parameter__context">context</a>, <a class="xref" href="#spldoc_operator__parameter__contextResourceBase">contextResourceBase</a>, <a class="xref" href="#spldoc_operator__parameter__host">host</a>, <a class="xref" href="#spldoc_operator__parameter__keyPassword">keyPassword</a>, <a class="xref" href="#spldoc_operator__parameter__keyStore">keyStore</a>, <a class="xref" href="#spldoc_operator__parameter__keyStorePassword">keyStorePassword</a>, <a class="xref" href="#spldoc_operator__parameter__port">port</a>, <a class="xref" href="#spldoc_operator__parameter__sslAppConfigName">sslAppConfigName</a>, <a class="xref" href="#spldoc_operator__parameter__trustStore">trustStore</a>, <a class="xref" href="#spldoc_operator__parameter__trustStorePassword">trustStorePassword</a>
 
 </p>
 <dl class="dl">
@@ -468,6 +468,57 @@ param
  <dd class="dd">
   <ul class="sl simple">
   <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int32
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__sslAppConfigName"><!-- --></a><tt class="ph tt">sslAppConfigName</tt></dt>
+
+<dd class="dd">
+<div class="p">The operator can get the SSL server key/certificate and the client trust material from Streams application configuration with this name. If this parameter is present, <tt class="ph tt">certificateAlias</tt>, <tt class="ph tt">keyStore</tt>, <tt class="ph tt">keyPassword</tt>, <tt class="ph tt">trustStore</tt> and <tt class="ph tt">trustStorePassword</tt> are not allowed. The application configuration must contain the folowing properties:
+<ul class="ul">
+<li class="li"> server.jks - Base 64 encoded representation of the Java key store with one key-certificate pair to be used as server key and certitficate.</li>
+
+<li class="li"> server.pass -Password for server.jks (and its key) and cacerts.jks.</li>
+
+</ul>
+The app configuration may contain property:
+<ul class="ul">
+<li class="li"> cacerts.jks - Base 64 encoded representation of the Java trust store with the client trust material.</li>
+
+</ul>
+
+</div>
+
+<div class="p"> If the property cacerts.jks is present, the operator requests client certificates. To create the Streams application configuration you may use a comand like:
+<pre class="pre codeblock">
+streamtool mkappconfig --description 'server cert and trust store' --property "server.jks=$(base64 --wrap=0 etc/keystore.jks)" --property "server.pass=password" --property "cacerts.jks=$(base64 --wrap=0 etc/cacerts.jks)" streams-certs
+</pre>
+
+
+</div>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
   </li>
 
      <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
