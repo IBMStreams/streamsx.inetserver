@@ -4,14 +4,23 @@
 */
 package com.ibm.streamsx.inet.rest.engine;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Base64.Decoder;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -49,6 +58,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.ThreadPool;
 
 import com.ibm.streams.operator.OperatorContext;
+import com.ibm.streams.operator.ProcessingElement;
 import com.ibm.streams.operator.StreamingData;
 import com.ibm.streams.operator.management.OperatorManagement;
 import com.ibm.streamsx.inet.rest.ops.Functions;
@@ -87,6 +97,8 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 
 	public static final String SSL_TRUSTSTORE_PARAM = "trustStore";
 	public static final String SSL_TRUSTSTORE_PASSWORD_PARAM = "trustStorePassword";
+	
+	public static final String SSL_APP_CONFIG_NAME_PARAM = "sslAppConfigName";
 
 	public static final int IDLE_TIMEOUT = 30000;
 	public static final int STRICT_TRANSPORT_SECURITY_MAX_AGE = 2000;
@@ -168,7 +180,8 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		server = new Server(tp);
 		handlers = new ContextHandlerCollection();
 
-		if (operatorContext.getParameterNames().contains(SSL_CERT_ALIAS_PARAM))
+		if (	   (operatorContext.getParameterNames().contains(SSL_CERT_ALIAS_PARAM))
+				|| (operatorContext.getParameterNames().contains(SSL_APP_CONFIG_NAME_PARAM)))
 			setHTTPSConnector(operatorContext, server, portNumber, host);
 		else
 			setHTTPConnector(operatorContext, server, portNumber, host);
@@ -208,47 +221,102 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 
 	/**
 	 * Setup an HTTPS connector.
+	 * @throws KeyStoreException 
+	 * @throws IOException 
+	 * @throws CertificateException 
+	 * @throws NoSuchAlgorithmException 
 	 */
-	private void setHTTPSConnector(OperatorContext operatorContext, Server server, int httpsPort, String host) {
+	private void setHTTPSConnector(OperatorContext operatorContext, Server server, int httpsPort, String host)
+			throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
 		SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
-		//Key Store is required
-		String keyStorePath = operatorContext.getParameterValues(SSL_KEYSTORE_PARAM).get(0);
-		File keyStorePathFile = new File(keyStorePath);
-		if (!keyStorePathFile.isAbsolute())
-			keyStorePathFile = new File(operatorContext.getPE().getApplicationDirectory(), keyStorePath);
-		String keyStorePathToLoad = keyStorePathFile.getAbsolutePath();
-		System.out.println("keyStorePathToLoad=" + keyStorePathToLoad);
-		sslContextFactory.setKeyStorePath(keyStorePathToLoad);
-		//the key store password is optional
-		if (operatorContext.getParameterNames().contains(SSL_KEYSTORE_PASSWORD_PARAM)) {
-			String keyStorePassword = operatorContext.getParameterValues(SSL_KEYSTORE_PASSWORD_PARAM).get(0);
-			System.out.println("keyStorePassword=****");
-			sslContextFactory.setKeyStorePassword(Functions.obfuscate(keyStorePassword));
-		}
-		//Key password is required
-		String keyPassword = operatorContext.getParameterValues(SSL_KEY_PASSWORD_PARAM).get(0);
-		System.out.println("keyPassword=****");
-		sslContextFactory.setKeyManagerPassword(Functions.obfuscate(keyPassword));
-		//Key alias
-		String alias = operatorContext.getParameterValues(SSL_CERT_ALIAS_PARAM).get(0);
-		sslContextFactory.setCertAlias(alias);
-		//Trust Store & password
-		if (operatorContext.getParameterNames().contains(SSL_TRUSTSTORE_PARAM)) {
-			String trustStorePath = operatorContext.getParameterValues(SSL_TRUSTSTORE_PARAM).get(0);
-			File trustStorePathFile = new File(trustStorePath);
-			if (!trustStorePathFile.isAbsolute())
-				trustStorePathFile = new File(operatorContext.getPE().getApplicationDirectory(), trustStorePath);
-			String trustStorePathToLoad = trustStorePathFile.getAbsolutePath();
-			System.out.println("trustStorePathToLoad=" + trustStorePathToLoad);
-			sslContextFactory.setTrustStorePath(trustStorePathToLoad);
-			sslContextFactory.setNeedClientAuth(true);
-			if (operatorContext.getParameterNames().contains(SSL_TRUSTSTORE_PASSWORD_PARAM)) {
-				String trustStorePassword = operatorContext.getParameterValues(SSL_TRUSTSTORE_PASSWORD_PARAM).get(0);
-				System.out.println("trustStorePassword=****");
-				sslContextFactory.setTrustStorePassword(Functions.obfuscate(trustStorePassword));
+
+		//ssl configuration with legacy parameters
+		if (operatorContext.getParameterNames().contains(SSL_CERT_ALIAS_PARAM)) {
+			
+			//Key Store is required
+			String keyStorePath = operatorContext.getParameterValues(SSL_KEYSTORE_PARAM).get(0);
+			File keyStorePathFile = new File(keyStorePath);
+			if (!keyStorePathFile.isAbsolute())
+				keyStorePathFile = new File(operatorContext.getPE().getApplicationDirectory(), keyStorePath);
+			String keyStorePathToLoad = keyStorePathFile.getAbsolutePath();
+			System.out.println("keyStorePathToLoad=" + keyStorePathToLoad);
+			sslContextFactory.setKeyStorePath(keyStorePathToLoad);
+			
+			//the key store password is optional
+			if (operatorContext.getParameterNames().contains(SSL_KEYSTORE_PASSWORD_PARAM)) {
+				String keyStorePassword = operatorContext.getParameterValues(SSL_KEYSTORE_PASSWORD_PARAM).get(0);
+				System.out.println("keyStorePassword=****");
+				sslContextFactory.setKeyStorePassword(Functions.obfuscate(keyStorePassword));
+			}
+			
+			//Key password is required
+			String keyPassword = operatorContext.getParameterValues(SSL_KEY_PASSWORD_PARAM).get(0);
+			System.out.println("keyPassword=****");
+			sslContextFactory.setKeyManagerPassword(Functions.obfuscate(keyPassword));
+			
+			//Key alias
+			String alias = operatorContext.getParameterValues(SSL_CERT_ALIAS_PARAM).get(0);
+			sslContextFactory.setCertAlias(alias);
+			
+			//Trust Store & password if necessary
+			if (operatorContext.getParameterNames().contains(SSL_TRUSTSTORE_PARAM)) {
+				String trustStorePath = operatorContext.getParameterValues(SSL_TRUSTSTORE_PARAM).get(0);
+				File trustStorePathFile = new File(trustStorePath);
+				if (!trustStorePathFile.isAbsolute())
+					trustStorePathFile = new File(operatorContext.getPE().getApplicationDirectory(), trustStorePath);
+				String trustStorePathToLoad = trustStorePathFile.getAbsolutePath();
+				System.out.println("trustStorePathToLoad=" + trustStorePathToLoad);
+				sslContextFactory.setTrustStorePath(trustStorePathToLoad);
+				sslContextFactory.setNeedClientAuth(true);
+				if (operatorContext.getParameterNames().contains(SSL_TRUSTSTORE_PASSWORD_PARAM)) {
+					String trustStorePassword = operatorContext.getParameterValues(SSL_TRUSTSTORE_PASSWORD_PARAM).get(0);
+					System.out.println("trustStorePassword=****");
+					sslContextFactory.setTrustStorePassword(Functions.obfuscate(trustStorePassword));
+				}
+			}
+
+		//Configuration with application configuration
+		} else {
+			
+			ProcessingElement pe = operatorContext.getPE();
+			String certAppConfigName = operatorContext.getParameterValues(SSL_APP_CONFIG_NAME_PARAM).get(0);
+			Map<String, String> certProps = pe.getApplicationConfiguration(certAppConfigName);
+			System.out.println("streams-certs len: " + new Integer(certProps.size()).toString() + " keyset: " + certProps.keySet().toString());
+			if (certProps.isEmpty())
+				throw new IllegalArgumentException("app config with name " + certAppConfigName + " is required");
+			
+			//Key Store and password is required
+			if ( ! certProps.containsKey("server.jks"))
+				throw new IllegalArgumentException("Property server.jks is required in app config " + certAppConfigName);
+			String keyB64Str = certProps.get("server.jks");
+			Decoder decoder = Base64.getDecoder();
+			byte[] keyBytes = decoder.decode(keyB64Str);
+			InputStream keyStream = new ByteArrayInputStream(keyBytes);
+
+			if ( ! certProps.containsKey("server.pass"))
+				throw new IllegalArgumentException("Property server.pass is required in app config " + certAppConfigName);
+			String password = certProps.get("server.pass");
+
+			System.out.println("Load key store and passwd from app config " + certAppConfigName);
+			KeyStore keyStore = KeyStore.getInstance("JKS");
+			keyStore.load(keyStream, password.toCharArray());
+			sslContextFactory.setKeyStore(keyStore);
+			sslContextFactory.setKeyManagerPassword(password);
+			
+			//Set optionally trust material
+			if (certProps.containsKey("cacerts.jks")) {
+				String trustB64Str = certProps.get("cacerts.jks");
+				byte[] trustBytes = decoder.decode(trustB64Str);
+				InputStream trustStream = new ByteArrayInputStream(trustBytes);
+				
+				System.out.println("Load trust store and passwd from app config " + certAppConfigName);
+				KeyStore trustStore = KeyStore.getInstance("JKS");
+				trustStore.load(trustStream, password.toCharArray());
+				sslContextFactory.setTrustStore(trustStore);
+				sslContextFactory.setNeedClientAuth(true);
 			}
 		}
-		
+
 		sslContextFactory.setRenegotiationAllowed(false);
 		sslContextFactory.setIncludeProtocols("TLSv1.2");
 		String[] specs = {"^.*_(MD5|SHA|SHA1)$","^TLS_RSA_.*$","^.*_NULL_.*$","^.*_anon_.*$"};

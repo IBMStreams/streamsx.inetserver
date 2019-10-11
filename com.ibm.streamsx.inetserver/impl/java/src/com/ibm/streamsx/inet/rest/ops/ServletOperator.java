@@ -100,6 +100,20 @@ public abstract class ServletOperator extends AbstractOperator {
 	@Parameter(optional = true, description = "Password to the trust store.")
 	public void setTrustStorePassword(String ksp) {}
 
+	@Parameter(optional = true, description = "The operator can get the SSL server key/certificate and the client trust "
+			+ "material from Streams application configuration with this name. If this parameter is present, `"
+			+ ServletEngine.SSL_CERT_ALIAS_PARAM +"`, `" + ServletEngine.SSL_KEYSTORE_PARAM + "`, `" + ServletEngine.SSL_KEY_PASSWORD_PARAM
+			+ "`, `" + ServletEngine.SSL_TRUSTSTORE_PARAM + "` and `" + ServletEngine.SSL_TRUSTSTORE_PASSWORD_PARAM + "` are "
+			+ "not allowed. The application configuration must contain the folowing properties:\\n"
+			+ " \\t\\t* server.jks - Base 64 encoded representation of the Java key store with one key-certificate pair to be used as server key and certitficate.\\n"
+			+ " \\t\\t* server.pass -Password for server.jks (and its key) and cacerts.jks.\\n"
+			+ "The app configuration may contain property:\\n"
+			+ " \\t\\t* cacerts.jks - Base 64 encoded representation of the Java trust store with the client trust material.\\n\\n"
+			+ " If the property cacerts.jks is present, the operator requests client certificates."
+			+ " To create the Streams application configuration you may use a comand like:\\n"
+			+ "    streamtool mkappconfig --description 'server cert and trust store' --property \\\"server.jks=$(base64 --wrap=0 etc/keystore.jks)\\\" --property \\\"server.pass=password\\\" --property \\\"cacerts.jks=$(base64 --wrap=0 etc/cacerts.jks)\\\" streams-certs")
+	public void setSslAppConfigName(String ac) {}
+
 	// Creates a metric that the ServletEngine will fill in.
 	private Metric serverPort;
 	@CustomMetric(description="Jetty (HTTP/HTTPS) server port if the operator hosts the server, 0 otherwise", kind=Kind.GAUGE)
@@ -113,7 +127,7 @@ public abstract class ServletOperator extends AbstractOperator {
 	public Metric getHttps() { return https; }
 	
 	@ContextCheck
-	public static void checkContextParameters(OperatorContextChecker checker) {	
+	public static void checkContextParameters(OperatorContextChecker checker) {
 
 		checker.checkDependentParameters(ServletEngine.SSL_CERT_ALIAS_PARAM, ServletEngine.SSL_KEYSTORE_PARAM, ServletEngine.SSL_KEY_PASSWORD_PARAM);
 		checker.checkDependentParameters(ServletEngine.SSL_KEY_PASSWORD_PARAM, ServletEngine.SSL_CERT_ALIAS_PARAM);
@@ -122,6 +136,10 @@ public abstract class ServletOperator extends AbstractOperator {
 		checker.checkDependentParameters(ServletEngine.SSL_TRUSTSTORE_PARAM, ServletEngine.SSL_CERT_ALIAS_PARAM);
 		checker.checkDependentParameters(ServletEngine.SSL_TRUSTSTORE_PASSWORD_PARAM, ServletEngine.SSL_TRUSTSTORE_PARAM);
 	
+		checker.checkExcludedParameters(ServletEngine.SSL_APP_CONFIG_NAME_PARAM, 
+				ServletEngine.SSL_CERT_ALIAS_PARAM, ServletEngine.SSL_KEYSTORE_PARAM, ServletEngine.SSL_KEY_PASSWORD_PARAM,
+				ServletEngine.SSL_TRUSTSTORE_PARAM, ServletEngine.SSL_TRUSTSTORE_PASSWORD_PARAM);
+		
 		checker.checkDependentParameters(ServletEngine.CONTEXT_RESOURCE_BASE_PARAM, ServletEngine.CONTEXT_PARAM);
 	}
 	
