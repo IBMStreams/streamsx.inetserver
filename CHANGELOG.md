@@ -41,3 +41,6 @@
 * Enhancemement: Parameter contextResourceBase is now independent from parameter context
 * Enhancemement in description for generation of client certitficate which can be used in a brower
 
+## v4.3.0
+* Enhancement: New parameter 'sslAppConfigName' to get the SSL server key/certificate and the client trust material from Streams application configuration with this name
+
