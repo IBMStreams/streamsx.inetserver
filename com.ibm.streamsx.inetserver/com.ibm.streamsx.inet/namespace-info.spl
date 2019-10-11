@@ -32,6 +32,7 @@
  * * `keyStore`
  * * `keyStorePassword`
  * * `keyPassword`
+ * * `sslAppConfigName`
  *
  * **Note:** Jetty server instances will fail to start if they are placed on a single host and use the same port number. 
  * 
