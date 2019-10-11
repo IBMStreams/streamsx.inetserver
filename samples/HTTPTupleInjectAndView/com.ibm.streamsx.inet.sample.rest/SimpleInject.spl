@@ -35,6 +35,18 @@ use com.ibm.streamsx.inet.rest::*;
  *     output/bin/standalone
  *     Point browser to [https://localhost:1443] and accept the SEC_ERROR_UNKNOWN_ISSUER error and add an exception.
  * 
+ * This sample is enabled to use a secure connection by default. The server key and self signed certificate are stored 
+ * in key store etc/keystore.jks.
+ * 
+ * To enable client authentication with client certificate add parameter `trustStore: "etc/cacerts.jks` to all three 
+ * rest operators and import the client key/certificate file `etc/client.pfx` into your browser certificate manager.
+ * 
+ * Alternatively the import of the key- and trust-material from an Streams application configuration is supported.
+ * Add parameter `sslAppConfigName: "streams-certs"` to all tree rest operators and remove `certificateAlias`, 
+ * `keyStore`, `keyPassword` and `trustStore`.
+ * Generate the application configuration:
+ * 		streamtool mkappconfig --description 'server cert and trust store' --property "server.jks=$(base64 --wrap=0 etc/keystore.jks)" --property "server.pass=changeit" --property "cacerts.jks=$(base64 --wrap=0 etc/cacerts.jks)" streams-certs
+ * 
  */
 public composite SimpleInject {
 	
@@ -45,7 +57,8 @@ public composite SimpleInject {
 				certificateAlias: "mykey";
 				keyStore: "etc/keystore.jks";
 				keyPassword: "changeit";
-				//context: "sensors";
+				//trustStore: "etc/cacerts.jks";
+				//sslAppConfigName: "streams-certs";
 			config
 				// Ensure the operators are in a single PE to have a single web-server
 				placement: partitionColocation("jetty1443");
@@ -59,6 +72,8 @@ public composite SimpleInject {
 				certificateAlias: "mykey";
 				keyStore: "etc/keystore.jks";
 				keyPassword: "changeit";
+				//trustStore: "etc/cacerts.jks";
+				//sslAppConfigName: "streams-certs";
 				context: "state";
 				contextResourceBase: "opt/statetest";
 			config
@@ -72,6 +87,8 @@ public composite SimpleInject {
 				certificateAlias: "mykey";
 				keyStore: "etc/keystore.jks";
 				keyPassword: "changeit";
+				//trustStore: "etc/cacerts.jks";
+				//sslAppConfigName: "streams-certs";
 				context: "wct";
 				contextResourceBase: "opt/wctest";
 			config
