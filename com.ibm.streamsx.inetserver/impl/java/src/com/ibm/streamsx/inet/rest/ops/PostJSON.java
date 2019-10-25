@@ -67,7 +67,7 @@ public class PostJSON extends ServletOperator {
 			"Any other attributes will be set to their default value.\\n" + 
 			"\\n" +
 			"The URLs defined by this operator are:\\n" +
-			"* *prefix*`/ports/output/`*port index*`/inject` - Accepts POST requests of type `application/xml`.\\n" +
+			"* *prefix*`/ports/output/`*port index*`/inject` - Accepts POST requests of type `application/json`.\\n" +
 			"* *prefix*`/ports/output/`*port index*`/info` - Output port meta-data including the stream attribute names and types (content type `application/json`).\\n" +
 			"\\nThe *prefix* for the URLs is:\\n" +
 			"* *context path*`/`*base operator name* - When the `context` parameter is set.\\n" +
