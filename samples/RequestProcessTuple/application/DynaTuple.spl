@@ -16,7 +16,7 @@ use com.ibm.streamsx.inet.rest::HTTPRequest ;
 *    
 * The goal:
 * * Demonstrate the processing of forms.
-* * Reinterate how important it is NOT to mess with the id. 
+* * Reiterate how important it is NOT to mess with the id. 
 * 
 * Procedure:
 * * build the sample - execute 'make'
