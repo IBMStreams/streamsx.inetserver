@@ -186,7 +186,7 @@ public class InjectXMLTest {
 		}
 	}
 
-	private static void postXMLAndTest(URL postTuple, String xml, MostRecent<Tuple> mrt) throws IOException {
+	private static void postXMLAndTest(URL postTuple, String xml, MostRecent<Tuple> mrt) throws IOException, InterruptedException {
 		System.out.println(postTuple.toString());
 		byte[] dataBytes = xml.getBytes("UTF-8");
 		HttpURLConnection conn = (HttpURLConnection) postTuple.openConnection();
@@ -200,7 +200,7 @@ public class InjectXMLTest {
 		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
-		
+		Thread.sleep(1000);
 		String tuple = mrt.getMostRecentTuple().getString(0);
 		System.out.println(tuple.toString());
 		assertEquals(xml, tuple);

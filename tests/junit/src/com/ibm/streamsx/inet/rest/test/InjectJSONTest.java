@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Random;
@@ -187,7 +188,7 @@ public class InjectJSONTest {
 		}
 	}
 
-	private static void postJSONAndTest(URL postTuple, JSONObject json, MostRecent<Tuple> mrt) throws IOException {
+	private static void postJSONAndTest(URL postTuple, JSONObject json, MostRecent<Tuple> mrt) throws UnsupportedEncodingException, IOException, InterruptedException  {
 		System.out.println(postTuple.toString());
 		byte[] dataBytes = json.serialize().getBytes("UTF-8");
 		HttpURLConnection conn = (HttpURLConnection) postTuple.openConnection();
@@ -201,7 +202,7 @@ public class InjectJSONTest {
 		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
-		
+		Thread.sleep(1000);
 		JSONObject tuple = JSONObject.parse(mrt.getMostRecentTuple().getString(0));
 		System.out.println(tuple.toString());
 		assertEquals(json, tuple);

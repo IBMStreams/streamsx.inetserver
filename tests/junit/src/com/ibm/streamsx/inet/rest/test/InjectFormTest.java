@@ -56,6 +56,7 @@ public class InjectFormTest {
 		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
+		Thread.sleep(1000);
 		System.out.println(mrt.getMostRecentTuple().toString());
 		assertEquals(0, mrt.getMostRecentTuple().getInt(0));
 		assertEquals("", mrt.getMostRecentTuple().getString(1));
@@ -77,6 +78,7 @@ public class InjectFormTest {
 		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
+		Thread.sleep(1000);
 		System.out.println(mrt.getMostRecentTuple().toString());
 		assertEquals(0, mrt.getMostRecentTuple().getInt(0));
 		assertEquals(quote, mrt.getMostRecentTuple().getString(1));
@@ -97,6 +99,7 @@ public class InjectFormTest {
 		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
+		Thread.sleep(1000);
 		System.out.println(mrt.getMostRecentTuple().toString());
 		assertEquals(73, mrt.getMostRecentTuple().getInt(0));
 		assertEquals(quote, mrt.getMostRecentTuple().getString(1));
