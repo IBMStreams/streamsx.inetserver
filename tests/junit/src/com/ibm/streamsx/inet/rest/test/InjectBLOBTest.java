@@ -218,7 +218,7 @@ public class InjectBLOBTest {
 		}
 	}
 
-	private static void postBLOBAndTest(URL postTuple, byte[] data, MostRecent<Tuple> mrt, boolean checkHeaderAttrib) throws IOException {
+	private static void postBLOBAndTest(URL postTuple, byte[] data, MostRecent<Tuple> mrt, boolean checkHeaderAttrib) throws IOException, InterruptedException {
 		System.out.println(postTuple.toString());
 		HttpURLConnection conn = (HttpURLConnection) postTuple.openConnection();
 		conn.setDoOutput(true);
@@ -231,7 +231,7 @@ public class InjectBLOBTest {
 		System.out.println(conn.getResponseMessage());
 		assertEquals(HttpURLConnection.HTTP_NO_CONTENT, conn.getResponseCode());
 		conn.disconnect();
-		
+		Thread.sleep(1000);
 		Blob tuple = mrt.getMostRecentTuple().getBlob(0);
 		System.out.println(tuple.toString());
 		assertTrue(Arrays.equals(data, tuple.getData()));

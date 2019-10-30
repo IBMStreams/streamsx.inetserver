@@ -43,8 +43,7 @@ public class InjectForm extends HttpServlet {
 		out.println("</head>");
 		out.println("<body>");
 		out.println("<H1>" + port.getName() + "</H1>");
-		String action = request.getRequestURI().replace("form", "inject");
-		out.println("<FORM METHOD=POST ACTION=\"" + action + "\">");
+		out.println("<FORM METHOD=POST ACTION=\"inject\">");
 		for (Attribute attr : port.getStreamSchema()) {
 			out.print(attr.getName());
 			out.println(": <input type=text size=30 value=\"\" name=" + attr.getName() + "><br/>");		

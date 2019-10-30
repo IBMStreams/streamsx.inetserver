@@ -44,3 +44,7 @@
 ## v4.3.0
 * Enhancement: New parameter 'sslAppConfigName' to get the SSL server key/certificate and the client trust material from Streams application configuration with this name
 
+## v4.3.1
+* Fix: Use relative path in all sample index.html files to be able to be used behind proxy
+* Fix: Correct timing issue in junit tests
+
