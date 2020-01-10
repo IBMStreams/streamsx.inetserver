@@ -30,8 +30,13 @@
 		description="Main target: Build the toolkit code, build the samples index and generate the spl documentation - incremental build"
 	/>
 
-	<target name="clean" depends="spldoc-clean,samples-clean,releaseinfo-clean,test-clean"
+	<target name="clean" depends="spldoc-clean,samples-clean,releaseinfo-clean"
 		description="Main target: clean up toolkit code, samples code, all spldocs and downloaded libs">
+		<ant dir="${toolkit.dir}" target="clean" />
+	</target>
+
+	<target name="clean-all" depends="clean,test-clean"
+		description="Main target: clean up toolkit code, samples code, all spldocs and downloaded libs and test artifacts">
 		<ant dir="${toolkit.dir}" target="clean" />
 	</target>
 

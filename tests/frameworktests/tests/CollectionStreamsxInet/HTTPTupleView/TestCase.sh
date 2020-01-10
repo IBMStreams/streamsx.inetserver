@@ -30,16 +30,16 @@ STEPS=(
 )
 
 errorCodes=(
-	'*No Input port window is partitioned, but parameter partitionKey has a non empty value*'
-	'*No Input port window is partitioned, but parameter partitionBy has non empty value*'
-	'*Window is partitioned but has no partitonAttributeNames*'
-	'*The cardinality of parameter partitionBy (2) must be equal the number of input ports (1)*'
-	'*partition name: a_string is duplicate for input port 0*'
-	'*partition name: a_string is duplicate for input port 0*'
-	'*partition name: a_string is duplicate for input port 0*'
-	'*Input port 1 is not partitioned but has none empty partition name*'
-	'*Input port 1 is not partitioned but has none empty partition name*'
-	'*Input port 1 has no attribute with name c_int32*'
-	'*Input port 1 has no attribute with name c_int32*'
-	'*Input port 1 has no attribute with name c_int32*'
+	"*CDIST3859E No Input port window is partitioned, but parameter 'partitionKey' has a non empty value*"
+	"*CDIST3859E No Input port window is partitioned, but parameter 'partitionBy' has a non empty value*"
+	"*CDIST3864E Window is partitioned but partition attribute names are not specified*"
+	'*CDIST3860E The cardinality of parameter partitionBy (2) must be equal the number of input ports (1)*'
+	"*CDIST3861E Partition name: 'a_string' is duplicate for input port 0*"
+	"*CDIST3861E Partition name: 'a_string' is duplicate for input port 0*"
+	"*CDIST3861E Partition name: 'a_string' is duplicate for input port 0*"
+	"*CDIST3863E Input port 1 is not partitioned but has none empty partition with name 'a_string'*"
+	"*CDIST3863E Input port 1 is not partitioned but has none empty partition with name 'a_string'*"
+	"*CDIST3862E Input port 1 has no attribute with name 'c_int32'*"
+	"*CDIST3862E Input port 1 has no attribute with name 'c_int32'*"
+	"*CDIST3862E Input port 1 has no attribute with name 'c_int32'*"
 )
