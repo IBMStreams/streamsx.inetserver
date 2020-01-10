@@ -186,13 +186,13 @@ public class WebSocketInject extends ServletOperator {
 		
 		//check required parameters
 		if (messageAttributeName == null) {
-			throw new IllegalArgumentException("Parameter messageAttributeName is required if output port has more than one attribute");
+			throw new IllegalArgumentException(Messages.getString("WSS_PARAMETER_MESSAGE_ATTRIBUTE_NAME_REQUIRED"));
 		}
 		
 		//check if attribute names are there and type is correct
 		Attribute messageAttribute = getOutput(0).getStreamSchema().getAttribute(messageAttributeName);
 		if (messageAttribute == null) {
-			throw new IllegalArgumentException("Could not detect required attribute '" + messageAttributeName + "' on output port 0. ");
+			throw new IllegalArgumentException(Messages.getString("REQUIRED_KEY_ATTRIBUTE", messageAttributeName, "output", "messageAttributeName"));
 		} else {
 			MetaType attrType = messageAttribute.getType().getMetaType();
 			if ((attrType == MetaType.RSTRING) || (attrType == MetaType.USTRING)) {
@@ -200,17 +200,17 @@ public class WebSocketInject extends ServletOperator {
 			} else if (attrType == MetaType.BLOB) {
 				binaryMessageMode = true;
 			} else {
-				throw new IllegalArgumentException("Port Attribute " + messageAttributeName + " must be of type rstring, ustring or blob");
+				throw new IllegalArgumentException(Messages.getString("ATTRIBUTE_TYPE_CHECK_3", messageAttributeName, "rstring", "ustring", "blob"));
 			}
 		}
 		if (senderIdAttributeName != null) {
 			Attribute senderIdAttribute = getOutput(0).getStreamSchema().getAttribute(senderIdAttributeName);
 			if (senderIdAttribute == null) {
-				throw new IllegalArgumentException("Could not detect required attribute '" + senderIdAttributeName + "' on output port 0. ");
+				throw new IllegalArgumentException(Messages.getString("REQUIRED_KEY_ATTRIBUTE", senderIdAttributeName, "output", "senderIdAttributeName"));
 			} else {
 				MetaType attrType = senderIdAttribute.getType().getMetaType();
 				if ((attrType != MetaType.RSTRING) || (attrType == MetaType.USTRING))
-					throw new IllegalArgumentException("Port Attribute " + senderIdAttributeName + " must be of type rstring or ustring");
+					throw new IllegalArgumentException(Messages.getString("ATTRIBUTE_TYPE_CHECK_2", "rstring", "ustring", senderIdAttributeName));
 			}
 		}
 	}

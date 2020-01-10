@@ -61,6 +61,7 @@ import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.ProcessingElement;
 import com.ibm.streams.operator.StreamingData;
 import com.ibm.streams.operator.management.OperatorManagement;
+import com.ibm.streamsx.inet.messages.Messages;
 import com.ibm.streamsx.inet.rest.ops.Functions;
 import com.ibm.streamsx.inet.rest.ops.PostTuple;
 import com.ibm.streamsx.inet.rest.ops.ServletOperator;
@@ -283,18 +284,18 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 			Map<String, String> certProps = pe.getApplicationConfiguration(certAppConfigName);
 			System.out.println("streams-certs len: " + new Integer(certProps.size()).toString() + " keyset: " + certProps.keySet().toString());
 			if (certProps.isEmpty())
-				throw new IllegalArgumentException("app config with name " + certAppConfigName + " is required");
+				throw new IllegalArgumentException(Messages.getString("APP_CONFIG_REQURED", certAppConfigName));
 			
 			//Key Store and password is required
 			if ( ! certProps.containsKey("server.jks"))
-				throw new IllegalArgumentException("Property server.jks is required in app config " + certAppConfigName);
+				throw new IllegalArgumentException(Messages.getString("APP_CONFIG_PROP_REQURED", "server.jks", certAppConfigName));
 			String keyB64Str = certProps.get("server.jks");
 			Decoder decoder = Base64.getDecoder();
 			byte[] keyBytes = decoder.decode(keyB64Str);
 			InputStream keyStream = new ByteArrayInputStream(keyBytes);
 
 			if ( ! certProps.containsKey("server.pass"))
-				throw new IllegalArgumentException("Property server.pass is required in app config " + certAppConfigName);
+				throw new IllegalArgumentException(Messages.getString("APP_CONFIG_PROP_REQURED", "server.pass", certAppConfigName));
 			String password = certProps.get("server.pass");
 
 			System.out.println("Load key store and passwd from app config " + certAppConfigName);
@@ -414,10 +415,10 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 		String resourceBase = operatorContext.getParameterValues(CONTEXT_RESOURCE_BASE_PARAM).get(0);
 
 		if ("".equals(ctxName))
-			throw new IllegalArgumentException("Parameter " + CONTEXT_PARAM + " cannot be empty");
+			throw new IllegalArgumentException(Messages.getString("PARAM_MUST_NOT_BE_EMPTY", CONTEXT_PARAM));
 
 		if ("".equals(resourceBase))
-			throw new IllegalArgumentException("Parameter " + CONTEXT_RESOURCE_BASE_PARAM + " cannot be empty");
+			throw new IllegalArgumentException(Messages.getString("PARAM_MUST_NOT_BE_EMPTY", CONTEXT_RESOURCE_BASE_PARAM));
 
 		// Convert resourceBase file path to absPath if it is relative, if relative, it should be relative to application directory.
 		URI baseConfigURI = operatorContext.getPE().getApplicationDirectory().toURI();
@@ -509,7 +510,7 @@ public class ServletEngine implements ServletEngineMBean, MBeanRegistration {
 			ctxName = operatorContext.getParameterValues(CONTEXT_PARAM).get(0);
 
 			if ("".equals(ctxName))
-				throw new IllegalArgumentException("Parameter " + CONTEXT_PARAM + " cannot be empty");
+				throw new IllegalArgumentException(Messages.getString("PARAM_MUST_NOT_BE_EMPTY", CONTEXT_PARAM));
 
 		}
 		

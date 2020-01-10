@@ -157,8 +157,7 @@ public class WebSocketSend extends ServletOperator {
 		if (binaryMessageAttributeName != null) {
 			Attribute binaryMessageAttribute = getInput(0).getStreamSchema().getAttribute(binaryMessageAttributeName);
 			if ( binaryMessageAttribute == null) {
-				throw new IllegalArgumentException("Could not detect required attribute \"" + binaryMessageAttributeName + "\" on input port 0. "
-						+ "Or specify a valid value for \"binaryMessageAttributeName\"");
+				throw new IllegalArgumentException(Messages.getString("REQUIRED_KEY_ATTRIBUTE", binaryMessageAttributeName, "input", "binaryMessageAttributeName"));
 			} else {
 				if (getInput(0).getStreamSchema().getAttribute(binaryMessageAttributeName).getType().getMetaType() != MetaType.BLOB) {
 					throw new IllegalArgumentException(Messages.getString("PARAM_ATTRIBUTE_TYPE_CHECK_1", MetaType.BLOB, binaryMessageAttributeName));

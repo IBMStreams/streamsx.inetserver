@@ -21,6 +21,7 @@ import com.ibm.streams.operator.model.InputPortSet.WindowPunctuationInputMode;
 import com.ibm.streams.operator.model.InputPorts;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
+import com.ibm.streamsx.inet.messages.Messages;
 
 @PrimitiveOperator(name=TupleView.opName, description=TupleView.DESC)
 // Require at least one input port
@@ -129,11 +130,11 @@ public class TupleView extends ServletOperator {
 		if ( ! anyInputIsPartitioned ) {
 			if (partitionKey != null)
 				if ((partitionKey.size() > 1) || ((partitionKey.size() == 1) && ( ! partitionKey.get(0).isEmpty())))
-					throw new IllegalArgumentException("No Input port window is partitioned, but parameter partitionKey has a non empty value");
+					throw new IllegalArgumentException(Messages.getString("WINDOW_PARTITION_REQUIRED", "partitionKey"));
 			if (partitionBy != null) {
 				for (int i = 0; i < partitionBy.size(); i++) {
 					if ( ! partitionBy.get(i).isEmpty())
-						throw new IllegalArgumentException("No Input port window is partitioned, but parameter partitionBy has non empty value");
+						throw new IllegalArgumentException(Messages.getString("WINDOW_PARTITION_REQUIRED", "partitionBy"));
 				}
 			}
 		} else {
@@ -149,8 +150,7 @@ public class TupleView extends ServletOperator {
 				}
 				if (partitionBy != null) {
 					if (numberInputPorts != partitionBy.size())
-						throw new IllegalArgumentException("The cardinality of parameter partitionBy (" + Integer.toString(partitionBy.size())
-						                                    + ") must be equal the number of input ports (" +Integer.toString(numberInputPorts) + ") !");
+						throw new IllegalArgumentException(Messages.getString("PARAMETER_CARDINALLITY_MISMATCH", Integer.toString(partitionBy.size()), Integer.toString(numberInputPorts)));
 					String[] attrs = partitionBy.get(i).split(",", -1);
 					for (int j = 0; j < attrs.length; j++) {
 						if ( ! attrs[j].isEmpty())
@@ -165,7 +165,7 @@ public class TupleView extends ServletOperator {
 				HashSet<String> portNameSet = new HashSet<String>();
 				for (String name : portPartitonAttributeNames) {
 					if ( ! portNameSet.add(name) )
-						throw new IllegalArgumentException("partition name: " + name + " is duplicate for input port " + Integer.toString(i));
+						throw new IllegalArgumentException(Messages.getString("DUPLICATE_PARTITION", name, Integer.toString(i)));
 				}
 			}
 
@@ -179,7 +179,7 @@ public class TupleView extends ServletOperator {
 						String attributeName = partitonAttributeNames.get(i).get(j);
 						int attributeIndex = port.getStreamSchema().getAttributeIndex(attributeName);
 						if (attributeIndex < 0)
-							throw new IllegalArgumentException("Input port " + Integer.toString(i) + " has no attribute with name " + attributeName);
+							throw new IllegalArgumentException(Messages.getString("INPUT_PORT_REQUIRES_ATTRIBUTE", Integer.toString(i), attributeName));
 						partIndx.add(new Integer(attributeIndex));
 						if (namedPartitionQuery) {
 							if (attributeName.equals("attribute")) {
@@ -199,7 +199,7 @@ public class TupleView extends ServletOperator {
 				} else {
 					ArrayList<String> portPartitonAttributeNames = partitonAttributeNames.get(i);
 					if ((portPartitonAttributeNames.size() > 1) || (portPartitonAttributeNames.size() == 1) && ( ! portPartitonAttributeNames.get(0).isEmpty()))
-						throw new IllegalArgumentException("Input port " + Integer.toString(i) + " is not partitioned but has none empty partition name " + portPartitonAttributeNames.get(0));
+						throw new IllegalArgumentException(Messages.getString("INPUT_PORT_PARTITION_REQUIRED", Integer.toString(i), portPartitonAttributeNames.get(0)));
 				}
 			}
 		}
