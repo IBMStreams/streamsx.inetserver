@@ -48,3 +48,6 @@
 * Fix: Use relative path in all sample index.html files to be able to be used behind proxy
 * Fix: Correct timing issue in junit tests
 
+## v4.4.0
+* Globalization support completed
+
