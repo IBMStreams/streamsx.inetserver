@@ -17,7 +17,6 @@ STEPS=(
 	'waitForFinAndCheckHealth'
 	'cancelJobAndLog'
 	'myEval'
-	'checkLogsNoError2'
 )
 
 FINS='cancelJobAndLog'

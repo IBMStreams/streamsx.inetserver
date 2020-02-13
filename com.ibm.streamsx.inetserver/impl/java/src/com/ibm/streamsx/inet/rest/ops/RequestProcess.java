@@ -43,6 +43,7 @@ import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streams.operator.types.RString;
+import com.ibm.streamsx.inet.messages.Messages;
 import com.ibm.streamsx.inet.rest.servlets.InjectWithResponse;
 import com.ibm.streamsx.inet.rest.servlets.ReqWebMessage;
 
@@ -299,11 +300,10 @@ public class RequestProcess extends ServletOperator {
 		} else {
 			// key, out port
 			if (getOutput(0).getStreamSchema().getAttribute(keyAttributeName) == null)
-				throw new IllegalArgumentException("Could not detect required attribute \"" + keyAttributeName + "\" on output port 0. "
-						+ "Or specify a valid value for \"keyAttributeName\"");
+				throw new IllegalArgumentException(Messages.getString("REQUIRED_KEY_ATTRIBUTE", keyAttributeName, "output", "keyAttributeName"));
 			MetaType keyParamType = getOutput(0).getStreamSchema().getAttribute(keyAttributeName).getType().getMetaType();
 			if (keyParamType != MetaType.INT64)
-				throw new IllegalArgumentException("Only types \"" + MetaType.INT64 + "\" allowed for attribute \"" + keyAttributeName + "\"");
+				throw new IllegalArgumentException(Messages.getString("ATTRIBUTE_TYPE_CHECK_1", MetaType.INT64, keyAttributeName));
 			// request, out port
 			requestAttributeName     = checkOptionalStringAttribute(requestAttributeName,     defaultRequestAttributeName,     getOutput(0).getStreamSchema(), "output", "requestAttributeName");
 			// header, out port
@@ -327,11 +327,10 @@ public class RequestProcess extends ServletOperator {
 		} else {
 			// key, in port, mandatory
 			if (getInput(0).getStreamSchema().getAttribute(keyAttributeName) == null)
-				throw new IllegalArgumentException("Could not detect required attribute \"" + keyAttributeName + "\" on input port 0. "
-					+ "Or specify a valid value for \"keyAttributeName\"");
+				throw new IllegalArgumentException(Messages.getString("REQUIRED_KEY_ATTRIBUTE", keyAttributeName, "input", "keyAttributeName"));
 			MetaType keyResponseParamType = getInput(0).getStreamSchema().getAttribute(keyAttributeName).getType().getMetaType();
 			if (keyResponseParamType != MetaType.INT64)
-				throw new IllegalArgumentException("Only types \"" + MetaType.INT64 + "\" allowed for attribute \"" + keyAttributeName + "\"");
+				throw new IllegalArgumentException(Messages.getString("ATTRIBUTE_TYPE_CHECK_1", MetaType.INT64, keyAttributeName));
 			// response, in port, optional
 			responseAttributeName            = checkOptionalStringAttribute(responseAttributeName,            defaultResponseAttributeName,       getInput(0).getStreamSchema(), "input", "responseAttributeName");
 			// status, in port, optional
@@ -354,12 +353,11 @@ public class RequestProcess extends ServletOperator {
 				attributeName = defaultName;
 		if (attributeName != null) {
 			if (schema.getAttribute(attributeName) == null) {
-				throw new IllegalArgumentException("Could not detect required attribute \"" + attributeName + "\" on " + inout + " port 0. "
-						+ "Or specify a valid value for \"" + paramName + "\"");
+				throw new IllegalArgumentException(Messages.getString("REQUIRED_KEY_ATTRIBUTE", attributeName, inout, paramName));
 			} else {
 				MetaType mAttributeType = schema.getAttribute(attributeName).getType().getMetaType();
 				if (mAttributeType != attributeType)
-					throw new IllegalArgumentException("Only type of \"" + attributeType + "\" allowed for attribute \"" + attributeName + "\"");
+					throw new IllegalArgumentException(Messages.getString("ATTRIBUTE_TYPE_CHECK_1", attributeType, attributeName));
 			}
 		}
 		System.out.println("Attribute check " + inout + " port, parameter: " + paramName + " use attribute: "+ attributeName + " type: " + attributeType.name());
@@ -375,13 +373,11 @@ public class RequestProcess extends ServletOperator {
 				attributeName = defaultName;
 		if (attributeName != null) {
 			if (schema.getAttribute(attributeName) == null) {
-				throw new IllegalArgumentException("Could not detect required attribute \"" + attributeName + "\" on " + inout + " port 0. "
-						+ "Or specify a valid value for \"" + paramName + "\"");
+				throw new IllegalArgumentException(Messages.getString("REQUIRED_KEY_ATTRIBUTE", attributeName, inout, paramName));
 			} else {
 				MetaType mAttributeType = schema.getAttribute(attributeName).getType().getMetaType();
 				if (mAttributeType != MetaType.USTRING && mAttributeType != MetaType.RSTRING)
-					throw new IllegalArgumentException("Only types \"" + MetaType.USTRING + "\" and \"" + MetaType.RSTRING
-							+ "\" allowed for attribute \"" + attributeName + "\"");
+					throw new IllegalArgumentException(Messages.getString("ATTRIBUTE_TYPE_CHECK_2", MetaType.USTRING, MetaType.RSTRING, attributeName));
 			}
 		}
 		System.out.println("Attribute check " + inout + " port, parameter: " + paramName + " use attribute: "+ attributeName + " type: string");

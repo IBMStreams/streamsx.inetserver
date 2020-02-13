@@ -23,9 +23,9 @@ STEPS=(
 )
 
 errorCodes=(
-	'*Port Attribute message must be of type rstring, ustring or blob*'
-	"*Could not detect required attribute 'myMessageAttribute' on output port 0*"
-	"*Port Attribute messageAttribute must be of type rstring, ustring or blob*"
-	"*Could not detect required attribute 'mySenderIdAttribute' on output port 0*"
-	"*Port Attribute senderIdAttribute must be of type rstring or ustring*"
+	"*CDIST3866E Port Attribute message must be of type rstring, ustring or blob*"
+	"*CDIST3856E Could not detect required attribute 'myMessageAttribute' on output port 0. Or specify a valid value for parameter 'messageAttributeName'*"
+	"*CDIST3866E Port Attribute messageAttribute must be of type rstring, ustring or blob*"
+	"*CDIST3856E Could not detect required attribute 'mySenderIdAttribute' on output port 0. Or specify a valid value for parameter 'senderIdAttributeName'*"
+	"*CDIST3858E Only types 'rstring' and 'ustring' is allowed for attribute 'senderIdAttribute'*"
 )

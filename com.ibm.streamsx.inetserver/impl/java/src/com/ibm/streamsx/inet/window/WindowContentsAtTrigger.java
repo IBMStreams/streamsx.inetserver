@@ -20,6 +20,7 @@ import com.ibm.streams.operator.window.StreamWindowEvent;
 import com.ibm.streams.operator.window.StreamWindowListener;
 import com.ibm.streams.operator.window.StreamWindowPartitioner;
 import com.ibm.streams.operator.window.WindowUtilities;
+import com.ibm.streamsx.inet.messages.Messages;
 import com.ibm.streamsx.inet.rest.ops.TupleView;
 
 /**
@@ -94,7 +95,7 @@ public class WindowContentsAtTrigger<T> implements StreamWindowListener<T> {
 		} else {
 
 			if (input.getStreamWindow().isPartitioned())
-				throw new IllegalStateException("Window is partitioned but has no partitonAttributeNames");
+				throw new IllegalStateException(Messages.getString("WINDOW_PARTITION_REQUIRED_2"));
 			
 			partitionAttributes = Collections.emptyList();
 

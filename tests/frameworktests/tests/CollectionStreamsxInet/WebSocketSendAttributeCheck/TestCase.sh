@@ -20,6 +20,6 @@ STEPS=(
 )
 
 errorCodes=(
-	'*Could not detect required attribute "myBinaryMessageAttribute" on input port 0. Or specify a valid value for "binaryMessageAttributeName"*'
-	"*CDIST0222E Only type 'BLOB' is allowed for attribute 'binaryMessageAttribute'*"
+	"*CDIST3856E Could not detect required attribute 'myBinaryMessageAttribute' on input port 0. Or specify a valid value for parameter 'binaryMessageAttributeName'*"
+	"*CDIST3853E Only type 'BLOB' is allowed for attribute 'binaryMessageAttribute'*"
 )

@@ -42,28 +42,28 @@ STEPS=(
 )
 
 errorCodes=(
-	'*Could not detect required attribute "key" on output port 0. Or specify a valid value for "keyAttributeName"*'
-	'*Only types "INT64" allowed for attribute "key"*'
-	'*Could not detect required attribute "myKey" on output port 0. Or specify a valid value for "keyAttributeName"*'
+	"*CDIST3856E Could not detect required attribute 'key' on output port 0. Or specify a valid value for parameter 'keyAttributeName'*"
+	"*CDIST3857E Only type 'INT64' is allowed for attribute 'key'*"
+	"*CDIST3856E Could not detect required attribute 'myKey' on output port 0. Or specify a valid value for parameter 'keyAttributeName'*"
 
-	'*Only types "USTRING" and "RSTRING" allowed for attribute "contentType"*'
-	'*Could not detect required attribute "myContentType" on output port 0. Or specify a valid value for "contentTypeAttributeName"*'
+	"*CDIST3858E Only types 'USTRING' and 'RSTRING' is allowed for attribute 'contentType'*"
+	"*CDIST3856E Could not detect required attribute 'myContentType' on output port 0. Or specify a valid value for parameter 'contentTypeAttributeName'*"
 
-	'*Only types "USTRING" and "RSTRING" allowed for attribute "request"*'
-	'*Could not detect required attribute "myRequest" on output port 0. Or specify a valid value for "requestAttributeName"*'
+	"*CDIST3858E Only types 'USTRING' and 'RSTRING' is allowed for attribute 'request'*"
+	"*CDIST3856E Could not detect required attribute 'myRequest' on output port 0. Or specify a valid value for parameter 'requestAttributeName'*"
 
-	'*Only type of "MAP" allowed for attribute "header"*'
-	'*Could not detect required attribute "myHeader" on output port 0. Or specify a valid value for "headerAttributeName"*'
+	"*CDIST3857E Only type 'MAP' is allowed for attribute 'header'*"
+	"*CDIST3856E Could not detect required attribute 'myHeader' on output port 0. Or specify a valid value for parameter 'headerAttributeName'*"
 
-	'*Only types "USTRING" and "RSTRING" allowed for attribute "method"*'
-	'*Could not detect required attribute "myMethod" on output port 0. Or specify a valid value for "methodAttributeName"*'
+	"*CDIST3858E Only types 'USTRING' and 'RSTRING' is allowed for attribute 'method'*"
+	"*CDIST3856E Could not detect required attribute 'myMethod' on output port 0. Or specify a valid value for parameter 'methodAttributeName'*"
 
-	'*Only types "USTRING" and "RSTRING" allowed for attribute "pathInfo"*'
-	'*Could not detect required attribute "myPathInfo" on output port 0. Or specify a valid value for "pathInfoAttributeName"*'
+	"*CDIST3858E Only types 'USTRING' and 'RSTRING' is allowed for attribute 'pathInfo'*"
+	"*CDIST3856E Could not detect required attribute 'myPathInfo' on output port 0. Or specify a valid value for parameter 'pathInfoAttributeName'*"
 
-	'*Only types "USTRING" and "RSTRING" allowed for attribute "contextPath"*'
-	'*Could not detect required attribute "myContextPath" on output port 0. Or specify a valid value for "contextPathAttributeName"*'
+	"*CDIST3858E Only types 'USTRING' and 'RSTRING' is allowed for attribute 'contextPath'*"
+	"*CDIST3856E Could not detect required attribute 'myContextPath' on output port 0. Or specify a valid value for parameter 'contextPathAttributeName'*"
 
-	'*Only types "USTRING" and "RSTRING" allowed for attribute "url"*'
-	'*Could not detect required attribute "myUrl" on output port 0. Or specify a valid value for "urlAttributeName"*'
+	"*CDIST3858E Only types 'USTRING' and 'RSTRING' is allowed for attribute 'url'*"
+	"*CDIST3856E Could not detect required attribute 'myUrl' on output port 0. Or specify a valid value for parameter 'urlAttributeName'*"
 )

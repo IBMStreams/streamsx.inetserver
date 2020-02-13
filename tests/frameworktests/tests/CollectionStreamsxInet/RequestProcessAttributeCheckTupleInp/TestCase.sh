@@ -30,19 +30,19 @@ STEPS=(
 )
 
 errorCodes=(
-	'*Could not detect required attribute "key" on input port 0. Or specify a valid value for "keyAttributeName"*'
-	'*Only types "INT64" allowed for attribute "key"*'
-	'*IllegalArgumentException: Could not detect required attribute "myKey" on input port 0. Or specify a valid value for "keyAttributeName"*'
+	"*CDIST3856E Could not detect required attribute 'key' on input port 0. Or specify a valid value for parameter 'keyAttributeName'*"
+	"*CDIST3857E Only type 'INT64' is allowed for attribute 'key'*"
+	"*CDIST3856E Could not detect required attribute 'myKey' on input port 0. Or specify a valid value for parameter 'keyAttributeName'*"
 
-	'*Only types "USTRING" and "RSTRING" allowed for attribute "contentType"*'
-	'*Could not detect required attribute "myContentType" on input port 0. Or specify a valid value for "responseContentTypeAttributeName"*'
+	"*CDIST3858E Only types 'USTRING' and 'RSTRING' is allowed for attribute 'contentType'*"
+	"*CDIST3856E Could not detect required attribute 'myContentType' on input port 0. Or specify a valid value for parameter 'responseContentTypeAttributeName'*"
 
-	'*Only types "USTRING" and "RSTRING" allowed for attribute "response"*'
-	'*Could not detect required attribute "myResponse" on input port 0. Or specify a valid value for "responseAttributeName"*'
+	"*CDIST3858E Only types 'USTRING' and 'RSTRING' is allowed for attribute 'response'*"
+	"*CDIST3856E Could not detect required attribute 'myResponse' on input port 0. Or specify a valid value for parameter 'responseAttributeName'*"
 
-	'*Only type of "INT32" allowed for attribute "status"*'
-	'*Could not detect required attribute "myStatus" on input port 0. Or specify a valid value for "responseStatusAttributeName"*'
+	"*CDIST3857E Only type 'INT32' is allowed for attribute 'status'*"
+	"*CDIST3856E Could not detect required attribute 'myStatus' on input port 0. Or specify a valid value for parameter 'responseStatusAttributeName'*"
 
-	'*Only type of "MAP" allowed for attribute "header"*'
-	'*Could not detect required attribute "myHeader" on input port 0. Or specify a valid value for "responseHeaderAttributeName"*'
+	"*CDIST3857E Only type 'MAP' is allowed for attribute 'header'*"
+	"*CDIST3856E Could not detect required attribute 'myHeader' on input port 0. Or specify a valid value for parameter 'responseHeaderAttributeName'*"
 )
