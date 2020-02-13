@@ -49,5 +49,5 @@
 * Fix: Correct timing issue in junit tests
 
 ## v4.3.2
-* Globalization support completed
+* Globalization support
 
