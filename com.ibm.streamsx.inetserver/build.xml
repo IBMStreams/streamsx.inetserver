@@ -117,6 +117,7 @@ artifacts were left around and caused issues with the ant build.
 		<available property="pomset" file="${basedir}/pom.xml"/>
 		<fail unless="pomset" message="There must be a pom.xml file in com.ibm.streamsx.mail in order to use maven to download necessary dependencies."/> 
 		<exec executable="${maven.bin}"  failonerror="true">
+			<arg value="--batch-mode" />
 			<arg value="dependency:copy-dependencies"/>
 			<arg value="-DoutputDirectory=${lib.dir}"/>
 		</exec>
