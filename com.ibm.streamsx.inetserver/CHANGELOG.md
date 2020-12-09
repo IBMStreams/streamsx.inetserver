@@ -51,3 +51,6 @@
 ## v4.3.2
 * Globalization support
 
+## v4.3.3
+* Bump jettyVersion from 9.4.18.v20190429 to 9.4.35.v20201120
+
