@@ -30,7 +30,7 @@ Reference of former releases:
 
 ## What is new
 
-[CHANGELOG.md](https://github.com/IBMStreams/streamsx.inetserver/blob/master/CHANGELOG.md)
+[CHANGELOG.md](https://github.com/IBMStreams/streamsx.inetserver/blob/master/com.ibm.streamsx.inetserver/CHANGELOG.md)
 
 
 ## Running applications that use the Internet Server Toolkit
