@@ -5,6 +5,9 @@ jetty webserver. It may be used for rest protocol and web socket protocol applic
 This toolkit is a split from streamsx.inet 2.9.6
 [streams.inet v2.9.6](https://github.com/IBMStreams/streamsx.inet/tree/v2.9.6)
 
+## Changes
+[CHANGELOG.md](com.ibm.streamsx.inetserver/CHANGELOG.md)
+
 This toolkit implements the NLS feature. Use the guidelines for the message bundle that are described in [The messages and the NLS for toolkits](https://github.com/IBMStreams/administration/wiki/Messages-and-National-Language-Support-for-toolkits)
 
 [Project Documentation at:](http://ibmstreams.github.io/streamsx.inetserver)
