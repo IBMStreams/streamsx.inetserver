@@ -57,15 +57,19 @@ public class InjectTuple extends SubmitterServlet {
               final int ai = attr.getIndex();
               switch (attr.getType().getMetaType()) {
               case INT8:
+              case UINT8:
                   tuple.setByte(ai, Byte.parseByte(value));
                   break;
               case INT16:
+              case UINT16:
                   tuple.setShort(ai, Short.parseShort(value));
                   break;
               case INT32:
+              case UINT32:
                   tuple.setInt(ai, Integer.parseInt(value));
                   break;
               case INT64:
+              case UINT64:
                   tuple.setLong(ai, Long.parseLong(value));
                   break;
               case FLOAT32:

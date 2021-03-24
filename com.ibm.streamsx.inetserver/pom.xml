@@ -12,12 +12,11 @@
     <groupId>com.ibm.streamsx.inetserver</groupId>
     <artifactId>streamsx.inetserver</artifactId>
     <packaging>jar</packaging>
-    <version>4.3.3</version>
+    <version>4.3.4</version>
     <name>com.ibm.streamsx.inetserver</name>
     <properties>
         <!-- Adapt this to a version found on http://central.maven.org/maven2/org/eclipse/jetty/ -->
-        <!-- <jettyVersion>9.4.12.v20180830</jettyVersion> -->
-        <jettyVersion>9.4.35.v20201120</jettyVersion>
+        <jettyVersion>9.4.38.v20210224</jettyVersion>
     </properties>
     <dependencies>
         <dependency>
