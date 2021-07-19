@@ -16,7 +16,7 @@
     <name>com.ibm.streamsx.inetserver</name>
     <properties>
         <!-- Adapt this to a version found on http://central.maven.org/maven2/org/eclipse/jetty/ -->
-        <jettyVersion>9.4.38.v20210224</jettyVersion>
+        <jettyVersion>9.4.43.v20210629</jettyVersion>
     </properties>
     <dependencies>
         <dependency>
